@@ -6,6 +6,7 @@ class DFS:
     def __init__(self, graph, shape, start=None, end=None):
         self.start = 0 if start is None else start
         self.end = shape[0] * shape[1] - 1 if end is None else end
+        self.shape = shape
         self.graph = graph
         self.nodes = []
         self.reset()
@@ -18,8 +19,11 @@ class DFS:
             edges_dict[key].append(neighbor)
     
         self.nodes = []
+        for node in range(self.shape[0] * self.shape[1]):
+            self.nodes.append(Node(node, []))
+
         for key, value in edges_dict.items():
-            self.nodes.append(Node(key, value))
+            self.nodes[key].set_neighbor(value)
             
     def generate_path(self, visited, start=None):
         current = self.start if start is None else start
