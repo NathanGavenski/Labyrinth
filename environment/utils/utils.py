@@ -1,4 +1,4 @@
-from collections import defaultdict
+import sys
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -18,20 +18,21 @@ def get_neighbors(current_pos : int, shape : tuple, undirected : bool = False) -
         Directed nodes: [0, 1] and [1, 0] are viable options
         Undirected nodes: only [0, 1] is a viable option
     '''
+    w, h = shape
     if not undirected:
-        neighbors = np.array([+shape[1], +1, -shape[1], -1]) # up, right, down, left
+        neighbors = np.array([+w, +1, -w, -1]) # up, right, down, left
     else:
-        neighbors = np.array([+shape[1], +1]) # up, right
+        neighbors = np.array([+w, +1]) # up, right
 
     possible_neighbors = np.array(current_pos + neighbors)
     delete = []
 
     # Test up neighbor
-    if possible_neighbors[0] > shape[0] * shape[1] - 1:
+    if possible_neighbors[0] > w * h - 1:
         delete.append(0)
 
     # Test right neighbor
-    if possible_neighbors[1] % shape[1] == 0:
+    if possible_neighbors[1] % w == 0:
         delete.append(1)    
         
     # Test down neighbor
@@ -40,8 +41,8 @@ def get_neighbors(current_pos : int, shape : tuple, undirected : bool = False) -
 
     # Test left neighbor
     if not undirected:
-        left = int(possible_neighbors[3] / shape[1])
-        pos = int(current_pos / shape[1])
+        left = int(possible_neighbors[3] / w)
+        pos = int(current_pos / w)
         if left != pos or possible_neighbors[3] < 0:
             delete.append(3)
 
@@ -74,16 +75,18 @@ def remove_redundant_nodes(edges:list) -> list:
                 tobe_deleted.append(idx+_idx)
     return list(map(tuple, np.delete(edges, tobe_deleted, 0)))
 
+
 def transform_edges_into_walls(edges:list, shape:tuple) -> list:
     '''
-    Construct a array like maze ploting walls and squares
+    Construct a array like maze ploting walls and squares.
+    Where there is an edge, it removes the wall to create a passage.
 
     Args:
         edges : list = list of edges (walls) that need 
         to be removed from the maze.
         shape : tuple = maze shape (height, width).
     '''
-    h, w = shape
+    w, h = shape
     walls = np.zeros(shape=[h*2+1, w*2+1])
     vertical_walls = list(range(0, h*2+1, 2))
     horizontal_walls = list(range(0, w*2+1, 2))
@@ -104,6 +107,7 @@ def transform_edges_into_walls(edges:list, shape:tuple) -> list:
             walls[row, column] = 0
     return walls
 
+
 def plot_graph(edges:list, shape:tuple) -> None:
     '''
     Plot the edges in a graph format.
@@ -122,3 +126,18 @@ def plot_graph(edges:list, shape:tuple) -> None:
             pos.append((x, y))
     nx.drawing.nx_pylab.draw_networkx(graph, pos)
     plt.show()
+
+
+class recursionLimit:
+    '''
+    Class for setting a higher recursion limit.
+    '''
+    def __init__(self, limit:int) -> None:
+        self.limit = limit
+
+    def __enter__(self) -> None:
+        self.old_limit = sys.getrecursionlimit()
+        sys.setrecursionlimit(self.limit)
+
+    def __exit__(self, *args) -> None:
+        sys.setrecursionlimit(self.old_limit)

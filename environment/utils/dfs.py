@@ -31,8 +31,8 @@ class DFS:
         if start is None:
             self.nodes[current].visited = True
         
-        if current == self.end:
-            return visited
+        # if current == self.end:
+        #     return visited
         
         for node in self.nodes[current]:
             node = self.nodes[node]
