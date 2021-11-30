@@ -3,7 +3,15 @@ from collections import defaultdict
 from .node import Node
 
 class DFS:
-    def __init__(self, graph, shape, start=None, end=None):
+    def __init__(self, graph: list, shape: tuple, start : int = None, end : int = None):
+        '''
+        Deepth first search algorithm for the maze generation.
+
+        graph : list = list of edges for each cell (ex: [(0, 1), (0, 5)])
+        shape : tuple = size of the map (width, height)
+        start : int = absolute position for the start (default: 0)
+        end : int = absolute position for the end (default: the last cell - up left most cell)
+        '''
         self.start = 0 if start is None else start
         self.end = shape[0] * shape[1] - 1 if end is None else end
         self.shape = shape
@@ -31,8 +39,8 @@ class DFS:
         if start is None:
             self.nodes[current].visited = True
         
-        # if current == self.end:
-        #     return visited
+        if current == self.end:
+            self.nodes[current].visited = False
         
         for node in self.nodes[current]:
             node = self.nodes[node]
