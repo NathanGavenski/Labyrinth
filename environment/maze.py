@@ -1,5 +1,6 @@
-import os
 import ast
+import os
+from collections import defaultdict
 
 import gym
 from gym.utils import seeding
@@ -10,6 +11,14 @@ from utils import get_neighbors, DFS, recursionLimit
 
 
 class Maze(gym.Env):
+    
+    actions = {
+        0: (1, 0),
+        1: (0, 1),
+        2: (-1, 0),
+        3: (0, -1)
+    }
+
     def __init__(self, shape : tuple, start : int = (0, 0), end : int = None) -> None:
         super().__init__()
         self.shape = shape
@@ -19,6 +28,7 @@ class Maze(gym.Env):
         
         self.start = start 
         self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
+        self.agent = self.start
 
         self.seed()
     
@@ -32,7 +42,7 @@ class Maze(gym.Env):
         if visited is None:
             edges = []
             for pos in range(maze.shape[0] * maze.shape[1]):
-                edges += get_neighbors(pos, maze.shape, undirected=True)
+                edges += get_neighbors(pos, maze.shape, undirected=False)
 
             start = (self.start[0] * self.shape[0]) + self.start[1]
             end = (self.end[0] * self.shape[0]) + self.end[1]
@@ -42,6 +52,11 @@ class Maze(gym.Env):
 
         return transform_edges_into_walls(visited, maze.shape), visited
 
+    def get_global_position(self, position:list) -> int:
+        return position[0] * self.shape[1] + position[1]
+
+
+    # FIXME: transition for the agent is not working
     def render(self, mode : str = "human"):
         if not self.reseted:
             raise Exception('You should reset first.')
@@ -57,6 +72,7 @@ class Maze(gym.Env):
             tile_h = screen_height // h
             tile_w = screen_width // w
 
+            # Draw walls
             for x, tiles in enumerate(self.maze[::-1]):
                 if (x > 0 and x < self.shape[0] * 2):
                     for y, tile in enumerate(tiles):
@@ -81,10 +97,10 @@ class Maze(gym.Env):
                                 self.viewer.add_geom(line)                                 
 
             # Draw start
-            left = self.start[0] * tile_w
-            right = (self.start[0] + 1) * tile_w
-            top = self.start[1] * tile_h
-            bottom = (self.start[1] + 1) * tile_h
+            left = self.start[1] * tile_w
+            right = (self.start[1] + 1) * tile_w
+            top = self.start[0] * tile_h
+            bottom = (self.start[0] + 1) * tile_h
             start = rendering.FilledPolygon([
                 (left, bottom),
                 (left, top),
@@ -95,10 +111,10 @@ class Maze(gym.Env):
             self.viewer.add_geom(start)
 
             # Draw end
-            left = self.end[0] * tile_w
-            right = (self.end[0] + 1) * tile_w
-            top = self.end[1] * tile_h
-            bottom = (self.end[1] + 1) * tile_h
+            left = self.end[1] * tile_w
+            right = (self.end[1] + 1) * tile_w
+            top = self.end[0] * tile_h
+            bottom = (self.end[0] + 1) * tile_h
             end = rendering.FilledPolygon([
                 (left, bottom),
                 (left, top),
@@ -109,30 +125,54 @@ class Maze(gym.Env):
             self.viewer.add_geom(end)
 
             # Draw agent
-            agent_pos = self.start
-            left = agent_pos[0] * tile_w
-            right = (agent_pos[0] + 1) * tile_w
-            bottom = agent_pos[1] * tile_h
-            top = (agent_pos[1] + 1) * tile_h
+            agent_pos = self.agent
+            left = agent_pos[1] * tile_w
+            right = (agent_pos[1] + 1) * tile_w
+            bottom = agent_pos[0] * tile_h
+            top = (agent_pos[0] + 1) * tile_h
             agent = rendering.FilledPolygon([
                 (left + tile_w // 2, bottom),
                 (left, top - tile_h // 2),
                 (right - tile_w // 2, top),
                 (right, bottom + tile_h // 2)
             ])
+            self.agent_transition = rendering.Transform()
+            agent.add_attr(self.agent_transition)
             agent.set_color(*Colors.GREEN.value)
             self.viewer.add_geom(agent)
 
+        self.agent_transition.set_translation(*self.agent)
+
         return self.viewer.render(return_rgb_array=mode == "rgb_array")    
 
+    # FIXME adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
     def step(self, action:int) -> list:
-        raise NotImplementedError('')
+        '''
+        0: UP, 1: RIGHT, 2: DOWN, 3: LEFT
+        '''
+        destiny = np.array(self.agent) + self.actions[action]
+        agent_global_position = self.get_global_position(self.agent)
+        destiny_global_position = self.get_global_position(destiny)
+        if destiny_global_position in self.pathways[agent_global_position]:
+            self.agent = destiny
+
+        done = (self.agent == self.end).all()
+        reward = -.1 / (self.shape[0] * self.shape[1]) if not done else 1
+
+        return np.hstack((self.agent, self.maze.flatten())), reward, done, {} 
 
     def reset(self) -> None:
         self.reseted = True
 
         with recursionLimit(10000):
-            self.maze, self.pathways = self.generate()
+            self.maze, pathways = self.generate()
+
+        self.pathways = defaultdict(list)        
+        for start, end in pathways:
+            self.pathways[start].append(end)
+
+        self.agent = self.start
+        return np.hstack((self.agent, self.maze.flatten()))
 
     def close(self) -> None:
         if self.viewer:
@@ -157,20 +197,21 @@ class Maze(gym.Env):
         pathways = ast.literal_eval(visited)
         self.start = ast.literal_eval(start)
         self.end = ast.literal_eval(end)
-        self.maze, self.pathways = self.generate(visited=pathways)
+        self.maze, pathways = self.generate(visited=pathways)
+        self.agent = self.start
+
+        self.pathways = defaultdict(list)        
+        for start, end in pathways:
+            self.pathways[start].append(end)
+
         self.reseted = True
 
 if __name__ == '__main__':
     from PIL import Image
+    import time
     
     maze = Maze((5, 5))
-    maze.reset()
-    Image.fromarray(maze.render('rgb_array')).save('tst01.png')
-    maze.save('./maze/01.txt')
-    maze.close()
-    del maze
-
-    maze = Maze((5, 5))
-    maze.load('./maze/01.txt')
-    Image.fromarray(maze.render('rgb_array')).save('tst02.png')
+    print(maze.reset())
+    maze.render()
+    time.sleep(2)
     maze.close()

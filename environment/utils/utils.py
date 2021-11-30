@@ -78,13 +78,13 @@ def remove_redundant_nodes(edges:list) -> list:
 
 def transform_edges_into_walls(edges:list, shape:tuple) -> list:
     '''
-    Construct a array like maze ploting walls and squares.
+    Constructs an array like maze ploting walls and squares.
     Where there is an edge, it removes the wall to create a passage.
 
     Args:
         edges : list = list of edges (walls) that need 
         to be removed from the maze.
-        shape : tuple = maze shape (height, width).
+        shape : tuple = maze shape (width, height).
     '''
     w, h = shape
     walls = np.zeros(shape=[h*2+1, w*2+1])
