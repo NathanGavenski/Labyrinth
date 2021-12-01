@@ -5,5 +5,5 @@ register(
     entry_point="environment.maze:Maze",
     max_episode_steps=1000,
     reward_threshold=1,
-    kwargs={'size': (10, 10), 'start': 0, 'end': 99}
+    kwargs={'shape': (10, 10), 'start': (0, 0), 'end': (9, 9)}
 )
