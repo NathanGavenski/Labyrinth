@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 
 import gym
+from gym import spaces
 from gym.utils import seeding
 import numpy as np
 
@@ -25,18 +26,25 @@ class Maze(gym.Env):
         self.viewer = None
         self.state = None
         self.reseted = False
+        self.dfs = None
         
         self.start = start 
         self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
         self.agent = self.start
 
         self.seed()
+
+        self.action_space = spaces.Discrete(4)
+
+        low = np.zeros(len(self.shape), dtype=int)
+        high = np.array(self.shape, dtype=int) - np.ones(len(self.shape), dtype=int)
+        self.observation_space = spaces.Box(low, high, dtype=int)
     
     def seed(self, seed=None) -> list:
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def generate(self, visited : list = None) -> list:
+    def _generate(self, visited : list = None) -> list:
         maze = np.ndarray(shape=self.shape)
 
         if visited is None:
@@ -47,8 +55,8 @@ class Maze(gym.Env):
             start = (self.start[0] * self.shape[0]) + self.start[1]
             end = (self.end[0] * self.shape[0]) + self.end[1]
 
-            dfs = DFS(edges, maze.shape, start=start, end=end)
-            visited = dfs.generate_path([])
+            self.dfs = DFS(edges, maze.shape, start=start, end=end)
+            visited = self.dfs.generate_path([])
 
         return transform_edges_into_walls(visited, maze.shape), visited
 
@@ -165,14 +173,24 @@ class Maze(gym.Env):
         self.reseted = True
 
         with recursionLimit(10000):
-            self.maze, pathways = self.generate()
+            self.maze, self._pathways = self._generate()
 
         self.pathways = defaultdict(list)        
-        for start, end in pathways:
+        for start, end in self._pathways:
             self.pathways[start].append(end)
 
         self.agent = self.start
         return np.hstack((self.agent, self.maze.flatten()))
+
+    def generate(self, amount : int = 1) -> None:
+        for _ in range(amount):
+            self.reset()
+            hash_idx = hash(self)
+            if not os.path.exists(f'./environment/mazes/mazes{self.shape[0]}/'):
+                os.makedirs(f'./environment/mazes/mazes{self.shape[0]}/')
+            
+            path = f'./environment/mazes/mazes{self.shape[0]}/{hash_idx}.txt'
+            self.save(path)
 
     def close(self) -> None:
         if self.viewer:
@@ -186,7 +204,7 @@ class Maze(gym.Env):
             os.makedirs(path)
 
         with open(f'{path}/{file}', 'w') as f:
-            f.write(f'{self.pathways};{self.start};{self.end}')
+            f.write(f'{self._pathways};{self.start};{self.end}')
     
     def load(self, path:str) -> None:
         with open(path, 'r') as f:
@@ -197,7 +215,7 @@ class Maze(gym.Env):
         pathways = ast.literal_eval(visited)
         self.start = ast.literal_eval(start)
         self.end = ast.literal_eval(end)
-        self.maze, pathways = self.generate(visited=pathways)
+        self.maze, self._pathways = self.generate(visited=pathways)
         self.agent = self.start
 
         self.pathways = defaultdict(list)        
@@ -206,12 +224,17 @@ class Maze(gym.Env):
 
         self.reseted = True
 
-if __name__ == '__main__':
-    from PIL import Image
-    import time
-    
-    maze = Maze((5, 5))
-    print(maze.reset())
-    maze.render()
-    time.sleep(2)
-    maze.close()
+    def solve(self, mode : str ='shortest') -> list:
+        with recursionLimit(10000):
+            paths = self.dfs.find_paths(self.pathways)
+            
+        if mode == 'shortest':
+            return min(paths)
+        else:
+            return paths
+
+    def __hash__(self) -> int:
+        pathways = list(map(sorted, self._pathways))
+        pathways.sort()
+        pathways = tuple(set(map(tuple, pathways)))
+        return hash(pathways)
