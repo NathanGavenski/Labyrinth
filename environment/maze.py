@@ -7,8 +7,8 @@ from gym import spaces
 from gym.utils import seeding
 import numpy as np
 
-from utils import transform_edges_into_walls, Colors
-from utils import get_neighbors, DFS, recursionLimit
+from .utils import transform_edges_into_walls, Colors
+from .utils import get_neighbors, DFS, recursionLimit
 
 
 class Maze(gym.Env):
@@ -62,7 +62,8 @@ class Maze(gym.Env):
         self.state = None
         self.reseted = False
         self.dfs = None
-        
+        self.maze = None
+    
         self.start = start 
         self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
         self.agent = self.start
@@ -216,7 +217,7 @@ class Maze(gym.Env):
         '''
         if action not in self.actions.keys():
             raise Exception(f"Action should be: {self.actions.keys()}")
-            
+
         destiny = np.array(self.agent) + self.actions[action]
         agent_global_position = self.get_global_position(self.agent)
         destiny_global_position = self.get_global_position(destiny)
@@ -235,7 +236,7 @@ class Maze(gym.Env):
         '''
         self.reseted = True
 
-        if not agent:
+        if not agent or self.maze is None:
             with recursionLimit(10000):
                 self.maze, self._pathways = self._generate()
 
