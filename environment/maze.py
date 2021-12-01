@@ -12,6 +12,41 @@ from utils import get_neighbors, DFS, recursionLimit
 
 
 class Maze(gym.Env):
+    '''
+    Description:
+        A maze with size [x, y] with an agent (green diamond),
+        a start (red square) and a goal (blue square). The goal
+        of the objective is for the agent to reach the goal tile.
+
+    Observation:
+        Num         Observation         Min     Max
+        0           Agent x position    0       shape - 1
+        1           Agent y position    0       shape - 1
+        2..shape    Maze tile           0       1
+
+        Note: For the rest of the state 0 means an empty 
+        space or no wall, and 1 means a wall. Since the 
+        maze is a matrix and each tile should represent 
+        a current tile, the observation will be (shape * 2).
+
+    Actions:
+        Type: Discrete(2)
+        Num   Action
+        0     UP
+        1     RIGHT
+        2     DOWN
+        3     LEFT
+
+        Note: Walking into a wall will still count as a action.
+
+    Reward:
+        Amount          Scenario
+        1               For reaching the goal
+        -.1 / (x * y)   For all other cases
+
+    Episode Termination:
+        Reaching the goal or a fixed number of steps.
+    '''
     
     actions = {
         0: (1, 0),
@@ -36,15 +71,25 @@ class Maze(gym.Env):
 
         self.action_space = spaces.Discrete(4)
 
+        # FIXME wrong, state is the maze plus the agent position
         low = np.zeros(len(self.shape), dtype=int)
         high = np.array(self.shape, dtype=int) - np.ones(len(self.shape), dtype=int)
         self.observation_space = spaces.Box(low, high, dtype=int)
     
     def seed(self, seed=None) -> list:
+        '''
+        Set a seed for the environment.
+        '''
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def _generate(self, visited : list = None) -> list:
+        '''
+        Create the maze if no maze was loaded.
+
+        Param:
+            visited:list = List of edges from a path
+        '''
         maze = np.ndarray(shape=self.shape)
 
         if visited is None:
@@ -61,11 +106,22 @@ class Maze(gym.Env):
         return transform_edges_into_walls(visited, maze.shape), visited
 
     def get_global_position(self, position:list) -> int:
+        '''
+        Get global position from a tile.
+        '''
         return position[0] * self.shape[1] + position[1]
 
 
     # FIXME: transition for the agent is not working
     def render(self, mode : str = "human"):
+        '''
+        Render the environment current state.
+
+        Mode:
+            Name        description
+            human       render a view (image)
+            rgb_array   render current state as a numpy array
+        '''
         if not self.reseted:
             raise Exception('You should reset first.')
 
@@ -153,11 +209,14 @@ class Maze(gym.Env):
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")    
 
-    # FIXME adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
+    # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
     def step(self, action:int) -> list:
         '''
-        0: UP, 1: RIGHT, 2: DOWN, 3: LEFT
+        Perform a step in the environment.
         '''
+        if action not in self.actions.keys():
+            raise Exception(f"Action should be: {self.actions.keys()}")
+            
         destiny = np.array(self.agent) + self.actions[action]
         agent_global_position = self.get_global_position(self.agent)
         destiny_global_position = self.get_global_position(destiny)
@@ -169,20 +228,28 @@ class Maze(gym.Env):
 
         return np.hstack((self.agent, self.maze.flatten())), reward, done, {} 
 
-    def reset(self) -> None:
+    def reset(self, agent=True) -> None:
+        '''
+        Reset the maze. If agent is True, return agent to the start tile.
+        If agent is False, return maze to a new one.
+        '''
         self.reseted = True
 
-        with recursionLimit(10000):
-            self.maze, self._pathways = self._generate()
+        if not agent:
+            with recursionLimit(10000):
+                self.maze, self._pathways = self._generate()
 
-        self.pathways = defaultdict(list)        
-        for start, end in self._pathways:
-            self.pathways[start].append(end)
+            self.pathways = defaultdict(list)        
+            for start, end in self._pathways:
+                self.pathways[start].append(end)
 
         self.agent = self.start
         return np.hstack((self.agent, self.maze.flatten()))
 
     def generate(self, amount : int = 1) -> None:
+        '''
+        Create 'n' amount of mazes.
+        '''
         for _ in range(amount):
             self.reset()
             hash_idx = hash(self)
@@ -193,11 +260,24 @@ class Maze(gym.Env):
             self.save(path)
 
     def close(self) -> None:
+        '''
+        Closes the view from the environment.
+        Note: This does not reset the environment.
+        '''
         if self.viewer:
             self.viewer.close()
             self.viewer = None
 
     def save(self, path:str) -> None:
+        '''
+        Save the current maze separated by ';'.
+
+        File:
+            Position    Description
+            0           Maze paths
+            1           Start position
+            2           Goal position
+        '''
         file = path.split('/')[-1]
         path = '/'.join(path.split('/')[:-1])
         if not os.path.exists(path):
@@ -207,6 +287,9 @@ class Maze(gym.Env):
             f.write(f'{self._pathways};{self.start};{self.end}')
     
     def load(self, path:str) -> None:
+        '''
+        Load the maze from a file.
+        '''
         with open(path, 'r') as f:
             for line in f:
                 info = line
@@ -225,6 +308,12 @@ class Maze(gym.Env):
         self.reseted = True
 
     def solve(self, mode : str ='shortest') -> list:
+        '''
+        Solve the current maze
+        
+        Param:
+            mode = amount of paths to return [shortest/all].
+        '''
         with recursionLimit(10000):
             paths = self.dfs.find_paths(self.pathways)
             
@@ -234,6 +323,14 @@ class Maze(gym.Env):
             return paths
 
     def __hash__(self) -> int:
+        '''
+        Create a hash of the edges of the maze.
+
+        Note: in order to have a consistent hash, 
+        it sorts the inner tuples (the edges), and
+        the tuples (the list of edges), and remove 
+        duplicates before hashing the maze.
+        '''
         pathways = list(map(sorted, self._pathways))
         pathways.sort()
         pathways = tuple(set(map(tuple, pathways)))
