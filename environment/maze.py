@@ -224,7 +224,7 @@ class Maze(gym.Env):
         if destiny_global_position in self.pathways[agent_global_position]:
             self.agent = destiny
 
-        done = (self.agent == self.end).all()
+        done = (np.array(self.agent) == self.end).all()
         reward = -.1 / (self.shape[0] * self.shape[1]) if not done else 1
 
         return np.hstack((self.agent, self.maze.flatten())), reward, done, {} 
@@ -251,8 +251,8 @@ class Maze(gym.Env):
         '''
         Create 'n' amount of mazes.
         '''
-        for _ in range(amount):
-            self.reset()
+        for idx in range(amount):
+            self.reset(agent=False)
             hash_idx = hash(self)
             if not os.path.exists(f'./environment/mazes/mazes{self.shape[0]}/'):
                 os.makedirs(f'./environment/mazes/mazes{self.shape[0]}/')
