@@ -1,4 +1,4 @@
-./Environments/mazes/
+environment/mazes/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
