@@ -49,10 +49,10 @@ class Maze(gym.Env):
     '''
     
     actions = {
-        0: (1, 0),
-        1: (0, 1),
-        2: (-1, 0),
-        3: (0, -1)
+        0: (0, 1),
+        1: (1, 0),
+        2: (0, -1),
+        3: (-1, 0)
     }
 
     def __init__(self, shape : tuple, start : int = (0, 0), end : int = None) -> None:
@@ -110,7 +110,7 @@ class Maze(gym.Env):
         '''
         Get global position from a tile.
         '''
-        return position[0] * self.shape[1] + position[1]
+        return position[1] * self.shape[1] + position[0]
 
 
     # FIXME: transition for the agent is not working
@@ -129,16 +129,16 @@ class Maze(gym.Env):
         w, h = self.shape
         screen_width = 600
         screen_height = 600
+        tile_h = screen_height // h
+        tile_w = screen_width // w
 
         if self.viewer is None:
             from gym.envs.classic_control import rendering
 
             self.viewer = rendering.Viewer(screen_width, screen_height)
-            tile_h = screen_height // h
-            tile_w = screen_width // w
 
             # Draw walls
-            for x, tiles in enumerate(self.maze[::-1]):
+            for x, tiles in enumerate(self.maze):
                 if (x > 0 and x < self.shape[0] * 2):
                     for y, tile in enumerate(tiles):
                         if tile == 1 and (y > 0 and y < self.shape[0] * 2):
@@ -150,7 +150,7 @@ class Maze(gym.Env):
                                     (_x * tile_w, _y * tile_h)
                                 )
                                 line.set_color(*Colors.BLACK.value)
-                                self.viewer.add_geom(line)   
+                                self.viewer.add_geom(line) 
                             elif x % 2 > 0: # vertical wall
                                 _y = x // 2 + 1
                                 _x = y // 2
@@ -206,7 +206,9 @@ class Maze(gym.Env):
             agent.set_color(*Colors.GREEN.value)
             self.viewer.add_geom(agent)
 
-        self.agent_transition.set_translation(*self.agent)
+        new_x = self.agent[0] * tile_h
+        new_y = self.agent[1] * tile_w
+        self.agent_transition.set_translation(new_x, new_y)
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")    
 
@@ -216,7 +218,7 @@ class Maze(gym.Env):
         Perform a step in the environment.
         '''
         if action not in self.actions.keys():
-            raise Exception(f"Action should be: {self.actions.keys()}")
+            raise Exception(f"Action should be in {self.actions.keys()} it was {action}")
 
         destiny = np.array(self.agent) + self.actions[action]
         agent_global_position = self.get_global_position(self.agent)
@@ -299,7 +301,7 @@ class Maze(gym.Env):
         pathways = ast.literal_eval(visited)
         self.start = ast.literal_eval(start)
         self.end = ast.literal_eval(end)
-        self.maze, self._pathways = self.generate(visited=pathways)
+        self.maze, self._pathways = self._generate(visited=pathways)
         self.agent = self.start
 
         self.pathways = defaultdict(list)        
@@ -307,6 +309,7 @@ class Maze(gym.Env):
             self.pathways[start].append(end)
 
         self.reseted = True
+        return np.hstack((self.agent, self.maze.flatten()))
 
     def solve(self, mode : str ='shortest') -> list:
         '''
@@ -325,6 +328,8 @@ class Maze(gym.Env):
 
     def __hash__(self) -> int:
         '''
+            print(self.maze[::-1])
+            print()
         Create a hash of the edges of the maze.
 
         Note: in order to have a consistent hash, 
