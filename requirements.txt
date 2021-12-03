@@ -1,3 +1,9 @@
 networkx
 gym
 matplotlib
+pyglet
+
+torch
+torchvision
+torchaudio
+tqdm
