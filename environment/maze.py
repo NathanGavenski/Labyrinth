@@ -1,6 +1,7 @@
 import ast
-import os
 from collections import defaultdict
+from copy import deepcopy
+import os
 
 import gym
 from gym import spaces
@@ -112,6 +113,16 @@ class Maze(gym.Env):
         '''
         return position[1] * self.shape[1] + position[0]
 
+    def define_pathways(self, pathways):
+        _pathways = defaultdict(list)        
+        for start, end in pathways:
+            _pathways[start].append(end)
+
+        d = deepcopy(_pathways)
+        for key, values in _pathways.items():
+            for value in values:
+                d[value].append(key)
+        return d
 
     # FIXME: transition for the agent is not working
     def render(self, mode : str = "human"):
@@ -228,6 +239,7 @@ class Maze(gym.Env):
 
         done = (np.array(self.agent) == self.end).all()
         reward = -.1 / (self.shape[0] * self.shape[1]) if not done else 1
+        self.reseted = not done
 
         return np.hstack((self.agent, self.maze.flatten())), reward, done, {} 
 
@@ -242,9 +254,7 @@ class Maze(gym.Env):
             with recursionLimit(10000):
                 self.maze, self._pathways = self._generate()
 
-            self.pathways = defaultdict(list)        
-            for start, end in self._pathways:
-                self.pathways[start].append(end)
+            self.pathways = self.define_pathways(self._pathways)
 
         self.agent = self.start
         return np.hstack((self.agent, self.maze.flatten()))
@@ -304,11 +314,10 @@ class Maze(gym.Env):
         self.maze, self._pathways = self._generate(visited=pathways)
         self.agent = self.start
 
-        self.pathways = defaultdict(list)        
-        for start, end in pathways:
-            self.pathways[start].append(end)
+        self.pathways = self.define_pathways(pathways)
 
         self.reseted = True
+        self.agent = self.start
         return np.hstack((self.agent, self.maze.flatten()))
 
     def solve(self, mode : str ='shortest') -> list:
