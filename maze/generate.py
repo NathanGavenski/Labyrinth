@@ -3,10 +3,12 @@ import argparse
 import os
 from os import listdir
 from os.path import isfile, join
+import pathlib
 
 import gym
-import environment
 from tqdm import tqdm
+
+import environment
 
 
 def get_args():
@@ -47,12 +49,15 @@ def get_args():
         help="Height of the generated maze"
     )
 
+    return parser.parse_args()
+
 
 def generate(train, eval, shape, verbose=False):
     env = gym.make('Maze-v0', shape=shape)
-    env.generate(amount=train+eval)
 
-    mypath = f'./environment/mazes/mazes{shape[0]}/'
+    global_path = pathlib.Path(__file__).parent.resolve()
+    mypath = f'{global_path}/environment/mazes/mazes{shape[0]}/'
+    env.generate(mypath, amount=train+eval)
     files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
     train_data = files[:train]

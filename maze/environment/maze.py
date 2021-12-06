@@ -259,18 +259,18 @@ class Maze(gym.Env):
         self.agent = self.start
         return np.hstack((self.agent, self.maze.flatten()))
 
-    def generate(self, amount : int = 1) -> None:
+    def generate(self, path:str, amount : int = 1) -> None:
         '''
         Create 'n' amount of mazes.
         '''
-        for idx in range(amount):
+        for _ in range(amount):
             self.reset(agent=False)
             hash_idx = hash(self)
-            if not os.path.exists(f'./environment/mazes/mazes{self.shape[0]}/'):
-                os.makedirs(f'./environment/mazes/mazes{self.shape[0]}/')
+            if not os.path.exists(path):
+                os.makedirs(path)
             
-            path = f'./environment/mazes/mazes{self.shape[0]}/{hash_idx}.txt'
-            self.save(path)
+            file_path = f'{path}/{hash_idx}.txt'
+            self.save(file_path)
 
     def close(self) -> None:
         '''
