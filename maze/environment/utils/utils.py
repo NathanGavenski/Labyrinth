@@ -1,3 +1,4 @@
+import resource
 import sys
 
 import matplotlib.pyplot as plt
@@ -5,7 +6,7 @@ import networkx as nx
 import numpy as np
 
 
-def get_neighbors(current_pos : int, shape : tuple, undirected : bool = False) -> list:
+def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> list:
     '''
     Find all possile neighbors of a node in a maze like grid.
 
@@ -20,9 +21,9 @@ def get_neighbors(current_pos : int, shape : tuple, undirected : bool = False) -
     '''
     w, h = shape
     if not undirected:
-        neighbors = np.array([+w, +1, -w, -1]) # up, right, down, left
+        neighbors = np.array([+w, +1, -w, -1])  # up, right, down, left
     else:
-        neighbors = np.array([+w, +1]) # up, right
+        neighbors = np.array([+w, +1])  # up, right
 
     possible_neighbors = np.array(current_pos + neighbors)
     delete = []
@@ -33,8 +34,8 @@ def get_neighbors(current_pos : int, shape : tuple, undirected : bool = False) -
 
     # Test right neighbor
     if possible_neighbors[1] % w == 0:
-        delete.append(1)    
-        
+        delete.append(1)
+
     # Test down neighbor
     if not undirected and possible_neighbors[2] < 0:
         delete.append(2)
@@ -52,7 +53,7 @@ def get_neighbors(current_pos : int, shape : tuple, undirected : bool = False) -
     return neighbors
 
 
-def remove_redundant_nodes(edges:list) -> list:
+def remove_redundant_nodes(edges: list) -> list:
     '''
     Remove redundant nodes for the maze.
 
@@ -76,7 +77,7 @@ def remove_redundant_nodes(edges:list) -> list:
     return list(map(tuple, np.delete(edges, tobe_deleted, 0)))
 
 
-def transform_edges_into_walls(edges:list, shape:tuple) -> list:
+def transform_edges_into_walls(edges: list, shape: tuple) -> list:
     '''
     Constructs an array like maze ploting walls and squares.
     Where there is an edge, it removes the wall to create a passage.
@@ -108,10 +109,10 @@ def transform_edges_into_walls(edges:list, shape:tuple) -> list:
     return walls
 
 
-def plot_graph(edges:list, shape:tuple) -> None:
+def plot_graph(edges: list, shape: tuple) -> None:
     '''
     Plot the edges in a graph format.
-    
+
     Args:
         edges : list = list of edges (walls) that need 
         to be removed from the maze.
@@ -132,12 +133,22 @@ class recursionLimit:
     '''
     Class for setting a higher recursion limit.
     '''
-    def __init__(self, limit:int) -> None:
+
+    def __init__(self, limit: int) -> None:
         self.limit = limit
 
     def __enter__(self) -> None:
-        self.old_limit = sys.getrecursionlimit()
+        self.old_size_limit = sys.getrecursionlimit()
+        self.old_memory_limit = resource.getrlimit(resource.RLIMIT_STACK)
         sys.setrecursionlimit(self.limit)
+        resource.setrlimit(
+            resource.RLIMIT_STACK,
+            (0x10000000, resource.RLIM_INFINITY)
+        )
 
     def __exit__(self, *args) -> None:
-        sys.setrecursionlimit(self.old_limit)
+        sys.setrecursionlimit(self.old_size_limit)
+        resource.setrlimit(
+            resource.RLIMIT_STACK,
+            self.old_memory_limit
+        )

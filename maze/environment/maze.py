@@ -100,7 +100,7 @@ class Maze(gym.Env):
                 edges += get_neighbors(pos, maze.shape, undirected=False)
 
             start = (self.start[0] * self.shape[0]) + self.start[1]
-            end = (self.end[0] * self.shape[0]) + self.end[1]
+            end = self.end[0] * self.shape[0] + self.end[1]
 
             self.dfs = DFS(edges, maze.shape, start=start, end=end)
             visited = self.dfs.generate_path([])
@@ -118,6 +118,7 @@ class Maze(gym.Env):
         for start, end in pathways:
             _pathways[start].append(end)
 
+        self.undirected_pathways = deepcopy(_pathways)
         d = deepcopy(_pathways)
         for key, values in _pathways.items():
             for value in values:
@@ -327,8 +328,8 @@ class Maze(gym.Env):
         Param:
             mode = amount of paths to return [shortest/all].
         '''
-        with recursionLimit(10000):
-            paths = self.dfs.find_paths(self.pathways)
+        with recursionLimit(100000):
+            paths = self.dfs.find_paths(self.undirected_pathways)
             
         if mode == 'shortest':
             return min(paths)
