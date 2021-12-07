@@ -338,8 +338,6 @@ class Maze(gym.Env):
 
     def __hash__(self) -> int:
         '''
-            print(self.maze[::-1])
-            print()
         Create a hash of the edges of the maze.
 
         Note: in order to have a consistent hash, 
