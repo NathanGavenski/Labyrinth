@@ -95,5 +95,5 @@ if __name__ == '__main__':
                     if idx < len(solution) - 1:
                         action = state_to_action(tile, solution[idx+1], shape=(args.width, args.height))
                         env.step(action)
-                        f.write(f'{maze_idx};{solution_idx}{image_idx};{action};{image_idx+1}\n')               
+                        f.write(f'{maze_idx};{solution_idx};{image_idx};{action};{image_idx+1}\n')               
             env.close()
