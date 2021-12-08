@@ -125,7 +125,6 @@ class Maze(gym.Env):
                 d[value].append(key)
         return d
 
-    # FIXME: transition for the agent is not working
     def render(self, mode : str = "human"):
         '''
         Render the environment current state.
@@ -135,8 +134,6 @@ class Maze(gym.Env):
             human       render a view (image)
             rgb_array   render current state as a numpy array
         '''
-        if not self.reseted:
-            raise Exception('You should reset first.')
 
         w, h = self.shape
         screen_width = 600
