@@ -5,6 +5,7 @@ from os.path import isfile, join
 import shutil
 
 import gym
+import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
@@ -76,24 +77,25 @@ if __name__ == '__main__':
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)
 
-    with open(f'{args.save_path}/dataset.txt', 'w') as f:
-        image_idx = 0
+    image_idx = 0
+    dataset = np.ndarray(shape=[0, 5])
+    for maze_idx, maze in tqdm(enumerate(mazes)):
+        env = gym.make('Maze-v0', shape=(args.width, args.height))
+        env.reset()
+        env.load(maze)
+        solutions = env.solve(mode='all')
 
-        for maze_idx, maze in tqdm(enumerate(mazes)):
-            env = gym.make('Maze-v0', shape=(args.width, args.height))
-            env.reset()
-            env.load(maze)
-            solutions = env.solve(mode='all')
+        for solution_idx, solution in enumerate(solutions):
+            env.reset(agent=True)
+            for idx, tile in enumerate(solution):
+                image = env.render('rgb_array')
+                np.save(f'{args.save_path}/{image_idx}', image)
+                image_idx += 1
 
-            for solution_idx, solution in enumerate(solutions):
-                env.reset(agent=True)
-                for idx, tile in enumerate(solution):
-                    image = env.render('rgb_array')
-                    Image.fromarray(image).save(f'{args.save_path}/{image_idx}.png')
-                    image_idx += 1
-
-                    if idx < len(solution) - 1:
-                        action = state_to_action(tile, solution[idx+1], shape=(args.width, args.height))
-                        env.step(action)
-                        f.write(f'{maze_idx};{solution_idx};{image_idx};{action};{image_idx+1}\n')               
+                if idx < len(solution) - 1:
+                    action = state_to_action(tile, solution[idx+1], shape=(args.width, args.height))
+                    env.step(action)
+                    entry = [maze_idx,solution_idx,image_idx,action,image_idx+1]  
+                    dataset = np.append(dataset, np.array(entry)[None], axis=0)             
             env.close()
+    np.save(f'{args.save_path}/dataset', dataset)
