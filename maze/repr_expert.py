@@ -50,13 +50,13 @@ def get_args():
 
     return parser.parse_args()
 
-def global_position_to_local(position, shape=(10, 10)):
+def global_position_to_local(position:int, shape:tuple=(10, 10)) -> tuple:
     y = position // shape[0]
     x = position - (y * shape[0])
     return (x, y)
 
 
-def percentage_to_rgb(minimum, maximum, value):
+def percentage_to_rgb(minimum:int, maximum:int, value:int) -> list:
     minimum, maximum = float(minimum), float(maximum)
     ratio = 2 * (value-minimum) / (maximum - minimum)
     b = int(max(0, 255*(1 - ratio)))
@@ -65,7 +65,7 @@ def percentage_to_rgb(minimum, maximum, value):
     return r, g, b
 
 
-def plot_heatmap(data, name, ax):
+def plot_heatmap(data:list, name:str, ax:plt.axes) -> None:
     ax = sns.heatmap(
         data[::-1],
         annot=False,
