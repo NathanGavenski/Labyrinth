@@ -30,7 +30,11 @@ def get_args():
     parser.add_argument(
         '--path',
         type=str
-    )    
+    )
+    parser.add_argument(
+        '--amount',
+        type=int
+    )
     
     # Maze specific
     parser.add_argument(
@@ -48,20 +52,6 @@ def get_args():
 
     return parser.parse_args()
 
-def state_to_action(source:int, target:int, shape:tuple) -> int:
-    w, h = shape
-
-    # Test left or right
-    if source // w == target // w:
-        if target > source:
-            return 1
-        else:
-            return 3
-    else:
-        if target > source:
-            return 0
-        else:
-            return 2
 
 if __name__ == '__main__':
 
@@ -78,24 +68,26 @@ if __name__ == '__main__':
         os.makedirs(args.save_path)
 
     image_idx = 0
-    dataset = np.ndarray(shape=[0, 5])
+    dataset = np.ndarray(shape=[0, 4])
+    amount_per_maze = (args.amount + 1*len(mazes))// len(mazes)
     for maze_idx, maze in enumerate(tqdm(mazes)):
         env = gym.make('Maze-v0', shape=(args.width, args.height))
         env.reset()
         env.load(maze)
-        solutions = env.solve(mode='all')
 
-        for solution_idx, solution in enumerate(solutions):
-            env.reset(agent=True)
-            for idx, tile in enumerate(solution):
-                image = env.render('rgb_array')
-                np.save(f'{args.save_path}/{image_idx}', image)
-                image_idx += 1
+        done = False
+        for idx in range(amount_per_maze):
+            image = env.render('rgb_array')
+            np.save(f'{args.save_path}/{image_idx}', image)
+            image_idx += 1
+            
+            if idx < amount_per_maze - 1:
+                action = np.random.randint(0, 4)
+                next_state, reward, done, info = env.step(action)
+                entry = [maze_idx,image_idx,action,image_idx+1]  
+                dataset = np.append(dataset, np.array(entry)[None], axis=0)  
 
-                if idx < len(solution) - 1:
-                    action = state_to_action(tile, solution[idx+1], shape=(args.width, args.height))
-                    env.step(action)
-                    entry = [maze_idx,solution_idx,image_idx,action,image_idx+1]  
-                    dataset = np.append(dataset, np.array(entry)[None], axis=0)             
-            env.close()
+                if done:
+                    env.reset(agent=True)
+        env.close()
     np.save(f'{args.save_path}/dataset', dataset)
