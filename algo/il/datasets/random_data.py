@@ -16,7 +16,7 @@ class RandomDataset(Dataset):
         return self.data.shape[0]
 
     def __getitem__(self, index):
-        _, _, state, action, next_state = self.data[index, :]
+        _, state, action, next_state = self.data[index, :]
         state_image = torchvision.transforms.ToTensor()(
             np.load(f'{self.path}{int(state)}.npy', allow_pickle=True)
         )
