@@ -28,6 +28,22 @@ class RandomDataset(Dataset):
 
 
 def get_dataloader(path:str, split:float, batch_size : int = 32) -> DataLoader:
+    '''
+    Create and return DataLoader for random data.
+    
+    Args:
+        path: str = path where all the data is contained. It assumes it follows the 
+        create_random.py script structure - dataset.npy and all .npy in the same
+        folder.
+
+        split: float = percentage for spliting between train and validation.
+        The number should be between 0 and 1.
+
+        batch_size: int = mini batch size for the experiments.
+
+    Return:
+        Train and Validation DataLoaders. If split is 0, validation DataLoader will be None.
+    '''
     if split > 1 or split < 0:
         raise Exception('Split should be between 0 and 1')
 

@@ -26,7 +26,20 @@ class ExpertDataset(Dataset):
         return state_image, next_state_image, action
 
 
-def get_dataloader(path, batch_size=32):
+def get_dataloader(path:str, batch_size : int = 32) -> DataLoader:
+    '''
+    Create and return DataLoader for expert data.
+    
+    Args:
+        path: str = path where all the data is contained. It assumes it follows the 
+        create_expert.py script structure - dataset.npy and all .npy in the same
+        folder.
+
+        batch_size: int = mini batch size for the experiments.
+
+    Return:
+        Train DataLoaders.
+    '''
     return DataLoader(
         ExpertDataset(path),
         batch_size=batch_size,
