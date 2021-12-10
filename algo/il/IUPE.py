@@ -81,6 +81,7 @@ class IUPE(nn.Module):
         # Model params
         self.device = device
         self.verbose = verbose
+        self.maze_path = maze_path
 
         # Env params
         self.environment = environment
@@ -138,13 +139,20 @@ class IUPE(nn.Module):
 
         acc_t = []
         loss_t = []
-        for dataset, name in zip(datasets, names):  
+        for idx, (dataset, name) in enumerate(zip(datasets, names)):  
             for mini_batch in dataset:
                 s, nS, a = mini_batch
 
                 s = s.to(self.device)
                 nS = nS.to(self.device)
                 a = a.to(self.device)
+
+                if idx == 0:
+                    self.board.add_grid(
+                        prior='IDM',
+                        state=s,
+                        next_state=nS
+                    )
 
                 if isinstance(self.environment.action_space, Discrete):
                     a = a.long()
@@ -253,16 +261,21 @@ class IUPE(nn.Module):
             env=self.environment
         )
 
+        iupe_amount = int(self.amount * ratio) + 1
+        random_amount = int(len(self.random_dataset.dataset) * (1 - ratio)) + 1
+
         self.iupe_dataset, self.iupe_dataset_eval = get_random_loader(
             './dataset/alpha/',
             split=.7,
-            batch_size=self.batch_size
+            batch_size=self.batch_size,
+            amount=iupe_amount
         )
 
         self.random_dataset, self.random_dataset_eval = get_random_loader(
             self.random_path,
             split=.7,
-            batch_size=self.batch_size
+            batch_size=self.batch_size,
+            amount=random_amount
         )
         
         return ratio
@@ -280,6 +293,32 @@ class IUPE(nn.Module):
         
         return a, None
 
+    def evaluate_policy(
+        self,
+        maze_path: str,
+        env: gym.core.Env
+    ) -> float:
+        if isinstance(env, str):
+            env = gym.make(env, shape=(self.width, self.height))
+
+        mypath = f'{maze_path}eval/'
+        mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+
+        rewards = []
+        for maze in mazes:
+            env.reset()
+            env.load(maze)
+            done, reward = False, 0
+
+            while not done:
+                state = env.render('rgb_array')
+                action = self.forward(state, weight=True)
+                _, r, done, _ = env.step(action)
+                reward += r
+
+            rewards.append(reward)
+        return np.mean(rewards)
+
     def generate_expert_traj(
         self,
         path: str,
@@ -296,6 +335,7 @@ class IUPE(nn.Module):
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
         ratio = 0
+        rewards = []
         image_idx = 0
         dataset = np.ndarray(shape=[0, 4])
         for maze_idx, maze in enumerate(tqdm(mazes)):
@@ -318,6 +358,8 @@ class IUPE(nn.Module):
                 if done:
                     np.save(f'{path}{image_idx}', env.render('rgb_array'))
                     image_idx += 1
+
+                    rewards.append(reward)
                     ratio += (next_state[:2] == env.end).all()
             env.close()
         np.save(f'{path}/dataset', dataset)
@@ -332,10 +374,13 @@ class IUPE(nn.Module):
         for _ in range(epochs):        
             if self.verbose:
                 if self.iupe_dataset is None:
-                    size = len(self.random_dataset) + len(self.expert_dataset)
+                    size = len(self.random_dataset) 
+                    size += len(self.expert_dataset)
                 else:
-                    size = len(self.random_dataset) + len(self.expert_dataset) + len(self.iupe_dataset)
-                self.pbar = tqdm(range(size // self.batch_size + 1))
+                    size = len(self.random_dataset) 
+                    size += len(self.expert_dataset) 
+                    size += len(self.iupe_dataset)
+                self.pbar = tqdm(range(size))
 
             # ############## IDM ############## #
             idm_acc, idm_loss = self.idm_train()
@@ -366,4 +411,14 @@ class IUPE(nn.Module):
                 ratio=ratio
             )
 
+            # ########## Validate POLICY ########## #
+            aer = self.evaluate_policy(
+                self.maze_path, 
+                self.environment
+            )
+            self.board.add_scalars(
+                prior='Eval',
+                aer=aer
+            )
+            
             self.board.step()
