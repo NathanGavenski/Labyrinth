@@ -6,7 +6,6 @@ import shutil
 
 import gym
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
 
 import environment
@@ -70,24 +69,32 @@ if __name__ == '__main__':
     image_idx = 0
     dataset = np.ndarray(shape=[0, 4])
     amount_per_maze = (args.amount + 1*len(mazes))// len(mazes)
-    for maze_idx, maze in enumerate(tqdm(mazes)):
-        env = gym.make('Maze-v0', shape=(args.width, args.height))
+    pbar = tqdm(range(args.amount))
+    for maze_idx, maze in enumerate(mazes):
+        env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
         env.reset()
-        env.load(maze)
+        state = env.load(maze)
 
+        idx = 0
         done = False
-        for idx in range(amount_per_maze):
+        while idx < amount_per_maze - 1:
             image = env.render('rgb_array')
-            np.save(f'{args.save_path}/{image_idx}', image)
-            image_idx += 1
             
             if idx < amount_per_maze - 1:
                 action = np.random.randint(0, 4)
-                next_state, reward, done, info = env.step(action)
-                entry = [maze_idx,image_idx,action,image_idx+1]  
-                dataset = np.append(dataset, np.array(entry)[None], axis=0)  
+                next_state, reward, done, info = env.step(action) 
+
+                if (state - next_state).sum() > 0:
+                    entry = [maze_idx,image_idx,action,image_idx+1] 
+                    dataset = np.append(dataset, np.array(entry)[None], axis=0)
+                    np.save(f'{args.save_path}/{image_idx}', image)
+                    image_idx += 1  
+                    idx += 1
+                    pbar.update()
 
                 if done:
                     env.reset(agent=True)
+                
+                state = next_state
         env.close()
     np.save(f'{args.save_path}/dataset', dataset)

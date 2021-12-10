@@ -27,7 +27,7 @@ class RandomDataset(Dataset):
         return state_image, next_state_image, action
 
 
-def get_dataloader(path:str, split:float, batch_size : int = 32) -> DataLoader:
+def get_dataloader(path:str, split:float, batch_size : int = 32, amount :int = None) -> DataLoader:
     '''
     Create and return DataLoader for random data.
     
@@ -48,6 +48,10 @@ def get_dataloader(path:str, split:float, batch_size : int = 32) -> DataLoader:
         raise Exception('Split should be between 0 and 1')
 
     dataset = np.load(f'{path}dataset.npy', allow_pickle=True)
+
+    if amount is not None:
+        dataset = dataset[:amount]
+
     if split > 0:
         idx = int(dataset.shape[0] * split)
         train = dataset[:idx]
