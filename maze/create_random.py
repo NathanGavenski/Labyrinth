@@ -84,7 +84,7 @@ if __name__ == '__main__':
                 action = np.random.randint(0, 4)
                 next_state, reward, done, info = env.step(action) 
 
-                if (state - next_state).sum() > 0:
+                if (state - next_state).sum() > 0 and not done:
                     entry = [maze_idx,image_idx,action,image_idx+1] 
                     dataset = np.append(dataset, np.array(entry)[None], axis=0)
                     np.save(f'{args.save_path}/{image_idx}', image)

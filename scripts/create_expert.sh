@@ -1,5 +1,5 @@
 echo "5X5"
-python maze/create_expert.py --path ./maze/environment/mazes/mazes5 --width 5 --height 5 --save_path ./dataset/dataset5
+xvfb-run  -s "-screen 0 1400x900x24" python maze/create_expert.py --path ./maze/environment/mazes/mazes5 --width 5 --height 5 --save_path ./dataset/dataset5
 
 # echo "10X10"
 # xvfb-run -a -s "-screen 0 1400x900x24" python maze/create_expert.py --path ./maze/environment/mazes/mazes10 --width 10 --height 10 --save_path ./dataset/dataset10
