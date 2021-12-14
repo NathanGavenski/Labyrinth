@@ -1,12 +1,9 @@
 from tqdm import tqdm
 
-from algo.il.datasets import get_random_loader
+from algo.il.datasets import get_expert_loader
 
 if __name__ == '__main__':
-    train, valid = get_random_loader('./dataset/random_dataset5/', .7, 32)
+    train = get_expert_loader('./dataset/dataset5/', 32)
 
     for mini_batch in tqdm(train):
-        continue
-
-    for mini_batch in tqdm(valid):
         continue
