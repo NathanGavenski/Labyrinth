@@ -79,22 +79,25 @@ if __name__ == '__main__':
         done = False
         while idx < amount_per_maze - 1:
             image = env.render('rgb_array')
-            
-            if idx < amount_per_maze - 1:
-                action = np.random.randint(0, 4)
-                next_state, reward, done, info = env.step(action) 
+            action = np.random.randint(0, 4)
+            next_state, reward, done, info = env.step(action) 
 
-                if (state - next_state).sum() > 0 and not done:
-                    entry = [maze_idx,image_idx,action,image_idx+1] 
-                    dataset = np.append(dataset, np.array(entry)[None], axis=0)
-                    np.save(f'{args.save_path}/{image_idx}', image)
-                    image_idx += 1  
-                    idx += 1
-                    pbar.update()
+            if (state - next_state).sum() > 0:
+                entry = [maze_idx, image_idx, action, image_idx+1] 
+                dataset = np.append(dataset, np.array(entry)[None], axis=0)
+                np.save(f'{args.save_path}/{image_idx}', image)
+                image_idx += 1  
+                idx += 1
+                pbar.update()
 
-                if done:
-                    env.reset(agent=True)
+            if done or idx == (amount_per_maze - 1):
+                image = env.render('rgb_array')
+                np.save(f'{args.save_path}/{image_idx}', image)
+                image_idx += 1
+                idx += 1
+                env.reset(agent=True)
                 
-                state = next_state
+            state = next_state
+
         env.close()
     np.save(f'{args.save_path}/dataset', dataset)
