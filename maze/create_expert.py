@@ -80,7 +80,7 @@ if __name__ == '__main__':
     image_idx = 0
     dataset = np.ndarray(shape=[0, 5])
     for maze_idx, maze in enumerate(tqdm(mazes)):
-        env = gym.make('Maze-v0', shape=(args.width, args.height))
+        env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
         env.reset()
         env.load(maze)
         solutions = env.solve(mode='all')

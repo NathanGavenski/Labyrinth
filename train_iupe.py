@@ -12,7 +12,7 @@ if __name__ == '__main__':
         height=5,
         random_dataset='./dataset/random_dataset5/',
         expert_dataset='./dataset/dataset5/',
-        device='cpu',
+        device='cuda',
         batch_size=4,
         verbose=True
     )

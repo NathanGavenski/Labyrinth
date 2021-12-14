@@ -53,7 +53,7 @@ def get_args():
 
 
 def generate(train, eval, shape, verbose=False):
-    env = gym.make('Maze-v0', shape=shape)
+    env = gym.make('MazeScripts-v0', shape=shape)
 
     global_path = pathlib.Path(__file__).parent.resolve()
     mypath = f'{global_path}/environment/mazes/mazes{shape[0]}/'
