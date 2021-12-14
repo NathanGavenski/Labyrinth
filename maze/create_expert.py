@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 import environment
 
+
 def get_args():
     parser = argparse.ArgumentParser(
         description="Args for creating expert dataset."
@@ -30,8 +31,8 @@ def get_args():
     parser.add_argument(
         '--path',
         type=str
-    )    
-    
+    )
+
     # Maze specific
     parser.add_argument(
         '--width',
@@ -48,7 +49,8 @@ def get_args():
 
     return parser.parse_args()
 
-def state_to_action(source:int, target:int, shape:tuple) -> int:
+
+def state_to_action(source: int, target: int, shape: tuple) -> int:
     w, h = shape
 
     # Test left or right
@@ -63,12 +65,14 @@ def state_to_action(source:int, target:int, shape:tuple) -> int:
         else:
             return 2
 
+
 if __name__ == '__main__':
 
     args = get_args()
 
     mypath = f'{args.path}/train/'
-    mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+    mazes = [join(mypath, f)
+             for f in listdir(mypath) if isfile(join(mypath, f))]
 
     if os.path.exists(args.save_path):
         shutil.rmtree(args.save_path)
@@ -87,15 +91,33 @@ if __name__ == '__main__':
 
         for solution_idx, solution in enumerate(solutions):
             env.reset(agent=True)
+            done = False
             for idx, tile in enumerate(solution):
                 image = env.render('rgb_array')
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
 
                 if idx < len(solution) - 1:
-                    action = state_to_action(tile, solution[idx+1], shape=(args.width, args.height))
-                    env.step(action)
-                    entry = [maze_idx,solution_idx,image_idx,action,image_idx+1]  
-                    dataset = np.append(dataset, np.array(entry)[None], axis=0)             
+                    action = state_to_action(
+                        tile,
+                        solution[idx+1],
+                        shape=(args.width, args.height)
+                    )
+                    _, _, done, _ = env.step(action)
+
+                if not done:
+                    entry = [
+                        maze_idx,
+                        solution_idx,
+                        image_idx,
+                        action,
+                        image_idx+1
+                    ]
+                    dataset = np.append(
+                        dataset,
+                        np.array(entry)[None],
+                        axis=0
+                    )
+
             env.close()
     np.save(f'{args.save_path}/dataset', dataset)
