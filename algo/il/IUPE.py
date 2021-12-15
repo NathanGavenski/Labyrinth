@@ -92,6 +92,7 @@ class IUPE(nn.Module):
         
         # Method params
         self.iupe_dataset = None
+        self.iupe_dataset_eval = None
         self.amount = amount
         self.batch_size = batch_size
 
