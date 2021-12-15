@@ -12,6 +12,7 @@ import torch
 from torch import nn, optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms
 from tensorboard_wrapper.tensorboard import Tensorboard as Board
 
 from .utils import Resnet
@@ -232,7 +233,7 @@ class IUPE(nn.Module):
             action = torch.argmax(a, 1)
 
             self.policy_optimizer.zero_grad()
-            pred = self.policy(s, reduce=False)
+            pred = self.policy(s)
 
             loss = self.policy_criterion(pred, action)
             loss.backward()
@@ -281,7 +282,7 @@ class IUPE(nn.Module):
         return ratio
 
     def forward(self, s : np.array, weight: bool = True):
-        s = torch.Tensor(s)[None].to(self.device)
+        s = transforms.ToTensor()(s.copy())[None].to(self.device)
         pred = self.policy(s)
 
         if weight:
@@ -348,7 +349,7 @@ class IUPE(nn.Module):
                 np.save(f'{path}{image_idx}', state)
                 image_idx += 1             
                 
-                action = self.forward(state, weight=True)
+                action, _ = self.forward(state, weight=True)
                 next_state, reward, done, info = env.step(action)
                 rewards += reward
 
