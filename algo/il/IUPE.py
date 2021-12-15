@@ -336,7 +336,7 @@ class IUPE(nn.Module):
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
         ratio = 0
-        rewards = []
+        all_rewards = []
         image_idx = 0
         dataset = np.ndarray(shape=[0, 4])
         for maze_idx, maze in enumerate(tqdm(mazes)):
@@ -360,9 +360,14 @@ class IUPE(nn.Module):
                     np.save(f'{path}{image_idx}', env.render('rgb_array'))
                     image_idx += 1
 
-                    rewards.append(reward)
+                    all_rewards.append(reward)
                     ratio += (next_state[:2] == env.end).all()
             env.close()
+
+            if self.verbose:
+                self.pbar.update()
+                self.pbar.set_postfix_str(f'Reward: {np.mean(all_rewards)} Solved: {ratio/len(mazes)}%')
+    
         np.save(f'{path}/dataset', dataset)
         return ratio/len(mazes)
 
