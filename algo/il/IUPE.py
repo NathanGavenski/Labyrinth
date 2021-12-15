@@ -181,7 +181,7 @@ class IUPE(nn.Module):
         if self.idm.training:
             self.idm.eval()
 
-        if self.iupe_dataset is not None:
+        if self.iupe_dataset_eval is not None:
             datasets = [self.random_dataset_eval, self.iupe_dataset_eval]
             names = ['random', 'alpha']
         else:
@@ -265,12 +265,13 @@ class IUPE(nn.Module):
         iupe_amount = int(self.amount * ratio) + 1
         random_amount = int(len(self.random_dataset.dataset) * (1 - ratio)) + 1
 
-        self.iupe_dataset, self.iupe_dataset_eval = get_random_loader(
-            './dataset/alpha/',
-            split=.7,
-            batch_size=self.batch_size,
-            amount=iupe_amount
-        )
+        if iupe_amount > 0:
+            self.iupe_dataset, self.iupe_dataset_eval = get_random_loader(
+                './dataset/alpha/',
+                split=.7,
+                batch_size=self.batch_size,
+                amount=iupe_amount
+            )
 
         self.random_dataset, self.random_dataset_eval = get_random_loader(
             self.random_path,
