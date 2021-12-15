@@ -360,7 +360,7 @@ class IUPE(nn.Module):
                     np.save(f'{path}{image_idx}', env.render('rgb_array'))
                     image_idx += 1
 
-                    all_rewards.append(reward)
+                    all_rewards.append(rewards)
                     ratio += (next_state[:2] == env.end).all()
             env.close()
 
