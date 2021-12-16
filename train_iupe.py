@@ -13,8 +13,7 @@ if __name__ == '__main__':
         random_dataset='./dataset/random_dataset5/',
         expert_dataset='./dataset/dataset5/',
         device='cuda',
-        batch_size=1,
+        batch_size=4,
         verbose=True,
-        debug=True
     )
     algo.learn(1)

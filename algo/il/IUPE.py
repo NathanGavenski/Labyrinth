@@ -27,6 +27,7 @@ class EarlyStopController():
 
     def check_position(self, s: np.ndarray) -> bool:
         state = (x, y) = s[:2]
+        state = tuple(state)
         self.states[state] += 1
         return self.states[state] == self.amount
 
@@ -109,6 +110,7 @@ class IUPE(nn.Module):
         # Method params
         self.iupe_dataset = None
         self.iupe_dataset_eval = None
+        self.random_path = random_dataset
         self.amount = amount
         self.batch_size = batch_size
 
@@ -142,7 +144,7 @@ class IUPE(nn.Module):
         return self.environment
 
     def get_min_reward(self) -> float:
-        return (-.1 / (self.width[0] * self.height[1])) * 1000
+        return (-.1 / (self.width * self.height)) * 1000
 
     def idm_train(self):
         if self.verbose:
@@ -293,8 +295,8 @@ class IUPE(nn.Module):
             env=self.environment
         )
 
-        iupe_amount = int(self.amount * ratio) + 1
-        random_amount = int(len(self.random_dataset.dataset) * (1 - ratio)) + 1
+        iupe_amount = int(self.amount * ratio)
+        random_amount = int(len(self.random_dataset.dataset) * (1 - ratio))
 
         if iupe_amount > 0:
             self.iupe_dataset, self.iupe_dataset_eval = get_random_loader(
@@ -346,11 +348,11 @@ class IUPE(nn.Module):
 
             while not done:
                 state = env.render('rgb_array')
-                action = self.forward(state, weight=True)
-                _, r, done, _ = env.step(action)
+                action, _ = self.forward(state, weight=True)
+                next_state, r, done, _ = env.step(action)
                 reward += r
 
-                if self.controller.check_position(state):
+                if self.controller.check_position(next_state):
                     done = True
                     reward = self.get_min_reward()
             
@@ -408,13 +410,14 @@ class IUPE(nn.Module):
                 if self.controller.check_position(next_state):
                     ratio += 0
                     done = True
+                    all_rewards.append(self.get_min_reward())
 
             env.close()
 
             if self.verbose:
                 self.pbar.update()
                 self.pbar.set_postfix_str(f'Reward: {np.mean(all_rewards)} Solved: {ratio/len(mazes)}%')
-    
+   
         np.save(f'{path}/dataset', dataset)
         return ratio/len(mazes)
 
