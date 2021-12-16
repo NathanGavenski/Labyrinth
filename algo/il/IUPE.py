@@ -92,6 +92,7 @@ class IUPE(nn.Module):
         batch_size: int = 1,
         verbose: bool = False,
         debug: bool = False,
+        early_stop: bool = False
     ) -> None:
         super().__init__()
         # Model params
@@ -99,6 +100,7 @@ class IUPE(nn.Module):
         self.verbose = verbose
         self.maze_path = maze_path
         self.debug = debug
+        self.early_stop = early_stop
 
         # Env params
         self.environment = environment
@@ -355,7 +357,7 @@ class IUPE(nn.Module):
                 next_state, r, done, _ = env.step(action)
                 reward += r
 
-                if self.controller.check_position(next_state):
+                if self.controller.check_position(next_state) and self.early_stop:
                     done = True
                     reward = self.get_min_reward()
             
@@ -415,7 +417,7 @@ class IUPE(nn.Module):
                     all_rewards.append(rewards)
                     ratio += (next_state[:2] == env.end).all()
 
-                if self.controller.check_position(next_state):
+                if self.controller.check_position(next_state) and self.early_stop:
                     ratio += 0
                     done = True
                     all_rewards.append(self.get_min_reward())
