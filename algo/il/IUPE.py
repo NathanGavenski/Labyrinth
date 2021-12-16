@@ -105,7 +105,7 @@ class IUPE(nn.Module):
         self.width = width
         self.height = height
         self.action_space = self.environment.action_space.n
-        self.controller = EarlyStopController(5)
+        self.controller = EarlyStopController(10)
         
         # Method params
         self.iupe_dataset = None
@@ -333,6 +333,9 @@ class IUPE(nn.Module):
         maze_path: str,
         env: gym.core.Env
     ) -> float:
+        if self.verbose:
+            self.pbar.set_description_str(desc='Eval Policy', refresh=True)
+
         if isinstance(env, str):
             env = gym.make(env, shape=(self.width, self.height))
 
@@ -358,8 +361,13 @@ class IUPE(nn.Module):
             
             rewards.append(reward)
 
+            if self.verbose:
+                self.pbar.update()
+
             if self.debug:
                 break
+            
+            env.close()
 
         return np.mean(rewards)
 
@@ -429,12 +437,9 @@ class IUPE(nn.Module):
 
         for _ in range(epochs):        
             if self.verbose:
-                if self.iupe_dataset is None:
-                    size = len(self.random_dataset) 
-                    size += len(self.expert_dataset)
-                else:
-                    size = len(self.random_dataset) 
-                    size += len(self.expert_dataset) 
+                size = len(self.random_dataset) 
+                size += len(self.expert_dataset)                
+                if self.iupe_dataset is not None:
                     size += len(self.iupe_dataset)
                 self.pbar = tqdm(range(size))
 
