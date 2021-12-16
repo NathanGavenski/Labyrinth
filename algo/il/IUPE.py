@@ -1,4 +1,5 @@
 
+from collections import defaultdict
 from re import M
 import os
 from os import listdir
@@ -18,6 +19,19 @@ from tensorboard_wrapper.tensorboard import Tensorboard as Board
 from .utils import Resnet
 from .datasets import get_expert_loader, get_random_loader
 
+
+class EarlyStopController():
+    def __init__(self, amount : int = 3) -> None:
+        self.amount = amount
+        self.states = defaultdict(int)
+
+    def check_position(self, s: np.ndarray) -> bool:
+        state = (x, y) = s[:2]
+        self.states[state] += 1
+        return self.states[state] == self.amount
+
+    def reset(self) -> None:
+        self.states = defaultdict(int)
 
 class IDM(nn.Module):
     def __init__(self, action_size, input=(3, 224, 224)):
@@ -63,7 +77,6 @@ class Policy(nn.Module):
     def forward(self, state):
         return self.fc_layers(self.encoder(state))
        
-# FIXME implement amount for i_pos
 class IUPE(nn.Module):
     def __init__(
         self,
@@ -77,18 +90,21 @@ class IUPE(nn.Module):
         amount: int = 5000,
         batch_size: int = 1,
         verbose: bool = False,
+        debug: bool = False,
     ) -> None:
         super().__init__()
         # Model params
         self.device = device
         self.verbose = verbose
         self.maze_path = maze_path
+        self.debug = debug
 
         # Env params
         self.environment = environment
         self.width = width
         self.height = height
         self.action_space = self.environment.action_space.n
+        self.controller = EarlyStopController(5)
         
         # Method params
         self.iupe_dataset = None
@@ -124,6 +140,9 @@ class IUPE(nn.Module):
 
     def get_env(self):
         return self.environment
+
+    def get_min_reward(self) -> float:
+        return (-.1 / (self.width[0] * self.height[1])) * 1000
 
     def idm_train(self):
         if self.verbose:
@@ -173,6 +192,10 @@ class IUPE(nn.Module):
                 if self.verbose:
                     self.pbar.update()
                     self.pbar.set_postfix_str(f'Loss: {np.mean(loss_t)} Acc: {np.mean(acc_t)}')
+
+                if self.debug:
+                    break
+
         return np.mean(acc_t), np.mean(loss_t)
             
     def idm_eval(self):
@@ -210,6 +233,10 @@ class IUPE(nn.Module):
                 if self.verbose:
                     self.pbar.update()
                     self.pbar.set_postfix_str(f'Acc: {np.mean(acc_t)}')
+
+                if self.debug:
+                    break
+    
         return np.mean(acc_t)
 
     def policy_train(self):
@@ -247,6 +274,9 @@ class IUPE(nn.Module):
             if self.verbose:
                 self.pbar.update()
                 self.pbar.set_postfix_str(f'Loss: {np.mean(loss_t)} Acc: {np.mean(acc_t)}')
+
+            if self.debug:
+                break
 
         return np.mean(acc_t), np.mean(loss_t)
 
@@ -311,6 +341,7 @@ class IUPE(nn.Module):
         for maze in mazes:
             env.reset()
             env.load(maze)
+            self.controller.reset()
             done, reward = False, 0
 
             while not done:
@@ -319,7 +350,15 @@ class IUPE(nn.Module):
                 _, r, done, _ = env.step(action)
                 reward += r
 
+                if self.controller.check_position(state):
+                    done = True
+                    reward = self.get_min_reward()
+            
             rewards.append(reward)
+
+            if self.debug:
+                break
+
         return np.mean(rewards)
 
     def generate_expert_traj(
@@ -344,6 +383,7 @@ class IUPE(nn.Module):
         for maze_idx, maze in enumerate(tqdm(mazes)):
             env.reset()
             env.load(maze)
+            self.controller.reset()
             done, rewards = False, 0
 
             while not done:             
@@ -364,6 +404,11 @@ class IUPE(nn.Module):
 
                     all_rewards.append(rewards)
                     ratio += (next_state[:2] == env.end).all()
+
+                if self.controller.check_position(next_state):
+                    ratio += 0
+                    done = True
+
             env.close()
 
             if self.verbose:
