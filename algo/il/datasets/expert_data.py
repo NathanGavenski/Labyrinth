@@ -6,10 +6,16 @@ import torchvision
 
 
 class ExpertDataset(Dataset):
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, amount: int = 1) -> None:
         super().__init__()
         self.path = path
         self.data = np.load(f'{path}dataset.npy', allow_pickle=True)
+        if amount > 1:
+            self.data = np.repeat(
+                self.data, 
+                repeats=amount,
+                axis=0
+            )
 
     def __len__(self) -> int:
         return self.data.shape[0]
@@ -26,7 +32,7 @@ class ExpertDataset(Dataset):
         return state_image, next_state_image, action
 
 
-def get_dataloader(path:str, batch_size : int = 32) -> DataLoader:
+def get_dataloader(path:str, batch_size: int = 32, amount: int = 10) -> DataLoader:
     '''
     Create and return DataLoader for expert data.
     
@@ -41,7 +47,7 @@ def get_dataloader(path:str, batch_size : int = 32) -> DataLoader:
         Train DataLoaders.
     '''
     return DataLoader(
-        ExpertDataset(path),
+        ExpertDataset(path, amount),
         batch_size=batch_size,
         shuffle=True
     )
