@@ -107,7 +107,7 @@ class IUPE(nn.Module):
         self.width = width
         self.height = height
         self.action_space = self.environment.action_space.n
-        self.controller = EarlyStopController(10)
+        self.controller = EarlyStopController(20)
         
         # Method params
         self.iupe_dataset = None
@@ -155,12 +155,14 @@ class IUPE(nn.Module):
         if not self.idm.training:
             self.idm.train()
 
+        names, datasets = [], []        
+        if self.random_dataset is not None:
+            datasets.append(self.random_dataset)
+            names.append('random')
+
         if self.iupe_dataset is not None:
-            datasets = [self.random_dataset, self.iupe_dataset]
-            names = ['random', 'alpha']
-        else:
-            datasets = [self.random_dataset]
-            names = ['random']
+            datasets.append(self.iupe_dataset)
+            names.append('alpha')
 
         acc_t = []
         loss_t = []
@@ -209,12 +211,14 @@ class IUPE(nn.Module):
         if self.idm.training:
             self.idm.eval()
 
-        if self.iupe_dataset_eval is not None:
-            datasets = [self.random_dataset_eval, self.iupe_dataset_eval]
-            names = ['random', 'alpha']
-        else:
-            datasets = [self.random_dataset_eval]
-            names = ['random']
+        names, datasets = [], []        
+        if self.random_dataset is not None:
+            datasets.append(self.random_dataset_eval)
+            names.append('random')
+
+        if self.iupe_dataset is not None:
+            datasets.append(self.iupe_dataset_eval)
+            names.append('alpha')
 
         acc_t = []
         for dataset, name in zip(datasets, names):  
@@ -299,6 +303,11 @@ class IUPE(nn.Module):
 
         iupe_amount = int(self.amount * ratio)
         random_amount = int(len(self.random_dataset.dataset) * (1 - ratio))
+        self.board.add_scalars(
+            prior='Alpha',
+            random=random_amount,
+            iupe=iupe_amount
+        )
 
         if iupe_amount > 0:
             self.iupe_dataset, self.iupe_dataset_eval = get_random_loader(
@@ -307,13 +316,18 @@ class IUPE(nn.Module):
                 batch_size=self.batch_size,
                 amount=iupe_amount
             )
+        else:
+            self.iupe_dataset, self.iupe_dataset_eval = None, None
 
-        self.random_dataset, self.random_dataset_eval = get_random_loader(
-            self.random_path,
-            split=.7,
-            batch_size=self.batch_size,
-            amount=random_amount
-        )
+        if random_amount > 0:
+            self.random_dataset, self.random_dataset_eval = get_random_loader(
+                self.random_path,
+                split=.7,
+                batch_size=self.batch_size,
+                amount=random_amount
+            )
+        else:
+            self.random_dataset, self.random_dataset_eval = None, None
         
         return ratio
 
