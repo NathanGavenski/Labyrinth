@@ -7,6 +7,7 @@ import shutil
 import gym
 import numpy as np
 from tqdm import tqdm
+from PIL import Image
 
 import environment
 
@@ -82,22 +83,26 @@ if __name__ == '__main__':
             action = np.random.randint(0, 4)
             next_state, reward, done, info = env.step(action) 
 
-            if (state - next_state).sum() > 0:
-                entry = [maze_idx, image_idx, action, image_idx+1] 
-                dataset = np.append(dataset, np.array(entry)[None], axis=0)
+            if (state[:2] != next_state[:2]).any():
+                # state
                 np.save(f'{args.save_path}/{image_idx}', image)
-                image_idx += 1  
-                idx += 1
-                pbar.update()
+                image_idx += 1
 
-            if done or idx == (amount_per_maze - 1):
+                # next state
                 image = env.render('rgb_array')
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
+
+                entry = [maze_idx, image_idx-2, action, image_idx-1]
+                dataset = np.append(dataset, np.array(entry).astype(int)[None], axis=0)
+                pbar.update()
                 idx += 1
-                env.reset(agent=True)
-                
-            state = next_state
+
+            if done:
+                state = env.reset(agent=True)
+            else:
+                state = next_state
+
 
         env.close()
-    np.save(f'{args.save_path}/dataset', dataset)
+    np.save(f'{args.save_path}/dataset', dataset.astype(int))
