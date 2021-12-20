@@ -128,6 +128,7 @@ class IUPE(nn.Module):
         ).to(self.device)
         self.idm_criterion = nn.CrossEntropyLoss()
         self.idm_optimizer = optim.Adam(self.idm.parameters(), lr=5e-4)
+        self.dataset_original_size = len(self.random_dataset.dataset)
 
         # Policy
         self.expert_dataset = get_expert_loader(expert_dataset, batch_size)
@@ -302,7 +303,7 @@ class IUPE(nn.Module):
         )
 
         iupe_amount = int(self.amount * ratio)
-        random_amount = int(len(self.random_dataset.dataset) * (1 - ratio))
+        random_amount = int(self.dataset_original_size * (1 - ratio))
         self.board.add_scalars(
             prior='Alpha',
             random=random_amount,
