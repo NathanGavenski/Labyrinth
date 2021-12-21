@@ -1,9 +1,17 @@
+import numpy as np
 from tqdm import tqdm
 
-from algo.il.datasets import get_expert_loader
+# CartPole cart position [0] Pole angle [2]
+# MountainCar
 
-if __name__ == '__main__':
-    train = get_expert_loader('./dataset/dataset5/', 32)
+if __name__ == "__main__":
+    x = np.load('./Expert/expert_CartPole-v1.npz')
+    begginings = np.where(x['episode_starts'] == True)[0]
+    ends = np.append(begginings[1:], x['episode_starts'].shape[0])
 
-    for mini_batch in tqdm(train):
-        continue
+    dataset = np.ndarray(shape=[0, 500, x['obs'].shape[-1]])
+    for beggining, end in zip(begginings, tqdm(ends)):
+        idxs = [idx for idx in range(beggining, end)]
+        dataset = np.append(dataset, x['obs'][idxs][None], axis=0)
+
+    np.save('cartpole_epsidoes', dataset)
