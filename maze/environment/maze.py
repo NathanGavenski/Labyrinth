@@ -68,6 +68,7 @@ class Maze(gym.Env):
         self.start = start 
         self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
         self.agent = self.start
+        self.prior_agent_position = self.agent
 
         self.seed()
 
@@ -111,7 +112,15 @@ class Maze(gym.Env):
         '''
         Get global position from a tile.
         '''
-        return position[1] * self.shape[1] + position[0]
+        return position[1] * self.shape[0] + position[0]
+
+    def get_local_position(self, position:int) -> list:
+        '''
+        Get local position from a tile.
+        '''
+        column = position // self.shape[1]
+        row = position - (column * self.shape[1])
+        return [column, row]
 
     def define_pathways(self, pathways):
         _pathways = defaultdict(list)        
@@ -171,10 +180,10 @@ class Maze(gym.Env):
                                 self.viewer.add_geom(line)                                 
 
             # Draw start
-            left = self.start[1] * tile_w
-            right = (self.start[1] + 1) * tile_w
-            top = self.start[0] * tile_h
-            bottom = (self.start[0] + 1) * tile_h
+            left = self.start[0] * tile_w
+            right = (self.start[0] + 1) * tile_w
+            top = self.start[1] * tile_h
+            bottom = (self.start[1] + 1) * tile_h
             start = rendering.FilledPolygon([
                 (left, bottom),
                 (left, top),
@@ -185,10 +194,10 @@ class Maze(gym.Env):
             self.viewer.add_geom(start)
 
             # Draw end
-            left = self.end[1] * tile_w
-            right = (self.end[1] + 1) * tile_w
-            top = self.end[0] * tile_h
-            bottom = (self.end[0] + 1) * tile_h
+            left = self.end[0] * tile_w
+            right = (self.end[0] + 1) * tile_w
+            top = self.end[1] * tile_h
+            bottom = (self.end[1] + 1) * tile_h
             end = rendering.FilledPolygon([
                 (left, bottom),
                 (left, top),
@@ -199,11 +208,10 @@ class Maze(gym.Env):
             self.viewer.add_geom(end)
 
             # Draw agent
-            agent_pos = self.agent
-            left = agent_pos[1] * tile_w
-            right = (agent_pos[1] + 1) * tile_w
-            bottom = agent_pos[0] * tile_h
-            top = (agent_pos[0] + 1) * tile_h
+            left = self.agent[0] * tile_w
+            right = (self.agent[0] + 1) * tile_w
+            bottom = self.agent[1] * tile_h
+            top = (self.agent[1] + 1) * tile_h
             agent = rendering.FilledPolygon([
                 (left + tile_w // 2, bottom),
                 (left, top - tile_h // 2),
@@ -215,8 +223,8 @@ class Maze(gym.Env):
             agent.set_color(*Colors.GREEN.value)
             self.viewer.add_geom(agent)
 
-        new_x = self.agent[0] * tile_h
-        new_y = self.agent[1] * tile_w
+        new_x = self.agent[0] * tile_w - self.prior_agent_position[0] * tile_w
+        new_y = self.agent[1] * tile_h - self.prior_agent_position[1] * tile_h
         self.agent_transition.set_translation(new_x, new_y)
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")    
@@ -233,7 +241,8 @@ class Maze(gym.Env):
         agent_global_position = self.get_global_position(self.agent)
         destiny_global_position = self.get_global_position(destiny)
         if destiny_global_position in self.pathways[agent_global_position]:
-            self.agent = destiny
+            self.prior_agent_position = self.agent
+            self.agent = tuple(destiny)
 
         done = (np.array(self.agent) == self.end).all()
         reward = -.1 / (self.shape[0] * self.shape[1]) if not done else 1
@@ -332,6 +341,30 @@ class Maze(gym.Env):
             return min(paths)
         else:
             return paths
+
+    def change_start_and_goal(self, min_distance=10) -> tuple:
+        '''
+        '''
+        paths = self.solve(mode='all')
+        longest_path = np.argmax(max(len(path) for path in paths))
+        path = paths[longest_path]
+        start = np.array(self.get_local_position(np.random.choice(path[1:], 1)[0]))
+        possible_goals = []
+        for tile in path:
+            tile = self.get_local_position(tile)
+            distance = np.abs(start - tile).sum()
+            if distance >= min_distance:
+                possible_goals.append(tile)
+        if len(possible_goals) == 0:
+            return self.change_start_and_goal(min_distance)
+        else:
+            end_idx = np.random.choice([x for x in range(len(possible_goals))], 1)[0]
+            end = possible_goals[end_idx]
+            self.start = tuple(start)
+            self.end = tuple(end)
+            self.agent = self.start
+            self.prior_agent_position = self.agent
+            return start, end
 
     def __hash__(self) -> int:
         '''
