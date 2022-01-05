@@ -348,7 +348,8 @@ class IUPE(nn.Module):
     def evaluate_policy(
         self,
         maze_path: str,
-        env: gym.core.Env
+        env: gym.core.Env,
+        soft_generalization: bool = False
     ) -> float:
         if self.verbose:
             self.pbar.set_description_str(desc='Eval Policy', refresh=True)
@@ -356,13 +357,15 @@ class IUPE(nn.Module):
         if isinstance(env, str):
             env = gym.make(env, shape=(self.width, self.height))
 
-        mypath = f'{maze_path}eval/'
+        mypath = f'{maze_path}{"eval" if not soft_generalization else "train"}/'
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
-        rewards = []
+        ratio, rewards = 0, []
         for maze in mazes:
             env.reset()
             env.load(maze)
+            if soft_generalization:
+                env.change_start_and_goal(min_distance=(self.width + self.height) // 2)
             self.controller.reset()
             done, reward = False, 0
 
@@ -377,6 +380,7 @@ class IUPE(nn.Module):
                     reward = self.get_min_reward()
             
             rewards.append(reward)
+            ratio += (next_state[:2] == env.end).all()
 
             if self.verbose:
                 self.pbar.update()
@@ -386,7 +390,7 @@ class IUPE(nn.Module):
             
             env.close()
 
-        return np.mean(rewards)
+        return np.mean(rewards), ratio / len(mazes)
 
     def generate_expert_traj(
         self,
@@ -489,14 +493,27 @@ class IUPE(nn.Module):
                 ratio=ratio
             )
 
-            # ########## Validate POLICY ########## #
-            aer = self.evaluate_policy(
+            # ########## Validate POLICY Hard Generalization ########## #
+            aer, ratio = self.evaluate_policy(
                 self.maze_path, 
                 self.environment
             )
             self.board.add_scalars(
-                prior='Eval',
-                aer=aer
+                prior='Hard Generalization',
+                aer=aer,
+                ratio=ratio
             )
             
+            # ########## Validate POLICY Soft Generalization ########## #
+            aer, ratio = self.evaluate_policy(
+                self.maze_path, 
+                self.environment,
+                soft_generalization=True
+            )
+            self.board.add_scalars(
+                prior='Soft Generalization',
+                aer=aer,
+                ratio=ratio
+            )
+
             self.board.step()
