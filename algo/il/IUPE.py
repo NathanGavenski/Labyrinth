@@ -92,7 +92,8 @@ class IUPE(nn.Module):
         batch_size: int = 1,
         verbose: bool = False,
         debug: bool = False,
-        early_stop: bool = False
+        early_stop: bool = False,
+        name: str = None,
     ) -> None:
         super().__init__()
         # Model params
@@ -140,7 +141,8 @@ class IUPE(nn.Module):
         self.policy_optimizer = optim.Adam(self.policy.parameters(), lr=5e-4)
 
         # Tensorboard
-        name = str(self.environment).split('<')[-1].replace('>', '')
+        if name is None:
+            name = str(self.environment).split('<')[-1].replace('>', '')
         self.board = Board(f'IUPE-{name}', './tmp/board/', delete=True)
 
     def get_env(self):
