@@ -68,7 +68,6 @@ class Maze(gym.Env):
         self.start = start 
         self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
         self.agent = self.start
-        self.prior_agent_position = self.agent
 
         self.seed()
 
@@ -153,31 +152,7 @@ class Maze(gym.Env):
         if self.viewer is None:
             from gym.envs.classic_control import rendering
 
-            self.viewer = rendering.Viewer(screen_width, screen_height)
-
-            # Draw walls
-            for x, tiles in enumerate(self.maze):
-                if (x > 0 and x < self.shape[0] * 2):
-                    for y, tile in enumerate(tiles):
-                        if tile == 1 and (y > 0 and y < self.shape[0] * 2):
-                            if x % 2 == 0 and (y % 2 != 0 or y == 1):  # horizontal wall
-                                _y = x // 2
-                                _x = y // 2 + 1
-                                line = rendering.Line(
-                                    ((_x-1) * tile_w, _y * tile_h),
-                                    (_x * tile_w, _y * tile_h)
-                                )
-                                line.set_color(*Colors.BLACK.value)
-                                self.viewer.add_geom(line) 
-                            elif x % 2 > 0: # vertical wall
-                                _y = x // 2 + 1
-                                _x = y // 2
-                                line = rendering.Line(
-                                    (_x * tile_w, (_y-1) * tile_h),
-                                    (_x * tile_w, _y * tile_h)
-                                )
-                                line.set_color(*Colors.BLACK.value)
-                                self.viewer.add_geom(line)                                 
+            self.viewer = rendering.Viewer(screen_width, screen_height)                             
 
             # Draw start
             left = self.start[0] * tile_w
@@ -223,8 +198,32 @@ class Maze(gym.Env):
             agent.set_color(*Colors.GREEN.value)
             self.viewer.add_geom(agent)
 
-        new_x = self.agent[0] * tile_w - self.prior_agent_position[0] * tile_w
-        new_y = self.agent[1] * tile_h - self.prior_agent_position[1] * tile_h
+            # Draw walls
+            for x, tiles in enumerate(self.maze):
+                if (x > 0 and x < self.shape[0] * 2):
+                    for y, tile in enumerate(tiles):
+                        if tile == 1 and (y > 0 and y < self.shape[0] * 2):
+                            if x % 2 == 0 and (y % 2 != 0 or y == 1):  # horizontal wall
+                                _y = x // 2
+                                _x = y // 2 + 1
+                                line = rendering.Line(
+                                    ((_x-1) * tile_w, _y * tile_h),
+                                    (_x * tile_w, _y * tile_h)
+                                )
+                                line.set_color(*Colors.BLACK.value)
+                                self.viewer.add_geom(line) 
+                            elif x % 2 > 0: # vertical wall
+                                _y = x // 2 + 1
+                                _x = y // 2
+                                line = rendering.Line(
+                                    (_x * tile_w, (_y-1) * tile_h),
+                                    (_x * tile_w, _y * tile_h)
+                                )
+                                line.set_color(*Colors.BLACK.value)
+                                self.viewer.add_geom(line)    
+
+        new_x = self.agent[0] * tile_w  - self.start[0] * tile_w
+        new_y = self.agent[1] * tile_h  - self.start[1] * tile_h
         self.agent_transition.set_translation(new_x, new_y)
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")    
@@ -241,7 +240,6 @@ class Maze(gym.Env):
         agent_global_position = self.get_global_position(self.agent)
         destiny_global_position = self.get_global_position(destiny)
         if destiny_global_position in self.pathways[agent_global_position]:
-            self.prior_agent_position = self.agent
             self.agent = tuple(destiny)
 
         done = (np.array(self.agent) == self.end).all()
@@ -363,7 +361,6 @@ class Maze(gym.Env):
             self.start = tuple(start)
             self.end = tuple(end)
             self.agent = self.start
-            self.prior_agent_position = self.agent
             return start, end
 
     def __hash__(self) -> int:
