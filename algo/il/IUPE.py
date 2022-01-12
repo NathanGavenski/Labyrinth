@@ -460,10 +460,9 @@ class IUPE(nn.Module):
 
         for _ in range(epochs):        
             if self.verbose:
-                size = len(self.random_dataset) 
-                size += len(self.expert_dataset)                
-                if self.iupe_dataset is not None:
-                    size += len(self.iupe_dataset)
+                size = 0 if self.random_dataset is None else len(self.random_dataset)
+                size += 0 if self.expert_dataset is None else len(self.expert_dataset) 
+                size += 0 if self.iupe_dataset is None else len(self.iupe_dataset)         
                 self.pbar = tqdm(range(size))
 
             # ############## IDM ############## #
