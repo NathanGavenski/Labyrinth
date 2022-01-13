@@ -48,7 +48,7 @@ class Maze(gym.Env):
     Episode Termination:
         Reaching the goal or a fixed number of steps.
     '''
-    
+
     actions = {
         0: (0, 1),
         1: (1, 0),
@@ -56,7 +56,14 @@ class Maze(gym.Env):
         3: (-1, 0)
     }
 
-    def __init__(self, shape : tuple, start : int = (0, 0), end : int = None) -> None:
+    def __init__(
+            self,
+            shape: tuple,
+            start: int = (0, 0),
+            end: int = None,
+            screen_width: int = 224,
+            screen_height: int = 224,
+    ) -> None:
         super().__init__()
         self.shape = shape
         self.viewer = None
@@ -64,8 +71,11 @@ class Maze(gym.Env):
         self.reseted = False
         self.dfs = None
         self.maze = None
-    
-        self.start = start 
+
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+
+        self.start = start
         self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
         self.agent = self.start
 
@@ -77,7 +87,7 @@ class Maze(gym.Env):
         low = np.zeros(len(self.shape), dtype=int)
         high = np.array(self.shape, dtype=int) - np.ones(len(self.shape), dtype=int)
         self.observation_space = spaces.Box(low, high, dtype=int)
-    
+
     def seed(self, seed=None) -> list:
         '''
         Set a seed for the environment.
@@ -85,7 +95,7 @@ class Maze(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _generate(self, visited : list = None) -> list:
+    def _generate(self, visited: list = None) -> list:
         '''
         Create the maze if no maze was loaded.
 
@@ -107,13 +117,13 @@ class Maze(gym.Env):
 
         return transform_edges_into_walls(visited, maze.shape), visited
 
-    def get_global_position(self, position:list) -> int:
+    def get_global_position(self, position: list) -> int:
         '''
         Get global position from a tile.
         '''
         return position[1] * self.shape[0] + position[0]
 
-    def get_local_position(self, position:int) -> list:
+    def get_local_position(self, position: int) -> list:
         '''
         Get local position from a tile.
         '''
@@ -122,7 +132,7 @@ class Maze(gym.Env):
         return [column, row]
 
     def define_pathways(self, pathways):
-        _pathways = defaultdict(list)        
+        _pathways = defaultdict(list)
         for start, end in pathways:
             _pathways[start].append(end)
 
@@ -133,7 +143,7 @@ class Maze(gym.Env):
                 d[value].append(key)
         return d
 
-    def render(self, mode : str = "human"):
+    def render(self, mode: str = "human"):
         '''
         Render the environment current state.
 
@@ -144,15 +154,15 @@ class Maze(gym.Env):
         '''
 
         w, h = self.shape
-        screen_width = 600
-        screen_height = 600
+        screen_width = self.screen_width
+        screen_height = self.screen_height
         tile_h = screen_height // h
         tile_w = screen_width // w
 
         if self.viewer is None:
             from gym.envs.classic_control import rendering
 
-            self.viewer = rendering.Viewer(screen_width, screen_height)                             
+            self.viewer = rendering.Viewer(screen_width, screen_height)
 
             # Draw start
             left = self.start[0] * tile_w
@@ -211,8 +221,8 @@ class Maze(gym.Env):
                                     (_x * tile_w, _y * tile_h)
                                 )
                                 line.set_color(*Colors.BLACK.value)
-                                self.viewer.add_geom(line) 
-                            elif x % 2 > 0: # vertical wall
+                                self.viewer.add_geom(line)
+                            elif x % 2 > 0:  # vertical wall
                                 _y = x // 2 + 1
                                 _x = y // 2
                                 line = rendering.Line(
@@ -220,16 +230,16 @@ class Maze(gym.Env):
                                     (_x * tile_w, _y * tile_h)
                                 )
                                 line.set_color(*Colors.BLACK.value)
-                                self.viewer.add_geom(line)    
+                                self.viewer.add_geom(line)
 
-        new_x = self.agent[0] * tile_w  - self.start[0] * tile_w
-        new_y = self.agent[1] * tile_h  - self.start[1] * tile_h
+        new_x = self.agent[0] * tile_w - self.start[0] * tile_w
+        new_y = self.agent[1] * tile_h - self.start[1] * tile_h
         self.agent_transition.set_translation(new_x, new_y)
 
-        return self.viewer.render(return_rgb_array=mode == "rgb_array")    
+        return self.viewer.render(return_rgb_array=mode == "rgb_array")
 
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
-    def step(self, action:int) -> list:
+    def step(self, action: int) -> list:
         '''
         Perform a step in the environment.
         '''
@@ -246,7 +256,7 @@ class Maze(gym.Env):
         reward = -.1 / (self.shape[0] * self.shape[1]) if not done else 1
         self.reseted = not done
 
-        return np.hstack((self.agent, self.maze.flatten())), reward, done, {} 
+        return np.hstack((self.agent, self.maze.flatten())), reward, done, {}
 
     def reset(self, agent=True) -> None:
         '''
@@ -264,7 +274,7 @@ class Maze(gym.Env):
         self.agent = self.start
         return np.hstack((self.agent, self.maze.flatten()))
 
-    def generate(self, path:str, amount : int = 1) -> None:
+    def generate(self, path: str, amount: int = 1) -> None:
         '''
         Create 'n' amount of mazes.
         '''
@@ -273,7 +283,7 @@ class Maze(gym.Env):
             hash_idx = hash(self)
             if not os.path.exists(path):
                 os.makedirs(path)
-            
+
             file_path = f'{path}/{hash_idx}.txt'
             self.save(file_path)
 
@@ -286,7 +296,7 @@ class Maze(gym.Env):
             self.viewer.close()
             self.viewer = None
 
-    def save(self, path:str) -> None:
+    def save(self, path: str) -> None:
         '''
         Save the current maze separated by ';'.
 
@@ -303,8 +313,8 @@ class Maze(gym.Env):
 
         with open(f'{path}/{file}', 'w') as f:
             f.write(f'{self._pathways};{self.start};{self.end}')
-    
-    def load(self, path:str) -> None:
+
+    def load(self, path: str) -> None:
         '''
         Load the maze from a file.
         '''
@@ -325,16 +335,16 @@ class Maze(gym.Env):
         self.agent = self.start
         return np.hstack((self.agent, self.maze.flatten()))
 
-    def solve(self, mode : str ='shortest') -> list:
+    def solve(self, mode: str = 'shortest') -> list:
         '''
         Solve the current maze
-        
+
         Param:
             mode = amount of paths to return [shortest/all].
         '''
         with recursionLimit(100000):
             paths = self.dfs.find_paths(self.undirected_pathways)
-            
+
         if mode == 'shortest':
             return min(paths)
         else:
@@ -346,7 +356,11 @@ class Maze(gym.Env):
         paths = self.solve(mode='all')
         longest_path = np.argmax(max(len(path) for path in paths))
         path = paths[longest_path]
-        start = np.array(self.get_local_position(np.random.choice(path[1:], 1)[0]))
+        start = np.array(
+            self.get_local_position(
+                np.random.choice(path[1:], 1)[0]
+            )
+        )
         possible_goals = []
         for tile in path:
             tile = self.get_local_position(tile)
@@ -356,7 +370,10 @@ class Maze(gym.Env):
         if len(possible_goals) == 0:
             return self.change_start_and_goal(min_distance)
         else:
-            end_idx = np.random.choice([x for x in range(len(possible_goals))], 1)[0]
+            end_idx = np.random.choice(
+                [x for x in range(len(possible_goals))], 
+                1
+            )[0]
             end = possible_goals[end_idx]
             self.start = tuple(start)
             self.end = tuple(end)
