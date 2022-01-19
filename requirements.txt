@@ -1,3 +1,5 @@
 networkx
 gym==0.18.3
 matplotlib
+tqdm
+tensorflow==1.15
