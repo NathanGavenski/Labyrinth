@@ -3,11 +3,13 @@ import collections
 from collections import deque
 import glob
 import math
+from multiprocessing.sharedctypes import Value
 import os
 import random
 import time
 from os import listdir
 from os.path import isfile, join
+from tkinter import W
 
 import cv2
 import numpy as np
@@ -458,7 +460,10 @@ class ImageILPO:
             if self.checkpoint is not None:
                 print("loading model from checkpoint")
                 checkpoint = tf.train.latest_checkpoint(self.checkpoint)
-                saver.restore(sess, checkpoint)
+                try:
+                    saver.restore(sess, checkpoint)
+                except ValueError:
+                    pass
 
             max_steps = 2 ** 32
             if self.max_epochs is not None:
