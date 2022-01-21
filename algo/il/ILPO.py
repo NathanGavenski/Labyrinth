@@ -86,7 +86,7 @@ class ImageILPO:
         save_freq=5000,
         display_freq=0,
         progress_freq=50,
-        max_epochs=1000,
+        max_epochs=5,
         max_steps=100000,
         flip=True, 
         direction='AtoB', 
@@ -412,7 +412,6 @@ class ImageILPO:
                 "expected_outputs": tf.map_fn(tf.image.encode_png, converted_expectation, dtype=tf.string, name="expected_output_pngs"),
                 "min_outputs": tf.map_fn(tf.image.encode_png, converted_min_output, dtype=tf.string,
                                               name="min_output_pngs"),
-
             }
 
         # summaries
@@ -456,10 +455,10 @@ class ImageILPO:
         with sv.managed_session(config=config) as sess:
             print("parameter_count =", sess.run(parameter_count))
 
-            # if self.checkpoint is not None:
-            #     print("loading model from checkpoint")
-            #     checkpoint = tf.train.latest_checkpoint(self.checkpoint)
-            #     saver.restore(sess, checkpoint)
+            if self.checkpoint is not None:
+                print("loading model from checkpoint")
+                checkpoint = tf.train.latest_checkpoint(self.checkpoint)
+                saver.restore(sess, checkpoint)
 
             max_steps = 2 ** 32
             if self.max_epochs is not None:
@@ -472,9 +471,10 @@ class ImageILPO:
 
             start = time.time()
 
+            def should(freq):
+                return freq > 0 and ((step + 1) % freq == 0 or step == max_steps - 1)
+
             for step in range(max_steps):
-                def should(freq):
-                    return freq > 0 and ((step + 1) % freq == 0 or step == max_steps - 1)
 
                 options = None
                 run_metadata = None
@@ -502,11 +502,6 @@ class ImageILPO:
                     print("recording summary")
                     sv.summary_writer.add_summary(results["summary"], results["global_step"])
 
-                # if should(self.display_freq):
-                #     print("saving display images")
-                #     filesets = save_images(results["display"], step=results["global_step"])
-                #     append_index(filesets, step=True)
-
                 if should(self.trace_freq):
                     print("recording trace")
                     sv.summary_writer.add_run_metadata(run_metadata, "step_%d" % results["global_step"])
@@ -517,8 +512,7 @@ class ImageILPO:
                     train_step = (results["global_step"] - 1) % examples.steps_per_epoch + 1
                     rate = (step + 1) * self.batch_size / (time.time() - start)
                     remaining = (max_steps - step) * self.batch_size / rate
-                    print("progress  epoch %d  step %d  image/sec %0.1f  remaining %dm" % (
-                    train_epoch, train_step, rate, remaining / 60))
+                    print("progress  epoch %d  step %d  image/sec %0.1f  remaining %dm" % (train_epoch, train_step, rate, remaining / 60))
                     print("gen_loss_L1", results["gen_loss_L1"])
 
                 if should(self.save_freq):
