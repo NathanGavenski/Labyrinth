@@ -14,33 +14,34 @@ if __name__ == '__main__':
             output_dir='./dataset/ilpo_dataset',
         )
 
-    # ilpo = ImageILPO(
-    #     input_dir='./dataset/ilpo_dataset',
-    #     output_dir='./tmp/ilpo/output',
-    #     checkpoint_dir='./tmp/ilpo/checkpoint',
-    #     batch_size=1,
-    #     ngf=15,
-    # )
-    # ilpo.run()
-
-    game = gym.make('Maze-v0', shape=(5, 5))
-
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    sess = tf.Session(config=config)
-    
-    with sess.as_default():
-        policy = PolicyILPO(
-            sess,
-            shape=[None, 128, 128, 3],
-            checkpoint='./tmp/ilpo/output/',
-            game=game,
-            maze_path='./maze/environment/mazes/mazes5/',
+    for _ in range(10):
+        ilpo = ImageILPO(
+            input_dir='./dataset/ilpo_dataset',
+            output_dir='./tmp/ilpo/output',
+            checkpoint_dir='./tmp/ilpo/checkpoint',
+            batch_size=1,
             ngf=15,
-            verbose=False,
-            experiment=True,
-            use_encoding=True,
-            # save_path='./tmp/ilpot/output',
         )
+        ilpo.run()
 
-        policy.run_policy(times=1)
+        game = gym.make('Maze-v0', shape=(5, 5))
+
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config=config)
+        
+        with sess.as_default():
+            policy = PolicyILPO(
+                sess,
+                shape=[None, 128, 128, 3],
+                checkpoint='./tmp/ilpo/output/',
+                game=game,
+                maze_path='./maze/environment/mazes/mazes5/',
+                ngf=15,
+                verbose=False,
+                experiment=True,
+                use_encoding=True,
+                name=1
+            )
+
+            policy.run_policy(times=1)
