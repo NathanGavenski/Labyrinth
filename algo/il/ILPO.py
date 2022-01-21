@@ -711,15 +711,17 @@ class Policy(ImageILPO):
 
         total_reward = 0
 
-        for evaluation in range(0, 10):
-            terminal = [False]
-            obs = np.squeeze(game.reset())
+        for evaluation, maze in enumerate(self.mazes):
+            terminal = False
+            game.reset()
+            game.load(maze)
+            obs = game.render()
+            obs = np.squeeze(obs)
             steps = 0
             print("Evaluating", evaluation)
 
-            while not terminal[0] and steps < 200:
+            while not terminal and steps < 200:
                 obs = np.squeeze(obs)
-                self.render(obs)
                 obs = cv2.resize(obs, (128, 128))
 
                 if np.random.uniform(0,1) <= .9:
@@ -727,13 +729,13 @@ class Policy(ImageILPO):
                 else:
                     action = game.action_space.sample()
 
-                for _ in range(0, 1):
-                    obs, reward, terminal, _ = game.step(np.array([action]))
+                obs, reward, terminal, _ = game.step(action)
+                obs = game.render()
 
                 total_reward += reward
                 steps +=1
 
-            print("Average reward", total_reward / 10.)
+            print("Average reward", total_reward / len(self.mazes))
 
         if not self.experiment:
             reward_summary = self.sess.run([self.reward_summary], feed_dict={self.reward: total_reward / 10.})[0]
