@@ -636,7 +636,7 @@ class Policy(ImageILPO):
         self.deprocessed_outputs = [tf.image.convert_image_dtype(deprocess(output), dtype=tf.uint8, saturate=True) for output in self.model.outputs]
         
         if name is None:
-            name = str(self.environment).split('<')[-1].replace('>', '')
+            name = str(self.game).split('<')[-1].replace('>', '')
         self.board = Board(f'ILPO-{name}', './tmp/board/', delete=True)
 
     def encode(self, state):
@@ -719,7 +719,7 @@ class Policy(ImageILPO):
         """Evaluate the policy."""
 
         total_reward, ratio = 0, 0
-        for evaluation, maze in enumerate(mazes):
+        for maze in mazes:
             terminal = False
             game.reset()
             game.load(maze)
@@ -731,7 +731,6 @@ class Policy(ImageILPO):
             obs = game.render('rgb_array')
             obs = np.squeeze(obs)
             steps = 0
-            print("Evaluating", evaluation)
 
             episode_reward = 0
             while not terminal and steps < 200:
@@ -751,8 +750,6 @@ class Policy(ImageILPO):
 
             total_reward += episode_reward
             ratio += (state[:2] == game.end).all()
-
-        print("Average reward", total_reward / len(mazes))
 
         return total_reward / len(mazes), ratio / len(mazes)
 
@@ -815,6 +812,12 @@ class Policy(ImageILPO):
                             self.fake_action: fake_action_batch
                         }
                     )
+                    self.board.add_scalars(
+                        prior='Policy Train',
+                        epoch='train',
+                        loss=loss,
+                    )
+                    self.board.step(epoch='train')
 
                 t += 1
 
@@ -822,12 +825,14 @@ class Policy(ImageILPO):
                 aer, ratio = self.eval_policy(self.game, self.mazes, True)
                 self.board.add_scalars(
                     prior='Policy Soft Generalization',
+                    epoch='eval',
                     AER=aer,
                     ratio=ratio
                 )
                 aer, ratio = self.eval_policy(self.game, self.eval_mazes)
                 self.board.add_scalars(
                     prior='Policy Hard Generalization',
+                    epoch='eval',
                     AER=aer,
                     ratio=ratio
                 )
@@ -836,6 +841,7 @@ class Policy(ImageILPO):
                 self.game.load(maze)
                 obs = self.game.render('rgb_array')
                 obs = cv2.resize(obs, (128, 128))
+                self.board.step(epoch='eval')
 
 
 def create_dataset(path, file, output_dir):
