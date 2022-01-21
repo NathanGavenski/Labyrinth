@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+from tensorboard_wrapper.tensorboard import Tensorboard as Board
 
 CROP_SIZE = 128
 
@@ -569,13 +570,18 @@ class Policy(ImageILPO):
         verbose=True,
         use_encoding=False,
         experiment=False,
-        exp_writer=None
+        exp_writer=None,
+        name=None,
     ):
         """Initializes the ILPO policy network."""
 
         mypath = f'{maze_path}train/'
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
         self.mazes = np.array(mazes)
+
+        mypath = f'{maze_path}eval/'
+        mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+        self.eval_mazes = np.array(mazes)
 
         self.sess = sess
         self.verbose = verbose
@@ -628,7 +634,10 @@ class Policy(ImageILPO):
         sess.run(tf.variables_initializer(policy_var_list))
 
         self.deprocessed_outputs = [tf.image.convert_image_dtype(deprocess(output), dtype=tf.uint8, saturate=True) for output in self.model.outputs]
-        #self.viewer = rendering.SimpleImageViewer()
+        
+        if name is None:
+            name = str(self.environment).split('<')[-1].replace('>', '')
+        self.board = Board(f'ILPO-{name}', './tmp/board/', delete=True)
 
     def encode(self, state):
         """Runs an encoding on a state."""
@@ -706,20 +715,25 @@ class Policy(ImageILPO):
         pass
         #self.viewer.imshow(obs)
 
-    def eval_policy(self, game, t):
+    def eval_policy(self, game, mazes, soft=False):
         """Evaluate the policy."""
 
-        total_reward = 0
-
-        for evaluation, maze in enumerate(self.mazes):
+        total_reward, ratio = 0, 0
+        for evaluation, maze in enumerate(mazes):
             terminal = False
             game.reset()
             game.load(maze)
-            obs = game.render()
+
+            if soft:
+                w, h = game.shape
+                game.change_start_and_goal(min_distance=(w + h) // 2)
+
+            obs = game.render('rgb_array')
             obs = np.squeeze(obs)
             steps = 0
             print("Evaluating", evaluation)
 
+            episode_reward = 0
             while not terminal and steps < 200:
                 obs = np.squeeze(obs)
                 obs = cv2.resize(obs, (128, 128))
@@ -729,19 +743,18 @@ class Policy(ImageILPO):
                 else:
                     action = game.action_space.sample()
 
-                obs, reward, terminal, _ = game.step(action)
-                obs = game.render()
+                state, reward, terminal, _ = game.step(action)
+                obs = game.render('rgb_array')
 
-                total_reward += reward
+                episode_reward += reward
                 steps +=1
 
-            print("Average reward", total_reward / len(self.mazes))
+            total_reward += episode_reward
+            ratio += (state[:2] == game.end).all()
 
-        if not self.experiment:
-            reward_summary = self.sess.run([self.reward_summary], feed_dict={self.reward: total_reward / 10.})[0]
-            self.summary_writer.add_summary(reward_summary, t)
-        else:
-            self.exp_writer.write(str(t) + "," + str(total_reward / 10.) + "\n")
+        print("Average reward", total_reward / len(mazes))
+
+        return total_reward / len(mazes), ratio / len(mazes)
 
     def run_policy(self, times=10):
         """Run the policy."""
@@ -806,8 +819,22 @@ class Policy(ImageILPO):
                 t += 1
 
             if t % 200 == 0 and t >= 0:
-                self.eval_policy(self.game, idx)
-                obs = np.squeeze(self.game.reset())
+                aer, ratio = self.eval_policy(self.game, self.mazes, True)
+                self.board.add_scalars(
+                    prior='Policy Soft Generalization',
+                    AER=aer,
+                    ratio=ratio
+                )
+                aer, ratio = self.eval_policy(self.game, self.eval_mazes)
+                self.board.add_scalars(
+                    prior='Policy Hard Generalization',
+                    AER=aer,
+                    ratio=ratio
+                )
+
+                self.game.reset()
+                self.game.load(maze)
+                obs = self.game.render('rgb_array')
                 obs = cv2.resize(obs, (128, 128))
 
 
