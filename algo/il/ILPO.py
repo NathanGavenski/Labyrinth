@@ -451,7 +451,10 @@ class ImageILPO:
 
         logdir = self.output_dir if (self.trace_freq > 0 or self.summary_freq > 0) else None
         sv = tf.train.Supervisor(logdir=logdir, save_summaries_secs=0, saver=None)
-        config = tf.ConfigProto()
+        config = tf.ConfigProto(
+            inter_op_parallelism_threads=4,
+            intra_op_parallelism_threads=4,
+        )
         config.gpu_options.allow_growth = True
 
         with sv.managed_session(config=config) as sess:
