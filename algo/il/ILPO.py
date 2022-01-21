@@ -456,10 +456,10 @@ class ImageILPO:
         with sv.managed_session(config=config) as sess:
             print("parameter_count =", sess.run(parameter_count))
 
-            if self.checkpoint is not None:
-                print("loading model from checkpoint")
-                checkpoint = tf.train.latest_checkpoint(self.checkpoint)
-                saver.restore(sess, checkpoint)
+            # if self.checkpoint is not None:
+            #     print("loading model from checkpoint")
+            #     checkpoint = tf.train.latest_checkpoint(self.checkpoint)
+            #     saver.restore(sess, checkpoint)
 
             max_steps = 2 ** 32
             if self.max_epochs is not None:
