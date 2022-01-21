@@ -102,7 +102,7 @@ class ImageILPO:
         self.ngf = ngf
         self.max_epochs = max_epochs
         self.max_steps = max_steps
-        self.n_actions=4
+        self.n_actions = n_actions
 
         self.trace_freq = trace_freq
         self.summary_freq = summary_freq
@@ -455,10 +455,10 @@ class ImageILPO:
         with sv.managed_session(config=config) as sess:
             print("parameter_count =", sess.run(parameter_count))
 
-            # if self.checkpoint is not None:
-            #     print("loading model from checkpoint")
-            #     checkpoint = tf.train.latest_checkpoint(self.checkpoint)
-            #     saver.restore(sess, checkpoint)
+            if self.checkpoint is not None:
+                print("loading model from checkpoint")
+                checkpoint = tf.train.latest_checkpoint(self.checkpoint)
+                saver.restore(sess, checkpoint)
 
             max_steps = 2 ** 32
             if self.max_epochs is not None:
