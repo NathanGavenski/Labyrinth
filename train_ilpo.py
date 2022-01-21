@@ -18,8 +18,8 @@ if __name__ == '__main__':
         ilpo = ImageILPO(
             input_dir='./dataset/ilpo_dataset',
             output_dir='./tmp/ilpo/output',
-            checkpoint_dir='./tmp/ilpo/checkpoint',
-            batch_size=1,
+            checkpoint_dir='./tmp/ilpo/output',
+            batch_size=32,
             ngf=15,
         )
         ilpo.run()
