@@ -474,6 +474,7 @@ class ImageILPO:
             if self.max_steps is not None:
                 max_steps = self.max_steps
 
+
             summary = sess.run(summaries)
             sv.summary_writer.add_summary(summary)
 
@@ -824,6 +825,13 @@ class Policy(ImageILPO):
                 t += 1
 
             if t % 200 == 0 and t >= 0:
+                aer, ratio = self.eval_policy(self.game, self.mazes)
+                self.board.add_scalars(
+                    prior='Policy Eval',
+                    epoch='eval',
+                    AER=aer,
+                    ratio=ratio
+                )
                 aer, ratio = self.eval_policy(self.game, self.mazes, True)
                 self.board.add_scalars(
                     prior='Policy Soft Generalization',
