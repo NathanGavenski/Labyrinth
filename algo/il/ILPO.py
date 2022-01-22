@@ -89,7 +89,7 @@ class ImageILPO:
         display_freq=0,
         progress_freq=50,
         max_epochs=5,
-        max_steps=100000,
+        max_steps=0,
         flip=True, 
         direction='AtoB', 
         ngf=128,
@@ -104,7 +104,7 @@ class ImageILPO:
         self.batch_size = batch_size
         self.ngf = ngf
         self.max_epochs = max_epochs
-        self.max_steps = max_steps
+        self.max_steps = 10000
         self.n_actions = n_actions
 
         self.trace_freq = trace_freq
