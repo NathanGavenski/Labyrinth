@@ -19,23 +19,28 @@ if __name__ == '__main__':
             input_dir='./dataset/ilpo_dataset',
             output_dir='./tmp/ilpo/output',
             checkpoint_dir='./tmp/ilpo/output',
+            max_steps=None,
+            max_epochs=5,
             batch_size=32,
             ngf=15,
         )
         ilpo.run()
 
-        game = gym.make('Maze-v0', shape=(5, 5))
 
-        config = tf.ConfigProto()
+        tf.reset_default_graph()
+        config = tf.ConfigProto(
+            inter_op_parallelism_threads=4,
+            intra_op_parallelism_threads=4,
+        )
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
         
         with sess.as_default():
             policy = PolicyILPO(
                 sess,
-                shape=[None, 128, 128, 3],
+                shape=[None, 224, 224, 3],
                 checkpoint='./tmp/ilpo/output/',
-                game=game,
+                game=gym.make('Maze-v0', shape=(5, 5)),
                 maze_path='./maze/environment/mazes/mazes5/',
                 ngf=15,
                 verbose=False,
