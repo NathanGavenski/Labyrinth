@@ -1,9 +1,10 @@
 from os import path
-from algo.il import ImageILPO, PolicyILPO, create_ilpo_dataset
+import shutil
 
 import gym
 import tensorflow as tf
 
+from algo.il import ImageILPO, PolicyILPO, create_ilpo_dataset
 from maze import environment
 
 if __name__ == '__main__':
@@ -50,3 +51,5 @@ if __name__ == '__main__':
             )
 
             policy.run_policy(times=1)
+        
+        shutil.rmtree('./tmp/ilpo/output/')
