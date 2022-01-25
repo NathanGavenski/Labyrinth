@@ -374,7 +374,7 @@ class IUPE(nn.Module):
             while not done:
                 state = env.render('rgb_array')
                 action, _ = self.forward(state, weight=True)
-                next_state, r, done, _ = env.step(action)
+                next_state, r, done, info = env.step(action)
                 reward += r
 
                 if self.controller.check_position(next_state) and self.early_stop:
@@ -382,7 +382,7 @@ class IUPE(nn.Module):
                     reward = self.get_min_reward()
             
             rewards.append(reward)
-            ratio += (next_state[:2] == env.end).all()
+            ratio += (info['state'][:2] == env.end).all()
 
             if self.verbose:
                 self.pbar.update()
@@ -436,7 +436,7 @@ class IUPE(nn.Module):
                     image_idx += 1
 
                     all_rewards.append(rewards)
-                    ratio += (next_state[:2] == env.end).all()
+                    ratio += (info['state'][:2] == env.end).all()
 
                 if self.controller.check_position(next_state) and self.early_stop:
                     ratio += 0

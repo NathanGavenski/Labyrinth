@@ -5,3 +5,6 @@ tqdm
 tensorflow==1.15
 opencv-python
 matplotlib
+stable-baselines3
+mpi4py
+imitation
