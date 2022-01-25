@@ -15,7 +15,7 @@ if __name__ == '__main__':
             output_dir='./dataset/ilpo_dataset',
         )
 
-    for _ in range(10):
+    for idx in range(5):
         ilpo = ImageILPO(
             input_dir='./dataset/ilpo_dataset',
             output_dir='./tmp/ilpo/output',
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         with sess.as_default():
             policy = PolicyILPO(
                 sess,
-                shape=[None, 224, 224, 3],
+                shape=[None, 128, 128, 3],
                 checkpoint='./tmp/ilpo/output/',
                 game=gym.make('Maze-v0', shape=(5, 5)),
                 maze_path='./maze/environment/mazes/mazes5/',
@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 verbose=False,
                 experiment=True,
                 use_encoding=True,
-                name=1
+                name=idx
             )
 
             policy.run_policy(times=1)

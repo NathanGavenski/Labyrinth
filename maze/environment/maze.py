@@ -2,6 +2,7 @@ import ast
 from collections import defaultdict
 from copy import deepcopy
 import os
+from pickletools import uint8
 
 import gym
 from gym import spaces
@@ -82,11 +83,7 @@ class Maze(gym.Env):
         self.seed()
 
         self.action_space = spaces.Discrete(4)
-
-        # FIXME wrong, state is the maze plus the agent position
-        low = np.zeros(len(self.shape), dtype=int)
-        high = np.array(self.shape, dtype=int) - np.ones(len(self.shape), dtype=int)
-        self.observation_space = spaces.Box(low, high, dtype=int)
+        self.observation_space = spaces.Box(0, 255, (screen_width, screen_height, 3), np.uint8)
 
     def seed(self, seed=None) -> list:
         '''
@@ -256,7 +253,8 @@ class Maze(gym.Env):
         reward = -.1 / (self.shape[0] * self.shape[1]) if not done else 1
         self.reseted = not done
 
-        return np.hstack((self.agent, self.maze.flatten())), reward, done, {}
+        # return np.hstack((self.agent, self.maze.flatten())), reward, done, {}
+        return self.render('rgb_array'), reward, done, {'state': np.hstack((self.agent, self.maze.flatten()))}
 
     def reset(self, agent=True) -> None:
         '''
@@ -272,7 +270,8 @@ class Maze(gym.Env):
             self.pathways = self.define_pathways(self._pathways)
 
         self.agent = self.start
-        return np.hstack((self.agent, self.maze.flatten()))
+        # return np.hstack((self.agent, self.maze.flatten()))
+        return self.render('rgb_array')
 
     def generate(self, path: str, amount: int = 1) -> None:
         '''

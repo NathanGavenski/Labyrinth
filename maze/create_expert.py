@@ -82,7 +82,7 @@ if __name__ == '__main__':
         os.makedirs(args.save_path)
 
     image_idx = 0
-    dataset = np.ndarray(shape=[0, 5])
+    dataset = np.ndarray(shape=[0, 9])
     for maze_idx, maze in enumerate(tqdm(mazes)):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
         env.reset()
@@ -92,6 +92,8 @@ if __name__ == '__main__':
         for solution_idx, solution in enumerate(solutions):
             env.reset(agent=True)
             done = False
+
+            total_reward = 0
             for idx, tile in enumerate(solution):
                 image = env.render('rgb_array')
                 np.save(f'{args.save_path}/{image_idx}', image)
@@ -103,21 +105,29 @@ if __name__ == '__main__':
                         solution[idx+1],
                         shape=(args.width, args.height)
                     )
-                    _, _, done, _ = env.step(action)
+                    state, reward, done, info = env.step(action)
+                    total_reward += reward
 
                 if not done:
                     entry = [
-                        maze_idx,
-                        solution_idx,
-                        image_idx,
-                        action,
-                        image_idx+1
+                        maze_idx,  # maze version
+                        solution_idx,  # solution number
+                        image_idx,  # state 
+                        action,  # action
+                        image_idx+1,  # next_state
+                        0,  # episode reward
+                        reward,  # step reward
+                        True if idx == 0 else False,  # episode_starts
+                        False,  # episode_ends                        
                     ]
                     dataset = np.append(
                         dataset,
                         np.array(entry)[None],
                         axis=0
                     )
+                elif done:
+                    dataset[-1, 5] = total_reward
+                    dataset[-1, -1] = True
 
             env.close()
     np.save(f'{args.save_path}/dataset', dataset)

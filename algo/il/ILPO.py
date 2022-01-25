@@ -586,6 +586,7 @@ class Policy(ImageILPO):
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
         self.eval_mazes = np.array(mazes)
 
+        self.shape = shape
         self.sess = sess
         self.verbose = verbose
         self.use_encoding = use_encoding
@@ -668,12 +669,12 @@ class Policy(ImageILPO):
         min_state = fake_next_states[min_action][0]
 
         if self.verbose:
-            display_states = [cv2.cvtColor(cv2.resize(fake_next_state[0], (128, 128)), cv2.COLOR_RGB2BGR) for fake_next_state in fake_next_states]
+            display_states = [cv2.cvtColor(cv2.resize(fake_next_state[0], (self.shape[1], self.shape[2])), cv2.COLOR_RGB2BGR) for fake_next_state in fake_next_states]
             cv2.imshow("outputs", np.hstack(display_states))
-            cv2.imshow("state", cv2.cvtColor(cv2.resize(state, (128, 128)), cv2.COLOR_RGB2BGR))
+            cv2.imshow("state", cv2.cvtColor(cv2.resize(state, (self.shape[1], self.shape[2])), cv2.COLOR_RGB2BGR))
             cv2.imshow("NextPrediction", np.hstack([
-                cv2.cvtColor(cv2.resize(next_state, (128, 128)), cv2.COLOR_RGB2BGR),
-                cv2.cvtColor(cv2.resize(min_state, (128, 128)), cv2.COLOR_RGB2BGR)]))
+                cv2.cvtColor(cv2.resize(next_state, (self.shape[1], self.shape[2])), cv2.COLOR_RGB2BGR),
+                cv2.cvtColor(cv2.resize(min_state, (self.shape[1], self.shape[2])), cv2.COLOR_RGB2BGR)]))
             cv2.waitKey(0)
         return min_action
 
@@ -738,21 +739,21 @@ class Policy(ImageILPO):
             episode_reward = 0
             while not terminal and steps < 200:
                 obs = np.squeeze(obs)
-                obs = cv2.resize(obs, (128, 128))
+                obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
 
                 if np.random.uniform(0,1) <= .9:
                     action = self.greedy(obs)
                 else:
                     action = game.action_space.sample()
 
-                state, reward, terminal, _ = game.step(action)
+                state, reward, terminal, info = game.step(action)
                 obs = game.render('rgb_array')
 
                 episode_reward += reward
                 steps +=1
 
             total_reward += episode_reward
-            ratio += (state[:2] == game.end).all()
+            ratio += (info['state'][:2] == game.end).all()
 
         return total_reward / len(mazes), ratio / len(mazes)
 
@@ -767,7 +768,7 @@ class Policy(ImageILPO):
             self.game.load(maze)
             obs = self.game.render('rgb_array')
             obs = np.squeeze(obs)
-            obs = cv2.resize(obs, (128, 128))
+            obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
 
             total_reward = 0
             D = deque()
@@ -792,7 +793,7 @@ class Policy(ImageILPO):
                 obs = self.game.render('rgb_array')
 
                 obs = np.squeeze(obs)
-                obs = cv2.resize(obs, (128, 128))
+                obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
                 total_reward += reward
                 fake_action = self.min_action(prev_obs, action, obs)
 
@@ -850,7 +851,7 @@ class Policy(ImageILPO):
                 self.game.reset()
                 self.game.load(maze)
                 obs = self.game.render('rgb_array')
-                obs = cv2.resize(obs, (128, 128))
+                obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
                 self.board.step(epoch='eval')
 
 
@@ -864,7 +865,7 @@ def create_dataset(path, file, output_dir):
     dataset = np.load(f'{path}/{file}', allow_pickle=True)
     dataset = np.repeat(dataset, 10, axis=0)
     for idx, data in enumerate(tqdm(dataset)):
-        _, _, s, _, ns = data.astype(int)
+        _, _, s, _, ns, _, _, _, _ = data.astype(int)
         state = np.load(f'{path}/{s}.npy')
         next_state = np.load(f'{path}/{ns}.npy')
         new_state = np.hstack((state, next_state))
