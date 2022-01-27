@@ -826,34 +826,34 @@ class Policy(ImageILPO):
 
                 t += 1
 
-            if t % 5000 == 0 and t >= 0:
-                aer, ratio = self.eval_policy(self.game, self.mazes)
-                self.board.add_scalars(
-                    prior='Policy Eval',
-                    epoch='eval',
-                    AER=aer,
-                    ratio=ratio
-                )
-                aer, ratio = self.eval_policy(self.game, self.mazes, True)
-                self.board.add_scalars(
-                    prior='Policy Soft Generalization',
-                    epoch='eval',
-                    AER=aer,
-                    ratio=ratio
-                )
-                aer, ratio = self.eval_policy(self.game, self.eval_mazes)
-                self.board.add_scalars(
-                    prior='Policy Hard Generalization',
-                    epoch='eval',
-                    AER=aer,
-                    ratio=ratio
-                )
+                if t % 5000 == 0 and t >= 0:
+                    aer, ratio = self.eval_policy(self.game, self.mazes)
+                    self.board.add_scalars(
+                        prior='Policy Eval',
+                        epoch='eval',
+                        AER=aer,
+                        ratio=ratio
+                    )
+                    aer, ratio = self.eval_policy(self.game, self.mazes, True)
+                    self.board.add_scalars(
+                        prior='Policy Soft Generalization',
+                        epoch='eval',
+                        AER=aer,
+                        ratio=ratio
+                    )
+                    aer, ratio = self.eval_policy(self.game, self.eval_mazes)
+                    self.board.add_scalars(
+                        prior='Policy Hard Generalization',
+                        epoch='eval',
+                        AER=aer,
+                        ratio=ratio
+                    )
 
-                self.game.reset()
-                self.game.load(maze)
-                obs = self.game.render('rgb_array')
-                obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
-                self.board.step(epoch='eval')
+                    self.game.reset()
+                    self.game.load(maze)
+                    obs = self.game.render('rgb_array')
+                    obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
+                    self.board.step(epoch='eval')
 
 
 def create_dataset(path, file, output_dir):

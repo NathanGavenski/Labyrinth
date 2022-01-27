@@ -54,4 +54,4 @@ if __name__ == '__main__':
             name='test'
         )
 
-        policy.run_policy(times=1)
+        policy.run_policy(times=10)
