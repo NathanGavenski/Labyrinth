@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     for idx in range(5):
         path, file = './dataset/dataset5', 'dataset.npy'
-        dataset = create_gail_dataset(path, file, times=1)
+        dataset = create_gail_dataset(path, file, times=1000)
         env = gym.make('Maze-v0', shape=(5, 5))
 
         model = GAIL(

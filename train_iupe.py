@@ -4,7 +4,7 @@ from maze import environment
 from algo.il import IUPE
 
 if __name__ == '__main__':
-    for i in range(10):
+    for i in range(3, 5):
         env = gym.make('Maze-v0', shape=(5, 5))
         algo = IUPE(
             environment=env,
