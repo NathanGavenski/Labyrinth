@@ -762,7 +762,9 @@ class Policy(ImageILPO):
         mazes = np.repeat(self.mazes, times, axis=0)
         np.random.shuffle(mazes)
 
+        t = 0
         for idx, maze in enumerate(mazes):
+            print(t)
             terminal = False
             self.game.reset()
             self.game.load(maze)
@@ -777,7 +779,6 @@ class Policy(ImageILPO):
 
             prev_obs = obs.copy()
 
-            t = 0
             while not terminal:           
                 prev_obs = np.copy(obs)
 
@@ -825,7 +826,7 @@ class Policy(ImageILPO):
 
                 t += 1
 
-            if t % 200 == 0 and t >= 0:
+            if t % 5000 == 0 and t >= 0:
                 aer, ratio = self.eval_policy(self.game, self.mazes)
                 self.board.add_scalars(
                     prior='Policy Eval',

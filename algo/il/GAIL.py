@@ -36,14 +36,14 @@ class GAIL:
             demonstrations=self.dataset,
             demo_batch_size=batch_size,
             gen_algo=sb3.PPO('CnnPolicy', self.game, verbose=0, n_steps=pretrain),
-            verbose=0,
+            allow_variable_horizon=True
         )
 
         if not os.path.exists(folder):
             os.makedirs(folder)
 
     def run(self, total_timesteps=1e6):
-        self.model.train(total_timesteps)
+        self.model.train(int(total_timesteps))
 
     # TODO transform this into an EvalCallback
     def eval(self, eval=True, soft=True):
