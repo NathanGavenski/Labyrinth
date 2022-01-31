@@ -438,7 +438,7 @@ class IUPE(nn.Module):
                     all_rewards.append(rewards)
                     ratio += (info['state'][:2] == env.end).all()
 
-                if self.controller.check_position(next_state) and self.early_stop:
+                if self.controller.check_position(info['state']) and self.early_stop:
                     ratio += 0
                     done = True
                     all_rewards.append(self.get_min_reward())
