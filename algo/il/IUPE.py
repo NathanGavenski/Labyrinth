@@ -377,7 +377,7 @@ class IUPE(nn.Module):
                 next_state, r, done, info = env.step(action)
                 reward += r
 
-                if self.controller.check_position(next_state) and self.early_stop:
+                if self.controller.check_position(info['state']) and self.early_stop:
                     done = True
                     reward = self.get_min_reward()
             
