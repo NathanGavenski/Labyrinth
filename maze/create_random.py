@@ -73,17 +73,18 @@ if __name__ == '__main__':
     pbar = tqdm(range(args.amount))
     for maze_idx, maze in enumerate(mazes):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
-        env.reset()
-        state = env.load(maze)
+        env.load(maze)
+        state = env.agent
 
         idx = 0
         done = False
         while idx < amount_per_maze - 1:
             image = env.render('rgb_array')
             action = np.random.randint(0, 4)
-            next_state, reward, done, info = env.step(action) 
+            _, reward, done, info = env.step(action) 
+            next_state = env.agent
 
-            if (state[:2] != next_state[:2]).any():
+            if (state != next_state):
                 # state
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
@@ -99,7 +100,8 @@ if __name__ == '__main__':
                 idx += 1
 
             if done:
-                state = env.reset(agent=True)
+                env.reset(agent=True)
+                state = env.agent
             else:
                 state = next_state
 
