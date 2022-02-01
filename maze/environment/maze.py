@@ -64,6 +64,7 @@ class Maze(gym.Env):
             end: int = None,
             screen_width: int = 224,
             screen_height: int = 224,
+            max_episode_steps: int = 1000,
     ) -> None:
         super().__init__()
         self.shape = shape
@@ -79,6 +80,9 @@ class Maze(gym.Env):
         self.start = start
         self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
         self.agent = self.start
+
+        self.max_episode_steps = max_episode_steps
+        self.step_count = 0
 
         self.seed()
 
@@ -153,8 +157,8 @@ class Maze(gym.Env):
         w, h = self.shape
         screen_width = self.screen_width
         screen_height = self.screen_height
-        tile_h = screen_height // h
-        tile_w = screen_width // w
+        tile_h = screen_height / h
+        tile_w = screen_width / w
 
         if self.viewer is None:
             from gym.envs.classic_control import rendering
@@ -249,11 +253,10 @@ class Maze(gym.Env):
         if destiny_global_position in self.pathways[agent_global_position]:
             self.agent = tuple(destiny)
 
-        done = (np.array(self.agent) == self.end).all()
-        reward = -.1 / (self.shape[0] * self.shape[1]) if not done else 1
-        self.reseted = not done
+        self.step_count += 1
+        done = (np.array(self.agent) == self.end).all() or self.step_count >= self.max_episode_steps
+        reward = -.1 / (self.shape[0] * self.shape[1]) if not (np.array(self.agent) == self.end).all() else 1
 
-        # return np.hstack((self.agent, self.maze.flatten())), reward, done, {}
         return self.render('rgb_array'), reward, done, {'state': np.hstack((self.agent, self.maze.flatten()))}
 
     def reset(self, agent=True) -> None:
@@ -262,6 +265,7 @@ class Maze(gym.Env):
         If agent is False, return maze to a new one.
         '''
         self.reseted = True
+        self.step_count = 0
 
         if not agent or self.maze is None:
             with recursionLimit(10000):
@@ -331,8 +335,9 @@ class Maze(gym.Env):
         self.pathways = self.define_pathways(pathways)
 
         self.reseted = True
+        self.step_count = 0
         self.agent = self.start
-        return np.hstack((self.agent, self.maze.flatten()))
+        return self.render('rgb_array')
 
     def solve(self, mode: str = 'shortest') -> list:
         '''
