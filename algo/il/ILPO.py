@@ -725,7 +725,6 @@ class Policy(ImageILPO):
         total_reward, ratio = 0, 0
         for maze in mazes:
             terminal = False
-            game.reset()
             game.load(maze)
 
             if soft:
@@ -753,7 +752,7 @@ class Policy(ImageILPO):
                 steps +=1
 
             total_reward += episode_reward
-            ratio += (info['state'][:2] == game.end).all()
+            ratio += game.agent == game.end
 
         return total_reward / len(mazes), ratio / len(mazes)
 
@@ -766,7 +765,6 @@ class Policy(ImageILPO):
         for idx, maze in enumerate(mazes):
             print(t)
             terminal = False
-            self.game.reset()
             self.game.load(maze)
             obs = self.game.render('rgb_array')
             obs = np.squeeze(obs)
@@ -849,7 +847,6 @@ class Policy(ImageILPO):
                         ratio=ratio
                     )
 
-                    self.game.reset()
                     self.game.load(maze)
                     obs = self.game.render('rgb_array')
                     obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
