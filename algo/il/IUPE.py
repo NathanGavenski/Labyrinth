@@ -26,8 +26,7 @@ class EarlyStopController():
         self.states = defaultdict(int)
 
     def check_position(self, s: np.ndarray) -> bool:
-        state = (x, y) = s[:2]
-        state = tuple(state)
+        state = tuple(s)
         self.states[state] += 1
         return self.states[state] == self.amount
 
@@ -364,7 +363,6 @@ class IUPE(nn.Module):
 
         ratio, rewards = 0, []
         for maze in mazes:
-            env.reset()
             env.load(maze)
             if soft_generalization:
                 env.change_start_and_goal(min_distance=(self.width + self.height) // 2)
@@ -414,7 +412,6 @@ class IUPE(nn.Module):
         image_idx = 0
         dataset = np.ndarray(shape=[0, 4])
         for maze_idx, maze in enumerate(tqdm(mazes)):
-            env.reset()
             env.load(maze)
             self.controller.reset()
             done, rewards = False, 0
@@ -436,9 +433,9 @@ class IUPE(nn.Module):
                     image_idx += 1
 
                     all_rewards.append(rewards)
-                    ratio += (info['state'][:2] == env.end).all()
+                    ratio += (env.agent == env.end)
 
-                if self.controller.check_position(info['state']) and self.early_stop:
+                if self.controller.check_position(env.agent) and self.early_stop:
                     ratio += 0
                     done = True
                     all_rewards.append(self.get_min_reward())
