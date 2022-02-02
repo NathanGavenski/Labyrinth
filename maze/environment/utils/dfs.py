@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from .node import Node
+from .utils import recursionLimit
 
 class DFS:
     def __init__(self, graph: list, shape: tuple, start : int = None, end : int = None):
@@ -70,38 +71,29 @@ class DFS:
 
         Returns a list of list of all the nodes that take the agent to its goal.
         '''
-        nodes_dict = {}
-        for x, y in edges.items():
-            nodes_dict[x] = Node(x, [])
+        nodes_dict = {x: Node(x, []) for x in edges.keys()}
 
-            for neighbor in y:
-                nodes_dict[neighbor] = Node(neighbor, [])
-        
-        nodes = []
         for x, y in edges.items():
-            neighbors = []
-            for neighbor in y:
-                neighbors.append(nodes_dict[neighbor])
-            nodes.append(nodes_dict[x].set_neighbor(neighbors))
-        nodes.sort()
-
-        self.paths = []
-        for node in nodes[self.start]:
-            self._find_paths(node, [self.start])
-        return self.paths
+            for node in y:
+                nodes_dict[x].add_edge(nodes_dict[node])
             
-    def _find_paths(self, node:Node, path:list) -> None:
+        self.path = []
+        self._find_paths(set(), nodes_dict, nodes_dict[self.start], [])
+        return self.path
+            
+    def _find_paths(self, visited, graph, node, path) -> None:
         '''
         Auxiliary recursion function for the find_paths().
         '''
-        path = list(tuple(path))  # So it does not use the object stored in memory
-        path.append(node.identifier)
+        path = list(tuple(path))
 
         if node.identifier == self.end:
-            self.paths.append(path)
+            path.append(node.identifier)
+            self.path.append(path)
             return
-        elif len(node.edges) == 0:
-            return
-    
-        for neighbor in node:
-            self._find_paths(neighbor, path)
+
+        if node.identifier not in visited:
+            path.append(node.identifier)
+            visited.add(node.identifier)
+            for neighbor in node:
+                self._find_paths(visited, graph, neighbor, path)

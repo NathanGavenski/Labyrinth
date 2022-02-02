@@ -105,16 +105,18 @@ class Maze(gym.Env):
         '''
         maze = np.ndarray(shape=self.shape)
 
+        start = (self.start[0] * self.shape[0]) + self.start[1]
+        end = self.end[0] * self.shape[0] + self.end[1]
+
         if visited is None:
             edges = []
             for pos in range(maze.shape[0] * maze.shape[1]):
                 edges += get_neighbors(pos, maze.shape, undirected=False)
 
-            start = (self.start[0] * self.shape[0]) + self.start[1]
-            end = self.end[0] * self.shape[0] + self.end[1]
-
             self.dfs = DFS(edges, maze.shape, start=start, end=end)
             visited = self.dfs.generate_path([])
+        else:
+            self.dfs = DFS(visited, maze.shape, start=start, end=end)
 
         return transform_edges_into_walls(visited, maze.shape), visited
 
@@ -274,7 +276,6 @@ class Maze(gym.Env):
             self.pathways = self.define_pathways(self._pathways)
 
         self.agent = self.start
-        # return np.hstack((self.agent, self.maze.flatten()))
         return self.render('rgb_array')
 
     def generate(self, path: str, amount: int = 1) -> None:
@@ -337,7 +338,6 @@ class Maze(gym.Env):
         self.reseted = True
         self.step_count = 0
         self.agent = self.start
-        return self.render('rgb_array')
 
     def solve(self, mode: str = 'shortest') -> list:
         '''
@@ -347,16 +347,20 @@ class Maze(gym.Env):
             mode = amount of paths to return [shortest/all].
         '''
         with recursionLimit(100000):
-            paths = self.dfs.find_paths(self.undirected_pathways)
+            paths = self.dfs.find_paths(self.pathways)
 
         if mode == 'shortest':
             return min(paths)
         else:
             return paths
 
-    def change_start_and_goal(self, min_distance=10) -> tuple:
+    def change_start_and_goal(self, min_distance=None) -> tuple:
         '''
         '''
+        if min_distance is None:
+            w, h = self.shape
+            min_distance = (w + h) // 2
+
         paths = self.solve(mode='all')
         longest_path = np.argmax(max(len(path) for path in paths))
         path = paths[longest_path]
@@ -365,12 +369,14 @@ class Maze(gym.Env):
                 np.random.choice(path[1:], 1)[0]
             )
         )
+
         possible_goals = []
         for tile in path:
             tile = self.get_local_position(tile)
             distance = np.abs(start - tile).sum()
             if distance >= min_distance:
                 possible_goals.append(tile)
+        
         if len(possible_goals) == 0:
             return self.change_start_and_goal(min_distance)
         else:
@@ -382,6 +388,9 @@ class Maze(gym.Env):
             self.start = tuple(start)
             self.end = tuple(end)
             self.agent = self.start
+
+            self.dfs.start = self.get_global_position(self.start)
+            self.dfs.end = self.get_global_position(self.end)
             return start, end
 
     def __hash__(self) -> int:
