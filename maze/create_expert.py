@@ -34,7 +34,14 @@ def get_args():
     )
     parser.add_argument(
         '--unbiased',
-        action='store_true',
+        action='store_false',
+        help='Swaps start and goal for each maze in order to reduce bias'
+    )
+    parser.add_argument(
+        '--times',
+        type=int,
+        default=10,
+        help='How many times should repeat each maze when unbiased is turned on'
     )
 
     # Maze specific
@@ -75,8 +82,10 @@ if __name__ == '__main__':
     args = get_args()
 
     mypath = f'{args.path}/train/'
-    mazes = [join(mypath, f)
-             for f in listdir(mypath) if isfile(join(mypath, f))]
+    mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+
+    if args.unbiased:
+        mazes = np.repeat(mazes, args.times, axis=0)
 
     if os.path.exists(args.save_path):
         shutil.rmtree(args.save_path)
@@ -90,9 +99,10 @@ if __name__ == '__main__':
     for maze_idx, maze in enumerate(tqdm(mazes)):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
         env.load(maze)
-        if args.unbiased:
+        
+        if args.unbiased and (maze_idx % args.times != 0):
             env.change_start_and_goal()
-            
+
         solutions = env.solve(mode='all')
 
         for solution_idx, solution in enumerate(solutions):
@@ -102,6 +112,8 @@ if __name__ == '__main__':
             total_reward = 0
             for idx, tile in enumerate(solution):
                 image = env.render('rgb_array')
+                from PIL import Image
+                Image.fromarray(image).save(f'{maze_idx}.png')
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
 
