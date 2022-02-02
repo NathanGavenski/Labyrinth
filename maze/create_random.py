@@ -35,6 +35,18 @@ def get_args():
         '--amount',
         type=int
     )
+    parser.add_argument(
+        '--unbiased',
+        action='store_false',
+        help='Swaps start and goal for each maze in order to reduce bias'
+    )
+    parser.add_argument(
+        '--times',
+        type=int,
+        default=10,
+        help='How many times should repeat each maze when unbiased is turned on'
+    )
+
     
     # Maze specific
     parser.add_argument(
@@ -60,6 +72,9 @@ if __name__ == '__main__':
     mypath = f'{args.path}/train/'
     mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
+    if args.unbiased:
+        mazes = np.repeat(mazes, args.times, axis=0)
+
     if os.path.exists(args.save_path):
         shutil.rmtree(args.save_path)
         os.makedirs(args.save_path)
@@ -74,8 +89,11 @@ if __name__ == '__main__':
     for maze_idx, maze in enumerate(mazes):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
         env.load(maze)
-        state = env.agent
+        
+        if args.unbiased and (maze_idx % args.times != 0):
+            env.change_start_and_goal()
 
+        state = env.agent
         idx = 0
         done = False
         while idx < amount_per_maze - 1:
