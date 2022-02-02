@@ -9,14 +9,17 @@ class Node:
         self.visited_edges = []
         
         random.shuffle(edges) # So the iterator is random for the DFS
-        self.edges = np.array(edges)
+        self.edges = edges
     
     def is_visited(self) -> bool:
         return self.visited
 
-    def visited_from(self, node:int) -> None:
+    def add_edge(self, edge: object) -> None:
+        self.edges.append(edge)
+
+    def visited_from(self, node: object) -> None:
         self.visited = True
-        self.visited_edges.append(node)
+        self.visited_edges.append(node.identifier)
 
     def set_neighbor(self, neighbor:list) -> object:
         random.shuffle(neighbor)
@@ -29,8 +32,20 @@ class Node:
         )
         return random.choice(unvisted_edges)
     
+    def __len__(self):
+        current_available_edges = []
+        for node in self.edges:
+            if not node.visited:
+                current_available_edges.append(node)
+        return len(current_available_edges)
+
     def __getitem__(self, idx:int) -> object:
-        return self.edges[idx]
+        current_available_edges = []
+        for node in self.edges:
+            if not node.visited:
+                current_available_edges.append(node)
+
+        return current_available_edges[idx]
 
     def __eq__(self, other:object) -> bool:
         return self.identifier == other.identifier
@@ -38,8 +53,17 @@ class Node:
     def __lt__(self, other:object) -> bool:
         return self.identifier < other.identifier
 
+    def __hash__(self) -> int:
+        return self.identifier
+
     def __repr__(self) -> str:
-        return f'{self.identifier}'
+
+        return f'{[edge.identifier for edge in self.edges]}'
 
     def __str__(self) -> str:
-        return f'{self.identifier}: {self.edges}'
+        current_available_edges = []
+        for node in self.edges:
+            if not node.visited:
+                current_available_edges.append(node)
+
+        return f'{self.identifier}: {[edge.identifier for edge in current_available_edges]}'

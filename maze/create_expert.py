@@ -32,6 +32,10 @@ def get_args():
         '--path',
         type=str
     )
+    parser.add_argument(
+        '--unbiased',
+        action='store_true',
+    )
 
     # Maze specific
     parser.add_argument(
@@ -85,8 +89,10 @@ if __name__ == '__main__':
     dataset = np.ndarray(shape=[0, 9])
     for maze_idx, maze in enumerate(tqdm(mazes)):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
-        env.reset()
         env.load(maze)
+        if args.unbiased:
+            env.change_start_and_goal()
+            
         solutions = env.solve(mode='all')
 
         for solution_idx, solution in enumerate(solutions):
