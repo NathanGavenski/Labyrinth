@@ -34,7 +34,7 @@ def get_args():
     )
     parser.add_argument(
         '--unbiased',
-        action='store_false',
+        action='store_true',
         help='Swaps start and goal for each maze in order to reduce bias'
     )
     parser.add_argument(
