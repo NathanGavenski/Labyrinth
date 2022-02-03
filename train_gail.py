@@ -27,16 +27,33 @@ if __name__ == '__main__':
             AER=aer,
             ratio=ratio
         )
+        
         aer, ratio = model.eval(eval=False, soft=True)
         board.add_scalars(
-            prior='Policy Soft Generalization',
+            prior='Policy Path Generalization',
             epoch='eval',
             AER=aer,
             ratio=ratio
         )
         aer, ratio = model.eval(eval=True, soft=False)
         board.add_scalars(
-            prior='Policy Hard Generalization',
+            prior='Policy Structure Generalization',
+            epoch='eval',
+            AER=aer,
+            ratio=ratio
+        )
+
+        aer, ratio = model.eval(eval=False, soft=True, occlusion=True)
+        board.add_scalars(
+            prior='Policy Occlusion Path Generalization',
+            epoch='eval',
+            AER=aer,
+            ratio=ratio
+        )
+
+        aer, ratio = model.eval(eval=True, soft=False, occlusion=True)
+        board.add_scalars(
+            prior='Policy Occlusion Structure Generalization',
             epoch='eval',
             AER=aer,
             ratio=ratio
