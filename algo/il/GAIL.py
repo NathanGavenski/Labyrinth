@@ -15,35 +15,15 @@ from stable_baselines3.common.callbacks import EvalCallback as StableEvalCallbac
 from stable_baselines3.common.callbacks import BaseCallback
 from tensorboard_wrapper.tensorboard import Tensorboard as Board
 
-class EvalCallback(StableEvalCallback):
+class EvalCallback:
     def __init__(
         self,
         eval_env: Union[gym.Env, VecEnv],
         maze_path: str,
         log_name: str,
-        model,
-        callback_on_new_best: Optional[BaseCallback] = None,
-        n_eval_episodes: int = 5,
-        eval_freq: int = 1000,
-        log_path: Optional[str] = None,
-        best_model_save_path: Optional[str] = None,
-        determionistic: bool = True,
-        render: bool = False,
-        verbose: int = 1,
-        warn: bool = True,
+        model: gail.GAIL,
+        should_eval: Optional[function] = None,
     ) -> None:
-        super(EvalCallback, self).__init__(
-            eval_env, 
-            callback_on_new_best, 
-            n_eval_episodes, 
-            eval_freq,
-            log_path,
-            best_model_save_path,
-            determionistic,
-            render,
-            verbose,
-            warn
-        )
         mypath = f'{maze_path}train/'
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
         self.mazes = np.array(mazes)
@@ -55,6 +35,7 @@ class EvalCallback(StableEvalCallback):
         
         self.original_game = eval_env
         self.board = Board(f'GAIL-{log_name}', './tmp/board/', delete=True)
+        self.should_eval = should_eval if should_eval is not None else lambda x: x % 10 == 0 and x > 0
 
     def eval(self, eval: bool = True, soft: bool = False, occlusion: bool = False) -> tuple:
 
@@ -92,52 +73,53 @@ class EvalCallback(StableEvalCallback):
         
         return np.mean(episode_reward), np.mean(ratio)
 
-    def __call__(self, *args, **kwargs) -> bool:
-        print('Evaluating', args, kwargs)
-        # Eval (train)
-        aer, ratio = self.eval(eval=False, soft=False)
-        self.board.add_scalars(
-            prior='Policy Eval',
-            epoch='eval',
-            AER=aer,
-            ratio=ratio,
-        )
-        
-        # Eval (eval)
-        aer, ratio = self.eval(eval=True, soft=False)
-        self.board.add_scalars(
-            prior='Policy Structure Generalization',
-            epoch='eval',
-            AER=aer,
-            ratio=ratio,
-        )
-        
-        # Eval (change start and goal)
-        aer, ratio = self.eval(eval=False, soft=True)  
-        self.board.add_scalars(
-            prior='Policy Path Generalization',
-            epoch='eval',
-            AER=aer,
-            ratio=ratio,
-        )
-        
-        # Eval (eval with occlusion)
-        aer, ratio = self.eval(eval=True, soft=False, occlusion=True) 
-        self.board.add_scalars(
-            prior='Policy Occlusion Structure Generalization',
-            epoch='eval',
-            AER=aer,
-            ratio=ratio,
-        )
-        
-        # Eval (change start and goal with occlusion)
-        aer, ratio = self.eval(eval=False, soft=True, occlusion=True) 
-        self.board.add_scalars(
-            prior='Policy Occlusion Path Generalization',
-            epoch='eval',
-            AER=aer,
-            ratio=ratio,
-        )
+    def __call__(self, idx) -> None:
+        if self.should_eval(idx):
+            # Eval (train)
+            aer, ratio = self.eval(eval=False, soft=False)
+            self.board.add_scalars(
+                prior='Policy Eval',
+                epoch='eval',
+                AER=aer,
+                ratio=ratio,
+            )
+            
+            # Eval (eval)
+            aer, ratio = self.eval(eval=True, soft=False)
+            self.board.add_scalars(
+                prior='Policy Structure Generalization',
+                epoch='eval',
+                AER=aer,
+                ratio=ratio,
+            )
+            
+            # Eval (change start and goal)
+            aer, ratio = self.eval(eval=False, soft=True)  
+            self.board.add_scalars(
+                prior='Policy Path Generalization',
+                epoch='eval',
+                AER=aer,
+                ratio=ratio,
+            )
+            
+            # Eval (eval with occlusion)
+            aer, ratio = self.eval(eval=True, soft=False, occlusion=True) 
+            self.board.add_scalars(
+                prior='Policy Occlusion Structure Generalization',
+                epoch='eval',
+                AER=aer,
+                ratio=ratio,
+            )
+            
+            # Eval (change start and goal with occlusion)
+            aer, ratio = self.eval(eval=False, soft=True, occlusion=True) 
+            self.board.add_scalars(
+                prior='Policy Occlusion Path Generalization',
+                epoch='eval',
+                AER=aer,
+                ratio=ratio,
+            )
+            self.board.step()        
         
 
 class GAIL:
