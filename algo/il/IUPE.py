@@ -350,7 +350,8 @@ class IUPE(nn.Module):
         self,
         maze_path: str,
         env: gym.core.Env,
-        soft_generalization: bool = False
+        soft_generalization: bool = False,
+        occlusion: bool = False
     ) -> float:
         if self.verbose:
             self.pbar.set_description_str(desc='Eval Policy', refresh=True)
@@ -366,6 +367,12 @@ class IUPE(nn.Module):
             env.load(maze)
             if soft_generalization:
                 env.change_start_and_goal(min_distance=(self.width + self.height) // 2)
+
+            if occlusion:
+                env.set_occlusion_on()
+            else:
+                env.set_occlusion_off()
+
             self.controller.reset()
             done, reward = False, 0
 
@@ -491,25 +498,50 @@ class IUPE(nn.Module):
                 ratio=ratio
             )
 
-            # ########## Validate POLICY Hard Generalization ########## #
+            # ########## Validate POLICY Structure Generalization ########## #
             aer, ratio = self.evaluate_policy(
                 self.maze_path, 
                 self.environment
             )
             self.board.add_scalars(
-                prior='Hard Generalization',
+                prior='Structure Generalization',
                 aer=aer,
                 ratio=ratio
             )
             
-            # ########## Validate POLICY Soft Generalization ########## #
+            # ########## Validate POLICY Path Generalization ########## #
             aer, ratio = self.evaluate_policy(
                 self.maze_path, 
                 self.environment,
                 soft_generalization=True
             )
             self.board.add_scalars(
-                prior='Soft Generalization',
+                prior='Path Generalization',
+                aer=aer,
+                ratio=ratio
+            )
+
+            # ########## Validate POLICY Occlusion Structure Generalization ########## #
+            aer, ratio = self.evaluate_policy(
+                self.maze_path,
+                self.environment,
+                occlusion=True,
+            )
+            self.board.add_scalars(
+                prior='Occlusion Structure Generalization',
+                aer=aer,
+                ratio=ratio
+            )
+
+            # ########## Validate POLICY Occlusion Path Generalization ########## #
+            aer, ratio = self.evaluate_policy(
+                self.maze_path,
+                self.environment,
+                soft_generalization=True,
+                occlusion=True,
+            )
+            self.board.add_scalars(
+                prior='Occlusion Structure Generalization',
                 aer=aer,
                 ratio=ratio
             )

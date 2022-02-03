@@ -19,7 +19,10 @@ class Node:
 
     def visited_from(self, node: object) -> None:
         self.visited = True
-        self.visited_edges.append(node.identifier)
+        if isinstance(node, int):
+            self.visited_edges.append(node)
+        else:
+            self.visited_edges.append(node.identifier)
 
     def set_neighbor(self, neighbor:list) -> object:
         random.shuffle(neighbor)
@@ -40,12 +43,7 @@ class Node:
         return len(current_available_edges)
 
     def __getitem__(self, idx:int) -> object:
-        current_available_edges = []
-        for node in self.edges:
-            if not node.visited:
-                current_available_edges.append(node)
-
-        return current_available_edges[idx]
+        return self.edges[idx]
 
     def __eq__(self, other:object) -> bool:
         return self.identifier == other.identifier

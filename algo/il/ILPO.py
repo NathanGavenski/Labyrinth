@@ -719,18 +719,22 @@ class Policy(ImageILPO):
         pass
         #self.viewer.imshow(obs)
 
-    def eval_policy(self, game, mazes, soft=False):
+    def eval_policy(self, game, mazes, soft=False, occlusion=False):
         """Evaluate the policy."""
 
         total_reward, ratio = 0, 0
         for maze in mazes:
             terminal = False
-            game.reset()
             game.load(maze)
 
             if soft:
                 w, h = game.shape
                 game.change_start_and_goal(min_distance=(w + h) // 2)
+            
+            if occlusion:
+                game.set_occlusion_on()
+            else:
+                game.set_occlusion_off()
 
             obs = game.render('rgb_array')
             obs = np.squeeze(obs)
@@ -753,7 +757,7 @@ class Policy(ImageILPO):
                 steps +=1
 
             total_reward += episode_reward
-            ratio += (info['state'][:2] == game.end).all()
+            ratio += game.agent == game.end
 
         return total_reward / len(mazes), ratio / len(mazes)
 
@@ -766,7 +770,6 @@ class Policy(ImageILPO):
         for idx, maze in enumerate(mazes):
             print(t)
             terminal = False
-            self.game.reset()
             self.game.load(maze)
             obs = self.game.render('rgb_array')
             obs = np.squeeze(obs)
@@ -836,20 +839,34 @@ class Policy(ImageILPO):
                     )
                     aer, ratio = self.eval_policy(self.game, self.mazes, True)
                     self.board.add_scalars(
-                        prior='Policy Soft Generalization',
+                        prior='Policy Path Generalization',
                         epoch='eval',
                         AER=aer,
                         ratio=ratio
                     )
                     aer, ratio = self.eval_policy(self.game, self.eval_mazes)
                     self.board.add_scalars(
-                        prior='Policy Hard Generalization',
+                        prior='Policy Structure Generalization',
+                        epoch='eval',
+                        AER=aer,
+                        ratio=ratio
+                    )
+                    aer, ratio = self.eval_policy(self.game, self.mazes, True, True)
+                    self.board.add_scalars(
+                        prior='Policy Occlusion Path Generalization',
+                        epoch='eval',
+                        AER=aer,
+                        ratio=ratio
+                    )
+                    aer, ratio = self.eval_policy(self.game, self.eval_mazes, True)
+                    self.board.add_scalars(
+                        prior='Policy Occlusion Structure Generalization',
                         epoch='eval',
                         AER=aer,
                         ratio=ratio
                     )
 
-                    self.game.reset()
+
                     self.game.load(maze)
                     obs = self.game.render('rgb_array')
                     obs = cv2.resize(obs, (self.shape[1], self.shape[2]))
