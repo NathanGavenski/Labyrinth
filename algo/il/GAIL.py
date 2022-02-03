@@ -1,8 +1,7 @@
-from collections.abc import Callable
 import os
 from os import listdir
 from os.path import isfile, join
-from typing import Optional, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 import gym
 from imitation.algorithms.adversarial import gail
