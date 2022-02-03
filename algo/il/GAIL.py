@@ -2,7 +2,7 @@ from collections.abc import Callable
 import os
 from os import listdir
 from os.path import isfile, join
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 import gym
 from imitation.algorithms.adversarial import gail
@@ -11,8 +11,6 @@ import numpy as np
 import stable_baselines3 as sb3
 from stable_baselines3.common import vec_env
 from stable_baselines3.common.vec_env import VecEnv
-from stable_baselines3.common.callbacks import EvalCallback as StableEvalCallback
-from stable_baselines3.common.callbacks import BaseCallback
 from tensorboard_wrapper.tensorboard import Tensorboard as Board
 
 class EvalCallback:
@@ -22,7 +20,7 @@ class EvalCallback:
         maze_path: str,
         log_name: str,
         model: gail.GAIL,
-        should_eval: Optional[Callable[int], bool] = None,
+        should_eval: Optional[Callable[[int], bool]] = None,
     ) -> None:
         mypath = f'{maze_path}train/'
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -37,7 +35,7 @@ class EvalCallback:
         self.board = Board(f'GAIL-{log_name}', './tmp/board/', delete=True)
         self.should_eval = should_eval if should_eval is not None else lambda x: x % 10 == 0 and x > 0
 
-    def eval(self, eval: bool = True, soft: bool = False, occlusion: bool = False) -> tuple:
+    def eval(self, eval: bool = True, soft: bool = False, occlusion: bool = False) -> Tuple[float, float]:
 
         if eval:
             mazes = self.eval_mazes
@@ -125,13 +123,13 @@ class EvalCallback:
 class GAIL:
     def __init__(
         self, 
-        dataset, 
-        game, 
-        maze_path,
-        log_name,
-        folder='./tmp/gail/', 
-        batch_size=32, 
-        pretrain=2048
+        dataset: types.Transitions, 
+        game: gym.Env, 
+        maze_path: str,
+        log_name: str,
+        folder: Optional[str] = './tmp/gail/', 
+        batch_size: Optional[int] = 32, 
+        pretrain: Optional[int] = 2048,
     ) -> None:
         self.dataset = dataset
 
@@ -148,23 +146,21 @@ class GAIL:
         )
 
         self.eval_callback = EvalCallback(
-            self.original_game,
+            eval_env=self.original_game,
             maze_path=maze_path,
             log_name=log_name,
-            eval_freq=10,
             model=self.model,
-            determionistic=True,
-            render=True,
+            should_eval=lambda x: x % 10 == 0 and x > 0,
         )
 
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-    def run(self, total_timesteps=1e6):
+    def run(self, total_timesteps: Optional[Union[int, float]] = 1e6) -> None:
         self.model.train(int(total_timesteps), callback=self.eval_callback)
 
 
-def create_dataset(path, file, times=10):
+def create_dataset(path, file: str, times: Optional[int] = 10) -> types.Transitions:
     original_dataset = np.load(f'{path}/{file}', allow_pickle=True)
     original_dataset = np.repeat(original_dataset, times, axis=0)
 
