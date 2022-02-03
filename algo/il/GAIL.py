@@ -52,7 +52,7 @@ class EvalCallback(StableEvalCallback):
         self.eval_mazes = np.array(mazes)
         
         self.original_game = eval_env
-        self.board = Board(f'GAIL-{log_path}', './tmp/board/', delete=True)
+        self.board = Board(f'GAIL-{log_name}', './tmp/board/', delete=True)
 
     def eval(self, eval: bool = True, soft: bool = False, occlusion: bool = False) -> tuple:
 
@@ -90,7 +90,7 @@ class EvalCallback(StableEvalCallback):
         
         return np.mean(episode_reward), np.mean(ratio)
 
-    def _on_step(self) -> bool:
+    def __call__(self) -> bool:
         print('Evaluating')
         # Eval (train)
         aer, ratio = self.eval(eval=False, soft=False)
