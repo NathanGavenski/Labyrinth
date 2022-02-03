@@ -1,9 +1,11 @@
 
 from collections import defaultdict
+from ctypes import Union
 from re import M
 import os
 from os import listdir
 from os.path import isfile, join
+from typing import Optional, Tuple
 
 import gym
 from gym.spaces import Discrete
@@ -21,7 +23,7 @@ from .datasets import get_expert_loader, get_random_loader
 
 
 class EarlyStopController():
-    def __init__(self, amount : int = 3) -> None:
+    def __init__(self, amount : Optional[int] = 3) -> None:
         self.amount = amount
         self.states = defaultdict(int)
 
@@ -34,7 +36,7 @@ class EarlyStopController():
         self.states = defaultdict(int)
 
 class IDM(nn.Module):
-    def __init__(self, action_size, input=(3, 224, 224)):
+    def __init__(self, action_size: int, input: Optional[Tuple[int, int, int]] = (3, 224, 224)) -> None:
         super().__init__()
         self.encoder = Resnet(normalize=True)
         with torch.no_grad():
@@ -50,7 +52,7 @@ class IDM(nn.Module):
             nn.Linear(512, action_size)
         )
 
-    def forward(self, state, nState):
+    def forward(self, state: torch.Tensor, nState: torch.Tensor) -> torch.Tensor:
         s = self.encoder(state)
         nS = self.encoder(nState)
         cat = torch.cat((s, nS), dim=1)
@@ -58,7 +60,7 @@ class IDM(nn.Module):
 
 
 class Policy(nn.Module):
-    def __init__(self, action_size, input=(3, 224, 224)):
+    def __init__(self, action_size: int, input: Optional[Tuple[int, int, int]] = (3, 224, 224)) -> None:
         super().__init__()
         self.encoder = Resnet(normalize=True)
         with torch.no_grad():
@@ -74,29 +76,29 @@ class Policy(nn.Module):
             nn.Linear(512, action_size)
         )
 
-    def forward(self, state):
+    def forward(self, state: torch.Tensor) -> torch.Tensor:
         return self.fc_layers(self.encoder(state))
        
 class IUPE(nn.Module):
     def __init__(
         self,
-        environment: gym.core.Env,
+        environment: gym.Env,
         maze_path : str,
-        width : int = 10,
-        height: int = 10,
+        width : Optional[int] = 10,
+        height: Optional[int] = 10,
         random_dataset: str = None,
         expert_dataset: str = None,
-        device=None,
-        amount: int = 5000,
-        batch_size: int = 1,
-        verbose: bool = False,
-        debug: bool = False,
-        early_stop: bool = False,
-        name: str = None,
+        device: Optional[str]= None,
+        amount: Optional[int] = 5000,
+        batch_size: Optional[int] = 1,
+        verbose: Optional[bool] = False,
+        debug: Optional[bool] = False,
+        early_stop: Optional[bool] = False,
+        name: Optional[str] = None,
     ) -> None:
         super().__init__()
         # Model params
-        self.device = device
+        self.device = device if device is not None else 'cpu'
         self.verbose = verbose
         self.maze_path = maze_path
         self.debug = debug
@@ -144,13 +146,13 @@ class IUPE(nn.Module):
             name = str(self.environment).split('<')[-1].replace('>', '')
         self.board = Board(f'IUPE-{name}', './tmp/board/', delete=True)
 
-    def get_env(self):
+    def get_env(self) -> gym.Env:
         return self.environment
 
     def get_min_reward(self) -> float:
         return (-.1 / (self.width * self.height)) * 1000
 
-    def idm_train(self):
+    def idm_train(self) -> Tuple[float, float]:
         if self.verbose:
             self.pbar.set_description_str(desc=f'Training IDM', refresh=True)
 
@@ -206,7 +208,7 @@ class IUPE(nn.Module):
 
         return np.mean(acc_t), np.mean(loss_t)
             
-    def idm_eval(self):
+    def idm_eval(self) -> float:
         if self.verbose:
             self.pbar.set_description_str(desc=f'Evaluation IDM', refresh=True)
 
@@ -249,7 +251,7 @@ class IUPE(nn.Module):
     
         return np.mean(acc_t)
 
-    def policy_train(self):
+    def policy_train(self) -> Tuple[float, float]:
         if self.verbose:
             self.pbar.set_description_str(desc="Training Policy", refresh=True)
 
@@ -290,7 +292,7 @@ class IUPE(nn.Module):
 
         return np.mean(acc_t), np.mean(loss_t)
 
-    def create_alpha(self):
+    def create_alpha(self) -> float:
         if self.verbose:
             self.pbar.set_description_str(desc='Creating alpha', refresh=True)
 
@@ -333,7 +335,7 @@ class IUPE(nn.Module):
         
         return ratio
 
-    def forward(self, s : np.array, weight: bool = True):
+    def forward(self, s : np.array, weight: bool = True) -> Tuple[int, Union[float, None]]:
         s = transforms.ToTensor()(s.copy())[None].to(self.device)
         pred = self.policy(s)
 
@@ -352,7 +354,7 @@ class IUPE(nn.Module):
         env: gym.core.Env,
         soft_generalization: bool = False,
         occlusion: bool = False
-    ) -> float:
+    ) -> Tuple[float, float]:
         if self.verbose:
             self.pbar.set_description_str(desc='Eval Policy', refresh=True)
 
@@ -456,11 +458,11 @@ class IUPE(nn.Module):
         np.save(f'{path}/dataset', dataset)
         return ratio/len(mazes)
 
-    def predict(self, s):
+    def predict(self, s: torch.Tensor) -> torch.Tensor:
         return self.forward(s, weight=False)
 
 
-    def learn(self, epochs : int = 100) -> None:
+    def learn(self, epochs : Optional[int] = 100) -> None:
 
         for _ in range(epochs):        
             if self.verbose:
