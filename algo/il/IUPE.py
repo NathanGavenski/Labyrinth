@@ -539,7 +539,7 @@ class IUPE(nn.Module):
             aer, ratio = self.evaluate_policy(
                 self.maze_path,
                 self.environment,
-                soft_generalization=True
+                soft_generalization=True,
                 occlusion=True,
             )
             self.board.add_scalars(
