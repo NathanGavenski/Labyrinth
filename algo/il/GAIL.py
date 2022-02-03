@@ -46,7 +46,7 @@ class GAIL:
         self.model.train(int(total_timesteps))
 
     # TODO transform this into an EvalCallback
-    def eval(self, eval=True, soft=True):
+    def eval(self, eval=True, soft=False, occlusion=False):
 
         if eval:
             mazes = self.eval_mazes
@@ -62,6 +62,11 @@ class GAIL:
             if soft:
                 w, h = self.original_game.shape
                 self.original_game.change_start_and_goal(min_distance=(w + h) // 2)
+
+            if occlusion:
+                self.original_game.set_occlusion_on()
+            else:
+                self.original_game.set_occlusion_off()
             
             while not done:
                 obs = self.original_game.render('rgb_array')
