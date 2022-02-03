@@ -57,8 +57,8 @@ class GAIL:
         episode_reward = []
         for maze in mazes:
             total_reward, done = 0, False
-            self.original_game.reset()
             self.original_game.load(maze)
+            
             if soft:
                 w, h = self.original_game.shape
                 self.original_game.change_start_and_goal(min_distance=(w + h) // 2)
