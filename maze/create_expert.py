@@ -112,8 +112,6 @@ if __name__ == '__main__':
             total_reward = 0
             for idx, tile in enumerate(solution):
                 image = env.render('rgb_array')
-                from PIL import Image
-                Image.fromarray(image).save(f'{maze_idx}.png')
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
 
