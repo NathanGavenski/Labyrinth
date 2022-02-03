@@ -21,6 +21,7 @@ class EvalCallback(StableEvalCallback):
         eval_env: Union[gym.Env, VecEnv],
         maze_path: str,
         log_name: str,
+        model,
         callback_on_new_best: Optional[BaseCallback] = None,
         n_eval_episodes: int = 5,
         eval_freq: int = 1000,
@@ -50,6 +51,7 @@ class EvalCallback(StableEvalCallback):
         mypath = f'{maze_path}eval/'
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
         self.eval_mazes = np.array(mazes)
+        self.model = model
         
         self.original_game = eval_env
         self.board = Board(f'GAIL-{log_name}', './tmp/board/', delete=True)
@@ -90,8 +92,8 @@ class EvalCallback(StableEvalCallback):
         
         return np.mean(episode_reward), np.mean(ratio)
 
-    def __call__(self) -> bool:
-        print('Evaluating')
+    def __call__(self, *args, **kwargs) -> bool:
+        print('Evaluating', args, kwargs)
         # Eval (train)
         aer, ratio = self.eval(eval=False, soft=False)
         self.board.add_scalars(
@@ -167,7 +169,8 @@ class GAIL:
             self.original_game,
             maze_path=maze_path,
             log_name=log_name,
-            eval_freq=1,
+            eval_freq=10,
+            model=self.model,
             determionistic=True,
             render=True,
         )
