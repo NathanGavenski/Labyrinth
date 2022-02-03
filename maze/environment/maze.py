@@ -65,6 +65,7 @@ class Maze(gym.Env):
             screen_width: int = 224,
             screen_height: int = 224,
             max_episode_steps: int = 1000,
+            occlusion: bool = False,
     ) -> None:
         super().__init__()
         self.shape = shape
@@ -83,6 +84,7 @@ class Maze(gym.Env):
 
         self.max_episode_steps = max_episode_steps
         self.step_count = 0
+        self.occlusion = occlusion
 
         self.seed()
 
@@ -235,6 +237,29 @@ class Maze(gym.Env):
                                 line.set_color(*Colors.BLACK.value)
                                 self.viewer.add_geom(line)
 
+        # Draw Mask
+        if self.occlusion:
+            from gym.envs.classic_control import rendering
+            mask = self.create_mask()
+            for x, tiles in enumerate(mask):
+                if (x > 0 and x < self.shape[0] * 2):
+                    for y, tile in enumerate(tiles):
+                        if tile == 1 and (y > 0 and y < self.shape[0] * 2) and (x % 2 != 0 and y % 2 != 0):
+                            _x = x // 2
+                            _y = y // 2
+                            left = _y * tile_w
+                            right = (_y + 1) * tile_w
+                            bottom = _x * tile_h
+                            top = (_x + 1) * tile_h
+                            mask = rendering.FilledPolygon([
+                                (left, bottom),
+                                (left, top),
+                                (right, top),
+                                (right, bottom)
+                            ])
+                            mask.set_color(*Colors.BLACK.value)
+                            self.viewer.add_onetime(mask)
+
         new_x = self.agent[0] * tile_w - self.start[0] * tile_w
         new_y = self.agent[1] * tile_h - self.start[1] * tile_h
         self.agent_transition.set_translation(new_x, new_y)
@@ -338,6 +363,43 @@ class Maze(gym.Env):
         self.reseted = True
         self.step_count = 0
         self.agent = self.start
+
+    def create_mask(self) -> list:
+        tiles = []
+        for x in range(5):
+            for y in range(5):
+                tiles.append(np.array((x, y)))
+        maze = self.maze
+        mask = deepcopy(maze)
+
+        for tile in tiles:
+            if (tile == self.agent).all():
+                continue
+            elif (tile == self.agent).any():
+                if tile[1] == self.agent[1]:  # Horizontal mask
+                    agent_column = self.agent[0] * 2 + 1
+                    target_column = tile[0] * 2 + 1
+                    row = tile[1] * 2 + 1
+                    lower_bound = agent_column if agent_column < target_column else target_column
+                    upper_bound = agent_column if agent_column > target_column else target_column
+                    if (maze[row, lower_bound:upper_bound+1] == 1).any():
+                        mask[row, target_column] = 1
+                else:  # Vertical mask
+                    agent_row = self.agent[1] * 2 + 1
+                    target_row = tile[1] * 2 + 1
+                    column = tile[0] * 2 + 1
+                    lower_bound = agent_row if agent_row < target_row else target_row
+                    upper_bound = agent_row if agent_row > target_row else target_row
+                    if (maze[lower_bound:upper_bound+1, column] == 1).any():
+                        mask[target_row, column] = 1
+                    pass
+            else:  # Diagonal mask FIXME
+                column, row = tile
+                row = row * 2 + 1
+                column = column * 2 + 1
+                mask[row, column] = 1
+                pass
+        return mask
 
     def solve(self, mode: str = 'shortest') -> list:
         '''
