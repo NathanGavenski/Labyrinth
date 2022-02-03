@@ -136,6 +136,18 @@ class Maze(gym.Env):
         row = position - (column * self.shape[1])
         return [column, row]
 
+    def set_occlusion_on(self) -> None:
+        '''
+        Turn on occlusion mask.
+        '''
+        self.occlusion = True
+    
+    def set_occlusion_off(self) -> None:
+        '''
+        Turn off occlusion mask
+        '''
+        self.occlusion = False
+
     def define_pathways(self, pathways):
         _pathways = defaultdict(list)
         for start, end in pathways:
@@ -365,6 +377,9 @@ class Maze(gym.Env):
         self.agent = self.start
 
     def create_mask(self) -> list:
+        '''
+        Create mask for occlusion based on the agent current position and maze structure.
+        '''
         tiles = []
         for x in range(5):
             for y in range(5):
