@@ -1,4 +1,4 @@
-from ctypes import Union
+from collections.abc import Callable
 import os
 from os import listdir
 from os.path import isfile, join
@@ -22,7 +22,7 @@ class EvalCallback:
         maze_path: str,
         log_name: str,
         model: gail.GAIL,
-        should_eval: Optional[function] = None,
+        should_eval: Optional[Callable[int], bool] = None,
     ) -> None:
         mypath = f'{maze_path}train/'
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
