@@ -291,6 +291,7 @@ class Maze(gym.Env):
         destiny_global_position = self.get_global_position(destiny)
         if destiny_global_position in self.pathways[agent_global_position]:
             self.agent = tuple(destiny)
+            print(self.agent)
 
         self.step_count += 1
         done = (np.array(self.agent) == self.end).all() or self.step_count >= self.max_episode_steps
@@ -298,7 +299,7 @@ class Maze(gym.Env):
 
         return self.render('rgb_array'), reward, done, {'state': np.hstack((self.agent, self.maze.flatten()))}
 
-    def reset(self, agent=True) -> None:
+    def reset(self, agent=True, render=True) -> None:
         '''
         Reset the maze. If agent is True, return agent to the start tile.
         If agent is False, return maze to a new one.
@@ -313,7 +314,7 @@ class Maze(gym.Env):
             self.pathways = self.define_pathways(self._pathways)
 
         self.agent = self.start
-        return self.render('rgb_array')
+        return self.render('rgb_array') if render else None
 
     def generate(self, path: str, amount: int = 1) -> None:
         '''
@@ -371,10 +372,7 @@ class Maze(gym.Env):
         self.agent = self.start
 
         self.pathways = self.define_pathways(pathways)
-
-        self.reseted = True
-        self.step_count = 0
-        self.agent = self.start
+        return self.reset(agent=True, render=False)
 
     def create_mask(self) -> list:
         '''
@@ -409,11 +407,53 @@ class Maze(gym.Env):
                         mask[target_row, column] = 1
                     pass
             else:  # Diagonal mask FIXME
-                column, row = tile
-                row = row * 2 + 1
-                column = column * 2 + 1
-                mask[row, column] = 1
-                pass
+                target_column, target_row = tile * 2 + 1
+                agent_column, agent_row = np.array(self.agent) * 2 + 1
+
+                column_lower_bound, column_upper_bound, column = (agent_column, target_column, False) \
+                    if agent_column < target_column \
+                    else (target_column, agent_column, True)
+
+                row_lower_bound, row_upper_bound, row = (agent_row, target_row, False) \
+                    if agent_row < target_row \
+                    else (target_row, agent_row, True)
+
+                matrix = maze[
+                    row_lower_bound:row_upper_bound+1, 
+                    column_lower_bound:column_upper_bound+1
+                ]
+
+                # if (tile == [2, 4]).all():
+                #     print(matrix[::-1])
+                #     exit()
+
+                if matrix.shape[0] == matrix.shape[1]:
+                    identity = []
+                    if row and column:
+                        x_range = range(matrix.shape[0] - 1)
+                        identity = [[x, x+1] for x in x_range]
+                    if not (row and column):
+                        identity = [[x + 1, x] for x in range(matrix.shape[0])][:-1]
+                    if not column and row:
+                        x_range = range(matrix.shape[0]-1, 0, -1)
+                        y_range = range(1, matrix.shape[0])
+                        identity = [[x, y] for x, y in zip(x_range, y_range)]
+                    if column and not row:
+                        x_range = range(matrix.shape[0] - 1)
+                        y_range = range(matrix.shape[0]-2, -1, -1)
+                        identity = [[x, y] for x, y in zip(x_range, y_range)]
+
+                    if (tile == [0, 4]).all():
+                        print(tile, identity, row, column, not column and row)
+                        # exit()
+
+                    for idx in identity:
+                        if matrix[idx[1], idx[0]] == 1:
+                            mask[target_row, target_column] = 1
+                            continue
+                else:
+                    mask[target_row, target_column] = 1
+
         return mask
 
     def solve(self, mode: str = 'shortest') -> list:
