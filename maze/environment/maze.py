@@ -423,10 +423,6 @@ class Maze(gym.Env):
                     column_lower_bound:column_upper_bound+1
                 ]
 
-                # if (tile == [2, 4]).all():
-                #     print(matrix[::-1])
-                #     exit()
-
                 if matrix.shape[0] == matrix.shape[1]:
                     identity = []
                     if row and column:
@@ -442,10 +438,6 @@ class Maze(gym.Env):
                         x_range = range(matrix.shape[0] - 1)
                         y_range = range(matrix.shape[0]-2, -1, -1)
                         identity = [[x, y] for x, y in zip(x_range, y_range)]
-
-                    if (tile == [0, 4]).all():
-                        print(tile, identity, row, column, not column and row)
-                        # exit()
 
                     for idx in identity:
                         if matrix[idx[1], idx[0]] == 1:
