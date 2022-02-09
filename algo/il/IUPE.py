@@ -1,11 +1,10 @@
 
 from collections import defaultdict
-from ctypes import Union
 from re import M
 import os
 from os import listdir
 from os.path import isfile, join
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import gym
 from gym.spaces import Discrete
@@ -84,6 +83,7 @@ class IUPE(nn.Module):
         self,
         environment: gym.Env,
         maze_path : str,
+        episode_times: int,
         width : Optional[int] = 10,
         height: Optional[int] = 10,
         random_dataset: str = None,
@@ -133,7 +133,7 @@ class IUPE(nn.Module):
         self.dataset_original_size = len(self.random_dataset.dataset)
 
         # Policy
-        self.expert_dataset = get_expert_loader(expert_dataset, batch_size)
+        self.expert_dataset = get_expert_loader(expert_dataset, batch_size, episode_times)
         self.policy = Policy(
             self.action_space,
             self.random_dataset.dataset[0][0].shape
