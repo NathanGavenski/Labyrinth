@@ -1,7 +1,9 @@
 maze/environment/mazes/*
 dataset/
 plots/
+
 tmp/
+!tmp/experiments/bias_measure.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
