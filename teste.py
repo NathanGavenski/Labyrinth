@@ -33,7 +33,7 @@ def list_mazes(path: str, folder: str) -> list:
     mypath = f'{path}{folder}/'
     return  [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
-def measure(path, size, bias=False):
+def measure_maze(path, size, bias=False):
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -74,7 +74,7 @@ def measure(path, size, bias=False):
     return round((valid * train).sum().item(), 4), round(torch.pow(train - valid, 2).sum().item(), 4)
 
 
-if __name__ == '__main__':
+def maze():
     if not os.path.exists('./tmp/experiments/'):
         os.makedirs('./tmp/experiments/')
 
@@ -98,8 +98,73 @@ if __name__ == '__main__':
         if not os.path.exists(f'./maze/environment/mazes/mazes{size[0]}'):
             generate(100, 100, size, verbose=True)
 
-        normal_dot, normal_euclidean = measure('./tmp/experiments/', size)
-        unbiased_dot, unbiased_euclidean = measure('./tmp/experiments/', size, True)
+        normal_dot, normal_euclidean = measure_maze('./tmp/experiments/', size)
+        unbiased_dot, unbiased_euclidean = measure_maze('./tmp/experiments/', size, True)
 
         with open('./tmp/experiments/bias_measure.txt', 'a') as f:
             f.write(f'{size};{normal_dot};{unbiased_dot};{normal_euclidean};{unbiased_euclidean}\n')
+
+
+def others():
+    if not os.path.exists('./tmp/experiments/'):
+        os.makedirs('./tmp/experiments/')
+
+    if not os.path.exists('./tmp/experiments/bias_measure_others.txt'):
+        with open('./tmp/experiments/bias_measure_others.txt', 'w') as f:
+            f.write('name;size;dot product;euclidean\n')
+    else:
+        envs = []
+        with open('./tmp/experiments/bias_measure_others.txt') as f:
+            for idx, line in enumerate(f):
+                if idx > 0:
+                    words = line.split(';')
+                    envs.append(eval(words[0]))
+
+    path = './tmp/experts/'
+    files = [f for f in listdir(path) if isfile(join(path, f)) and '.npz' in f]
+
+    for env in files:
+        if env in files:
+            files.remove(env)
+    
+    for f in files:
+        dataset = np.load(f'{path}{f}', allow_pickle=True)
+        episode_starts = dataset['episode_starts']
+        starts = np.where(episode_starts == True)[0]
+        ends = starts - 1
+        ends = np.append(ends[1:], episode_starts.shape[0] - 1)
+
+        idx = starts.shape[0] // 2
+        train = zip(starts[:idx], ends[:idx])
+        valid = zip(starts[idx:], ends[idx:])
+
+        obs = dataset['obs']   
+
+        pbar = tqdm(range(starts.shape[0]))
+        pbar.set_description_str(f'{f}')     
+
+        for data, t in zip([train, valid], ['train', 'eval']):
+            episode = obs[:ends[0]+1].astype(float)
+            episode = torch.from_numpy(episode).unsqueeze(0)
+            shape = signatory.signature(episode, 4).shape[-1]
+            trajectories = torch.Tensor(size=[0, shape])
+            
+            for start, end in data:
+                episode = obs[:end+1]
+                episode = signatory.signature(torch.from_numpy(episode.astype(float)).unsqueeze(0), 4)
+                trajectories = torch.cat((trajectories, episode), dim=0)
+                pbar.update(1)
+
+            torch.save(trajectories, f'{path}{t}.pt')
+    
+        train = torch.load(f'{path}train.pt')
+        valid = torch.load(f'{path}eval.pt')
+
+        dot = round((valid * train).sum().item(), 4)
+        euclidean = round(torch.pow(train - valid, 2).sum().item(), 4)
+
+        with open('./tmp/experiments/bias_measure_others.txt', 'a') as f:
+            f.write(f'{f};{idx};{dot};{euclidean}')
+
+if __name__ == '__main__':
+    others()
