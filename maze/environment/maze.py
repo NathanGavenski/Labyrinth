@@ -291,7 +291,6 @@ class Maze(gym.Env):
         destiny_global_position = self.get_global_position(destiny)
         if destiny_global_position in self.pathways[agent_global_position]:
             self.agent = tuple(destiny)
-            print(self.agent)
 
         self.step_count += 1
         done = (np.array(self.agent) == self.end).all() or self.step_count >= self.max_episode_steps
