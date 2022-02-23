@@ -134,6 +134,10 @@ def others():
         ends = starts - 1
         ends = np.append(ends[1:], episode_starts.shape[0] - 1)
 
+        if starts.shape[0] > 200:
+            starts = starts[:200]
+            ends = ends[:200]
+
         idx = starts.shape[0] // 2
         train = zip(starts[:idx], ends[:idx])
         valid = zip(starts[idx:], ends[idx:])
