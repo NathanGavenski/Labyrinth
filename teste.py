@@ -148,18 +148,14 @@ def others():
             episode = torch.from_numpy(episode).unsqueeze(0)
             shape = signatory.signature(episode, 4).shape[-1]
             trajectories = torch.Tensor(size=[0, shape])
-            torch.save(trajectories, f'{path}{t}.pt')
             
             for start, end in data:
                 episode = obs[:end+1]
                 episode = signatory.signature(torch.from_numpy(episode.astype(float)).unsqueeze(0).cuda(), 4)
-
-                trajectories = torch.load(f'{path}{t}.pt')
                 trajectories = torch.cat((trajectories, episode.cpu()), dim=0)
-                torch.save(trajectories, f'{path}{t}.pt')
-                del trajectories
-
                 pbar.update(1)
+
+            torch.save(trajectories, f'{path}{t}.pt')
     
         train = torch.load(f'{path}train.pt')
         valid = torch.load(f'{path}eval.pt')
