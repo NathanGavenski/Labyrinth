@@ -148,14 +148,18 @@ def others():
             episode = torch.from_numpy(episode).unsqueeze(0)
             shape = signatory.signature(episode, 4).shape[-1]
             trajectories = torch.Tensor(size=[0, shape])
+            torch.save(trajectories, f'{path}{t}.pt')
             
             for start, end in data:
                 episode = obs[:end+1]
-                episode = signatory.signature(torch.from_numpy(episode.astype(float)).unsqueeze(0), 4)
-                trajectories = torch.cat((trajectories, episode), dim=0)
-                pbar.update(1)
+                episode = signatory.signature(torch.from_numpy(episode.astype(float)).unsqueeze(0).cuda(), 4)
 
-            torch.save(trajectories, f'{path}{t}.pt')
+                trajectories = torch.load(f'{path}{t}.pt')
+                trajectories = torch.cat((trajectories, episode), dim=0)
+                torch.save(trajectories, f'{path}{t}.pt')
+                del trajectories
+
+                pbar.update(1)
     
         train = torch.load(f'{path}train.pt')
         valid = torch.load(f'{path}eval.pt')
@@ -163,8 +167,8 @@ def others():
         dot = round((valid * train).sum().item(), 4)
         euclidean = round(torch.pow(train - valid, 2).sum().item(), 4)
 
-        with open('./tmp/experiments/bias_measure_others.txt', 'a') as f:
-            f.write(f'{f};{idx};{dot};{euclidean}')
+        with open('./tmp/experiments/bias_measure_others.txt', 'a') as _f:
+            _f.write(f'{f};{idx};{dot};{euclidean}')
 
 if __name__ == '__main__':
     others()
