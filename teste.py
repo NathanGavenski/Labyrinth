@@ -155,7 +155,7 @@ def others():
                 episode = signatory.signature(torch.from_numpy(episode.astype(float)).unsqueeze(0).cuda(), 4)
 
                 trajectories = torch.load(f'{path}{t}.pt')
-                trajectories = torch.cat((trajectories, episode), dim=0)
+                trajectories = torch.cat((trajectories, episode.cpu()), dim=0)
                 torch.save(trajectories, f'{path}{t}.pt')
                 del trajectories
 
