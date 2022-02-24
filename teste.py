@@ -157,8 +157,7 @@ def others():
             for start, end in data:
                 episode = obs[:end+1]
                 episode = torch.from_numpy(episode.astype(float)).unsqueeze(0)
-                episode = nn.DataParallel(episode)
-                episode = signatory.signature(episode.cuda(), 4)
+                episode = signatory.signature(episode, 4)
                 trajectories = torch.cat((trajectories, episode.cpu()), dim=0)
                 pbar.update(1)
 
