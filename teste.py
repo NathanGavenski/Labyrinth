@@ -10,6 +10,7 @@ from PIL import Image
 import torch
 import signatory
 from tqdm import tqdm
+from torch import nn
 
 from maze.generate import generate
 
@@ -155,7 +156,9 @@ def others():
             
             for start, end in data:
                 episode = obs[:end+1]
-                episode = signatory.signature(torch.from_numpy(episode.astype(float)).unsqueeze(0).cuda(), 4)
+                episode = torch.from_numpy(episode.astype(float)).unsqueeze(0)
+                episode = nn.DataParallel(episode)
+                episode = signatory.signature(episode.cuda(), 4)
                 trajectories = torch.cat((trajectories, episode.cpu()), dim=0)
                 pbar.update(1)
 
@@ -168,7 +171,7 @@ def others():
         euclidean = round(torch.pow(train - valid, 2).sum().item(), 4)
 
         with open('./tmp/experiments/bias_measure_others.txt', 'a') as _f:
-            _f.write(f'{f};{idx};{dot};{euclidean}')
+            _f.write(f'{f};{idx};{dot};{euclidean}\n')
 
 if __name__ == '__main__':
     others()
