@@ -38,9 +38,10 @@ def get_args():
         help="Width of the generated maze"
     )
 
+    args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-    return parser.parse_args()
+    return args
 
 
 if __name__ == '__main__':
