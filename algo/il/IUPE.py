@@ -421,6 +421,7 @@ class IUPE(nn.Module):
         image_idx = 0
         dataset = np.ndarray(shape=[0, 4])
         for maze_idx, maze in enumerate(tqdm(mazes)):
+            env = gym.make('Maze-v0', shape=(self.width, self.height))
             env.load(maze)
             self.controller.reset()
             done, rewards = False, 0
@@ -431,10 +432,10 @@ class IUPE(nn.Module):
                 image_idx += 1             
                 
                 action, _ = self.forward(state, weight=True)
-                next_state, reward, done, info = env.step(action)
+                _, reward, done, _ = env.step(action)
                 rewards += reward
 
-                entry = [maze_idx, image_idx, action, image_idx + 1]
+                entry = [maze_idx, image_idx - 1, action, image_idx]
                 dataset = np.append(dataset, np.array(entry)[None], axis=0)
 
                 if done:
@@ -444,7 +445,7 @@ class IUPE(nn.Module):
                     all_rewards.append(rewards)
                     ratio += (env.agent == env.end)
 
-                if self.controller.check_position(env.agent) and self.early_stop:
+                elif self.controller.check_position(env.agent) and self.early_stop:
                     ratio += 0
                     done = True
                     all_rewards.append(self.get_min_reward())
