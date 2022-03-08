@@ -47,19 +47,20 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
-    env = gym.make('Maze-v0', shape=(args.size, args.size))
-    algo = IUPE(
-        environment=env,
-        maze_path=f'./maze/environment/mazes/mazes{args.size}/',
-        width=args.size,
-        height=args.size,
-        episode_times=args.times,
-        random_dataset=f'./dataset/random_dataset{args.size}/',
-        expert_dataset=f'./dataset/dataset{args.size}/',
-        device='cuda',
-        batch_size=12,
-        verbose=True,
-        early_stop=True,
-        name=f'{args.size}x{args.size}-{args.idx}'
-    )
-    algo.learn(100)
+    for idx in range(5):
+        env = gym.make('Maze-v0', shape=(args.size, args.size))
+        algo = IUPE(
+            environment=env,
+            maze_path=f'./maze/environment/mazes/mazes{args.size}/',
+            width=args.size,
+            height=args.size,
+            episode_times=args.times,
+            random_dataset=f'./dataset/random_dataset{args.size}/',
+            expert_dataset=f'./dataset/dataset{args.size}/',
+            device=args.gpu if int(args.gpu) >= 0 else None,
+            batch_size=12,
+            verbose=True,
+            early_stop=True,
+            name=f'{args.size}x{args.size}-{idx}'
+        )
+        algo.learn(100)
