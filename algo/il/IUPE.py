@@ -17,7 +17,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from tensorboard_wrapper.tensorboard import Tensorboard as Board
 
-from .utils import Resnet
+from .utils import ResnetLast as Resnet
 from .datasets import get_expert_loader, get_random_loader
 
 
@@ -544,7 +544,7 @@ class IUPE(nn.Module):
                 occlusion=True,
             )
             self.board.add_scalars(
-                prior='Occlusion Structure Generalization',
+                prior='Occlusion Path Generalization',
                 aer=aer,
                 ratio=ratio
             )
