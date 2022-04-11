@@ -68,7 +68,7 @@ class ResnetFirst(nn.Module):
     def __init__(self, normalize=False):
         super().__init__()
         self.normalize = normalize
-        self.features = models.resnet18(pretrained=True)
+        self.features = models.resnet152(pretrained=True)
 
         self.att = Self_Attn2D(64)
         self.att2 = Self_Attn2D(128)
