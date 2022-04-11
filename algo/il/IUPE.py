@@ -12,12 +12,10 @@ import numpy as np
 from tqdm import tqdm
 import torch
 from torch import nn, optim
-import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from tensorboard_wrapper.tensorboard import Tensorboard as Board
 
-from .utils import ResnetLast as Resnet
+from .utils import ResnetFirst as Resnet
 from .datasets import get_expert_loader, get_random_loader
 
 
