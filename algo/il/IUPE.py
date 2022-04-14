@@ -261,8 +261,9 @@ class IUPE(nn.Module):
 
         loss_t = []
         acc_t = []
+        idm_acc_t = []
         for mini_batch in self.expert_dataset:
-            s, nS, _ = mini_batch
+            s, nS, gt = mini_batch
 
             s = s.to(self.device)
             nS = nS.to(self.device)
@@ -279,7 +280,9 @@ class IUPE(nn.Module):
             loss_t.append(loss.item())
 
             acc = ((torch.argmax(pred, 1) == action).sum().item() / action.shape[0])
+            idm_acc = ((torch.argmax(a, 1) == gt).sum().item() / gt.shape[0])
             acc_t.append(acc)
+            idm_acc_t.append(idm_acc)
 
             if self.verbose:
                 self.pbar.update()
@@ -288,7 +291,7 @@ class IUPE(nn.Module):
             if self.debug:
                 break
 
-        return np.mean(acc_t), np.mean(loss_t)
+        return np.mean(acc_t), np.mean(loss_t), np.mean(idm_acc_t)
 
     def create_alpha(self) -> float:
         if self.verbose:
@@ -485,11 +488,12 @@ class IUPE(nn.Module):
             )
 
             # ############## POLICY ############## #
-            policy_acc, policy_loss = self.policy_train()
+            policy_acc, policy_loss, idm_acc = self.policy_train()
             self.board.add_scalars(
                 prior='Policy',
                 policy_loss=policy_loss,
-                policy_acc=policy_acc
+                policy_acc=policy_acc,
+                idm_acc=idm_acc
             )
 
             # ########## Create New Data ########## #

@@ -57,8 +57,8 @@ if __name__ == '__main__':
             episode_times=args.times,
             random_dataset=f'./dataset/random_dataset{args.size}/',
             expert_dataset=f'./dataset/dataset{args.size}/',
-            device=args.gpu if int(args.gpu) >= 0 else None,
-            batch_size=12,
+            device='cuda' if int(args.gpu) >= 0 else 'cpu',
+            batch_size=2,
             verbose=True,
             early_stop=True,
             name=f'{args.size}x{args.size}-{idx}'
