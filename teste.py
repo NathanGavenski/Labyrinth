@@ -3,16 +3,16 @@ import os
 from os import listdir
 from os.path import isfile, join
 
-import gym
-from maze import environment
+# import gym
+# from maze import environment
 import numpy as np
-from PIL import Image
-import torch
-import signatory
-from tqdm import tqdm
-from torch import nn
+# from PIL import Image
+# import torch
+# import signatory
+# from tqdm import tqdm
+# from torch import nn
 
-from maze.generate import generate
+# from maze.generate import generate
 
 
 def state_to_action(source: int, target: int, shape: tuple) -> int:
@@ -173,4 +173,35 @@ def others():
             _f.write(f'{f};{idx};{dot};{euclidean}\n')
 
 if __name__ == '__main__':
-    others()
+    import gym    
+    from maze import environment
+    from PIL import Image
+
+    # path = './dataset/alpha/'
+    # files = [f for f in listdir(path) if isfile(join(path, f)) and '.npy' in f and 'dataset' not in f]
+
+    # for f in files:
+    #     file_name = f.replace('.npy', '')
+    #     Image.fromarray(np.load(f'{path}{f}', allow_pickle=True)).save(f'{path}{file_name}.png')
+
+    # dataset = np.load(f'{path}dataset.npy', allow_pickle=True).astype(int)
+    
+    # with open('./alpha.txt', 'w') as f:
+    #     for entry in dataset:
+    #         f.write(f'{entry}\n')
+
+    env = gym.make('Maze-v0', shape=(15, 15))
+    env.load('/home/nathan/Documents/git/python/maze-gym/maze/environment/mazes/mazes15/train/-9281026480587551.txt')
+    env.reset()
+    state = env.render('rgb_array')
+    Image.fromarray(state).save('0.png')
+    env.close()
+    del env
+
+    env = gym.make('Maze-v0', shape=(15, 15))
+    env.load('/home/nathan/Documents/git/python/maze-gym/maze/environment/mazes/mazes15/train/-9281026480587551.txt')
+    env.reset()
+    state = env.render('rgb_array')
+    Image.fromarray(state).save('1.png')
+    env.close()
+    del env
