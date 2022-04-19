@@ -503,6 +503,7 @@ class Maze(gym.Env):
             return start, end
 
     def agent_random_position(self) -> None:
+        self.reset()
         self.agent = (
             random.randint(0, self.shape[0] - 1),
             random.randint(0, self.shape[1] - 1)

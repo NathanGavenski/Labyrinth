@@ -196,10 +196,13 @@ if __name__ == '__main__':
     #     for entry in dataset:
     #         f.write(f'{entry}\n')
 
-    for idx in range(100):
+    mypath = f'./maze/environment/mazes/mazes15/train/'
+    mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+
+    for idx, maze in enumerate(mazes):
         env = gym.make('Maze-v0', shape=(15, 15))
-        env.load('./maze/environment/mazes/mazes15/train/-146648377535640027.txt')
-        env.reset()
+        env.load(maze)
+        # env.reset()
         env.agent_random_position()
         print(idx, env.shape, env.agent)
         state = env.render('rgb_array')
