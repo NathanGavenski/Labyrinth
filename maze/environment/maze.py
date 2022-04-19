@@ -3,6 +3,7 @@ from collections import defaultdict
 from copy import deepcopy
 import os
 from pickletools import uint8
+import random
 
 import gym
 from gym import spaces
@@ -500,6 +501,12 @@ class Maze(gym.Env):
             self.dfs.start = self.get_global_position(self.start)
             self.dfs.end = self.get_global_position(self.end)
             return start, end
+
+    def agent_random_position(self) -> None:
+        self.agent = (
+            random.randint(0, self.shape[0] - 1),
+            random.randint(0, self.shape[1] - 1)
+        )
 
     def __hash__(self) -> int:
         '''
