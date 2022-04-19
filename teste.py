@@ -2,6 +2,7 @@ import time
 import os
 from os import listdir
 from os.path import isfile, join
+import random
 
 # import gym
 # from maze import environment
@@ -32,7 +33,8 @@ def state_to_action(source: int, target: int, shape: tuple) -> int:
 
 def list_mazes(path: str, folder: str) -> list:
     mypath = f'{path}{folder}/'
-    return  [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+    return [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+
 
 def measure_maze(path, size, bias=False):
     if not os.path.exists(path):
@@ -64,7 +66,8 @@ def measure_maze(path, size, bias=False):
                 episode.append(env.agent)
 
                 episode = np.array(episode)[None]
-                episode = signatory.signature(torch.from_numpy(episode.astype(float)), 4)
+                episode = signatory.signature(
+                    torch.from_numpy(episode.astype(float)), 4)
                 trajectories = torch.cat([trajectories, episode], dim=0)
                 env.close()
             torch.save(trajectories, f'{path}{t}.pt')
@@ -81,7 +84,8 @@ def maze():
 
     if not os.path.exists('./tmp/experiments/bias_measure.txt'):
         with open('./tmp/experiments/bias_measure.txt', 'w') as f:
-            f.write('size;normal dot product;unbiased dot product;normal euclidean;unbiased euclidean\n')
+            f.write(
+                'size;normal dot product;unbiased dot product;normal euclidean;unbiased euclidean\n')
     else:
         sizes = []
         with open('./tmp/experiments/bias_measure.txt') as f:
@@ -100,7 +104,8 @@ def maze():
             generate(100, 100, size, verbose=True)
 
         normal_dot, normal_euclidean = measure_maze('./tmp/experiments/', size)
-        unbiased_dot, unbiased_euclidean = measure_maze('./tmp/experiments/', size, True)
+        unbiased_dot, unbiased_euclidean = measure_maze(
+            './tmp/experiments/', size, True)
 
         with open('./tmp/experiments/bias_measure.txt', 'a') as f:
             f.write(f'{size};{normal_dot};{unbiased_dot};{normal_euclidean};{unbiased_euclidean}\n')
@@ -127,7 +132,7 @@ def others():
     for env in files:
         if env in files:
             files.remove(env)
-    
+
     for f in files:
         dataset = np.load(f'{path}{f}', allow_pickle=True)
         episode_starts = dataset['episode_starts']
@@ -143,17 +148,17 @@ def others():
         train = zip(starts[:idx], ends[:idx])
         valid = zip(starts[idx:], ends[idx:])
 
-        obs = dataset['obs']   
+        obs = dataset['obs']
 
         pbar = tqdm(range(starts.shape[0]))
-        pbar.set_description_str(f'{f}')     
+        pbar.set_description_str(f'{f}')
 
         for data, t in zip([train, valid], ['train', 'eval']):
             episode = obs[:ends[0]+1].astype(float)
             episode = torch.from_numpy(episode).unsqueeze(0)
             shape = signatory.signature(episode, 4).shape[-1]
             trajectories = torch.Tensor(size=[0, shape])
-            
+
             for start, end in data:
                 episode = obs[:end+1]
                 episode = torch.from_numpy(episode.astype(float)).unsqueeze(0)
@@ -162,7 +167,7 @@ def others():
                 pbar.update(1)
 
             torch.save(trajectories, f'{path}{t}.pt')
-    
+
         train = torch.load(f'{path}train.pt')
         valid = torch.load(f'{path}eval.pt')
 
@@ -172,8 +177,9 @@ def others():
         with open('./tmp/experiments/bias_measure_others.txt', 'a') as _f:
             _f.write(f'{f};{idx};{dot};{euclidean}\n')
 
+
 if __name__ == '__main__':
-    import gym    
+    import gym
     from maze import environment
     from PIL import Image
 
@@ -185,23 +191,18 @@ if __name__ == '__main__':
     #     Image.fromarray(np.load(f'{path}{f}', allow_pickle=True)).save(f'{path}{file_name}.png')
 
     # dataset = np.load(f'{path}dataset.npy', allow_pickle=True).astype(int)
-    
+
     # with open('./alpha.txt', 'w') as f:
     #     for entry in dataset:
     #         f.write(f'{entry}\n')
 
-    env = gym.make('Maze-v0', shape=(15, 15))
-    env.load('/home/nathan/Documents/git/python/maze-gym/maze/environment/mazes/mazes15/train/-9281026480587551.txt')
-    env.reset()
-    state = env.render('rgb_array')
-    Image.fromarray(state).save('0.png')
-    env.close()
-    del env
-
-    env = gym.make('Maze-v0', shape=(15, 15))
-    env.load('/home/nathan/Documents/git/python/maze-gym/maze/environment/mazes/mazes15/train/-9281026480587551.txt')
-    env.reset()
-    state = env.render('rgb_array')
-    Image.fromarray(state).save('1.png')
-    env.close()
-    del env
+    for idx in range(100):
+        env = gym.make('Maze-v0', shape=(15, 15))
+        env.load('./maze/environment/mazes/mazes15/train/-146648377535640027.txt')
+        env.reset()
+        env.agent_random_position()
+        print(idx, env.shape, env.agent)
+        state = env.render('rgb_array')
+        Image.fromarray(state).save(f'{idx}.png')
+        env.close()
+        del env
