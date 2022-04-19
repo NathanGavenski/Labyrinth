@@ -267,6 +267,7 @@ class IUPE(nn.Module):
 
             s = s.to(self.device)
             nS = nS.to(self.device)
+            gt = gt.to(self.device)
 
             a = self.idm(s, nS)
             action = torch.argmax(a, 1)

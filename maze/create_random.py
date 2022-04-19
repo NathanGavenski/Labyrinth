@@ -41,13 +41,17 @@ def get_args():
         help='Swaps start and goal for each maze in order to reduce bias'
     )
     parser.add_argument(
+        '--random_start',
+        action='store_true',
+        help='Swaps start and goal for each maze in order to reduce bias'
+    )
+    parser.add_argument(
         '--times',
         type=int,
         default=10,
         help='How many times should repeat each maze when unbiased is turned on'
     )
 
-    
     # Maze specific
     parser.add_argument(
         '--width',
@@ -84,14 +88,17 @@ if __name__ == '__main__':
 
     image_idx = 0
     dataset = np.ndarray(shape=[0, 4])
-    amount_per_maze = (args.amount + 1*len(mazes))// len(mazes)
+    amount_per_maze = (args.amount + 1 * len(mazes)) // len(mazes)
     pbar = tqdm(range(args.amount))
     for maze_idx, maze in enumerate(mazes):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
         env.load(maze)
-        
+
         if args.unbiased and (maze_idx % args.times != 0):
             env.change_start_and_goal()
+
+        if args.random_start and (maze_idx % args.times != 0):
+            env.agent_random_position()
 
         state = env.agent
         idx = 0
@@ -112,7 +119,7 @@ if __name__ == '__main__':
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
 
-                entry = [maze_idx, image_idx-2, action, image_idx-1]
+                entry = [maze_idx, image_idx - 2, action, image_idx - 1]
                 dataset = np.append(dataset, np.array(entry).astype(int)[None], axis=0)
                 pbar.update()
                 idx += 1
@@ -122,7 +129,6 @@ if __name__ == '__main__':
                 state = env.agent
             else:
                 state = next_state
-
 
         env.close()
 
