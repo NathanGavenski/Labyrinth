@@ -76,7 +76,7 @@ if __name__ == '__main__':
     mypath = f'{args.path}/train/'
     mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
-    if args.unbiased:
+    if args.unbiased or args.random_start:
         mazes = np.repeat(mazes, args.times, axis=0)
 
     if os.path.exists(args.save_path):
