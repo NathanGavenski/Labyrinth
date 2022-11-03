@@ -128,9 +128,9 @@ if __name__ == '__main__':
                     entry = [
                         maze_idx,  # maze version
                         solution_idx,  # solution number
-                        image_idx,  # state 
+                        image_idx-1,  # state 
                         action,  # action
-                        image_idx+1,  # next_state
+                        image_idx,  # next_state
                         0,  # episode reward
                         reward,  # step reward
                         True if idx == 0 else False,  # episode_starts

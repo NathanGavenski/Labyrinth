@@ -262,18 +262,24 @@ class IUPE(nn.Module):
         loss_t = []
         acc_t = []
         idm_acc_t = []
+        idm_actions = []
+        gt_actions = []
+        policy_actions = []
         for mini_batch in self.expert_dataset:
             s, nS, gt = mini_batch
 
             s = s.to(self.device)
             nS = nS.to(self.device)
             gt = gt.to(self.device)
+            gt_actions += list(gt.detach().cpu().numpy())
 
             a = self.idm(s, nS)
             action = torch.argmax(a, 1)
+            idm_actions += list(action.detach().cpu().numpy())
 
             self.policy_optimizer.zero_grad()
             pred = self.policy(s)
+            policy_actions += list(torch.argmax(pred, 1).detach().cpu().numpy())
 
             loss = self.policy_criterion(pred, action)
             loss.backward()
@@ -281,7 +287,7 @@ class IUPE(nn.Module):
             loss_t.append(loss.item())
 
             acc = ((torch.argmax(pred, 1) == action).sum().item() / action.shape[0])
-            idm_acc = ((torch.argmax(a, 1) == gt).sum().item() / gt.shape[0])
+            idm_acc = ((action == gt).sum().item() / gt.shape[0])
             acc_t.append(acc)
             idm_acc_t.append(idm_acc)
 
@@ -292,7 +298,7 @@ class IUPE(nn.Module):
             if self.debug:
                 break
 
-        return np.mean(acc_t), np.mean(loss_t), np.mean(idm_acc_t)
+        return np.mean(acc_t), np.mean(loss_t), np.mean(idm_acc_t), gt_actions, idm_actions, policy_actions
 
     def create_alpha(self) -> float:
         if self.verbose:
@@ -362,6 +368,12 @@ class IUPE(nn.Module):
 
         if isinstance(env, str):
             env = gym.make(env, shape=(self.width, self.height))
+
+        if self.policy.training:
+            self.policy.eval()
+
+        if self.idm.training:
+            self.idm.eval()
 
         mypath = f'{maze_path}{"eval" if not soft_generalization else "train"}/'
         mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -489,13 +501,16 @@ class IUPE(nn.Module):
             )
 
             # ############## POLICY ############## #
-            policy_acc, policy_loss, idm_acc = self.policy_train()
+            policy_acc, policy_loss, idm_acc, gt_actions, idm_actions, policy_actions = self.policy_train()
             self.board.add_scalars(
                 prior='Policy',
                 policy_loss=policy_loss,
                 policy_acc=policy_acc,
                 idm_acc=idm_acc
             )
+            self.board.writer.add_histogram('GT', np.array(gt_actions), self.board.epoch['default'])
+            self.board.writer.add_histogram('IDM', np.array(idm_actions), self.board.epoch['default'])
+            self.board.writer.add_histogram('POLICY', np.array(policy_actions), self.board.epoch['default'])
 
             # ########## Create New Data ########## #
             ratio = self.create_alpha()
@@ -551,5 +566,4 @@ class IUPE(nn.Module):
                 aer=aer,
                 ratio=ratio
             )
-
             self.board.step()

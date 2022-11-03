@@ -58,7 +58,7 @@ if __name__ == '__main__':
         random_dataset=f'./dataset/random_dataset{args.size}/',
         expert_dataset=f'./dataset/dataset{args.size}/',
         device='cuda' if int(args.gpu) >= 0 else 'cpu',
-        batch_size=2,
+        batch_size=12,
         verbose=True,
         early_stop=True,
         name=f'{args.size}x{args.size}-{args.idx}'

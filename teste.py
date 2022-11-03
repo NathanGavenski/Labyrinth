@@ -196,16 +196,25 @@ if __name__ == '__main__':
     #     for entry in dataset:
     #         f.write(f'{entry}\n')
 
-    mypath = f'./maze/environment/mazes/mazes15/train/'
-    mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+    # from algo.il.datasets import ExpertDataset
+    # from torch.utils.data import DataLoader
+    # from torchvision import transforms
 
-    for idx, maze in enumerate(mazes):
-        env = gym.make('Maze-v0', shape=(15, 15))
-        env.load(maze)
-        # env.reset()
-        env.agent_random_position()
-        print(idx, env.shape, env.agent)
-        state = env.render('rgb_array')
-        Image.fromarray(state).save(f'{idx}.png')
-        env.close()
-        del env
+    # dataset = ExpertDataset('./dataset/dataset10/', amount=1)
+    # dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+    # actions = []
+    # for idx, (s, ns, a) in enumerate(dataloader):
+    #     print(idx, a)
+    #     transforms.ToPILImage()(s[0]).save(f'./tmp/images/{idx}.png')
+    #     transforms.ToPILImage()(ns[0]).save(f'./tmp/images/{idx}+1.png')
+    #     if idx == 10:
+    #         exit()
+    # print(np.bincount(actions))
+
+    x = np.load('./dataset/alpha/dataset.npy', allow_pickle=True).astype(int)
+    for (_, state, action, next_state) in x:
+        s = np.load(f'./dataset/alpha/{state}.npy', allow_pickle=True)
+        ns = np.load(f'./dataset/alpha/{next_state}.npy', allow_pickle=True)
+        new_state = np.hstack((s, ns))
+        Image.fromarray(new_state).save(f'./dataset/alpha/{state}.png')
+
