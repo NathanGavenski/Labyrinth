@@ -2,8 +2,8 @@ import ast
 from collections import defaultdict
 from copy import deepcopy
 import os
-from pickletools import uint8
 import random
+from typing import List, Tuple
 
 import gym
 from gym import spaces
@@ -92,14 +92,14 @@ class Maze(gym.Env):
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(0, 255, (screen_width, screen_height, 3), np.uint8)
 
-    def seed(self, seed=None) -> list:
+    def seed(self, seed: int = None) -> List[int]:
         '''
         Set a seed for the environment.
         '''
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _generate(self, visited: list = None) -> list:
+    def _generate(self, visited: list = None) -> Tuple[List[Tuple[int]], List[Tuple[int]]]:
         '''
         Create the maze if no maze was loaded.
 
@@ -129,7 +129,7 @@ class Maze(gym.Env):
         '''
         return position[1] * self.shape[0] + position[0]
 
-    def get_local_position(self, position: int) -> list:
+    def get_local_position(self, position: int) -> List[int]:
         '''
         Get local position from a tile.
         '''
@@ -161,6 +161,7 @@ class Maze(gym.Env):
                 d[value].append(key)
         return d
 
+    # TODO change to pygame dependency
     def render(self, mode: str = "human"):
         '''
         Render the environment current state.

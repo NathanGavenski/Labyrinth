@@ -183,6 +183,8 @@ if __name__ == '__main__':
     from maze import environment
     from PIL import Image
 
+    env = gym.make('Maze-v0')
+    print(env)
     # path = './dataset/alpha/'
     # files = [f for f in listdir(path) if isfile(join(path, f)) and '.npy' in f and 'dataset' not in f]
 
@@ -211,10 +213,10 @@ if __name__ == '__main__':
     #         exit()
     # print(np.bincount(actions))
 
-    x = np.load('./dataset/alpha/dataset.npy', allow_pickle=True).astype(int)
-    for (_, state, action, next_state) in x:
-        s = np.load(f'./dataset/alpha/{state}.npy', allow_pickle=True)
-        ns = np.load(f'./dataset/alpha/{next_state}.npy', allow_pickle=True)
-        new_state = np.hstack((s, ns))
-        Image.fromarray(new_state).save(f'./dataset/alpha/{state}.png')
+    # x = np.load('./dataset/alpha/dataset.npy', allow_pickle=True).astype(int)
+    # for (_, state, action, next_state) in x:
+    #     s = np.load(f'./dataset/alpha/{state}.npy', allow_pickle=True)
+    #     ns = np.load(f'./dataset/alpha/{next_state}.npy', allow_pickle=True)
+    #     new_state = np.hstack((s, ns))
+    #     Image.fromarray(new_state).save(f'./dataset/alpha/{state}.png')
 
