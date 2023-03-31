@@ -7,3 +7,4 @@ class Colors(enum.Enum):
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     GREY = (106, 106, 106)
+    GOLD = (255, 215, 0)

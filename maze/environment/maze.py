@@ -14,6 +14,7 @@ from .utils import transform_edges_into_walls, Colors
 from .utils import get_neighbors, DFS, recursionLimit
 
 
+# FIXME typing
 class Maze(gym.Env):
     '''
     Description:
@@ -67,6 +68,7 @@ class Maze(gym.Env):
             screen_height: int = 224,
             max_episode_steps: int = 1000,
             occlusion: bool = False,
+            key_and_door: bool = False,
     ) -> None:
         super().__init__()
         self.shape = shape
@@ -91,6 +93,8 @@ class Maze(gym.Env):
 
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(0, 255, (screen_width, screen_height, 3), np.uint8)
+
+        self.key_and_door = key_and_door
 
     def seed(self, seed: int = None) -> List[int]:
         '''
@@ -164,6 +168,8 @@ class Maze(gym.Env):
         return d
 
     # TODO change to pygame dependency
+    # TODO change key and door to have a transition function
+    # TODO move rendering functions to a utils class (reduce amount of code)
     def render(self, mode: str = "human"):
         '''
         Render the environment current state.
@@ -282,13 +288,54 @@ class Maze(gym.Env):
                             mask.set_color(*Colors.BLACK.value)
                             self.viewer.add_onetime(mask)
 
+        if self.key_and_door:
+            from gym.envs.classic_control import rendering
+            ky, kx = self.key
+            left = kx * tile_w + tile_w * 0.25
+            right = (kx + 1) * tile_w - tile_w * 0.25
+            bottom = ky * tile_h + tile_h * 0.25
+            top = (ky + 1) * tile_h - tile_h * 0.25
+
+            key_rendering = rendering.FilledPolygon([
+                (left, bottom),
+                (left, top),
+                (right, top),
+                (right, bottom)
+            ])
+            key_rendering.set_color(*Colors.GOLD.value)
+            self.viewer.add_onetime(key_rendering)
+
+            dy, dx = self.door
+            left = dx * tile_w
+            right = (dx + 1) * tile_w
+            bottom = dy * tile_h
+            top = (dy + 1) * tile_h
+
+            door_rendering = rendering.FilledPolygon([
+                (left, bottom),
+                (left, top),
+                (right, top),
+                (right, bottom)
+            ])
+            door_rendering.set_color(*Colors.BLACK.value)
+            self.viewer.add_onetime(door_rendering)
+
         new_x = self.agent[1] * tile_w - self.start[1] * tile_w
         new_y = self.agent[0] * tile_h - self.start[0] * tile_h
         self.agent_transition.set_translation(new_x, new_y)
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
     
-    def translate_position(self, position):
+    def translate_position(self, position: Tuple[int, int]) -> Tuple[int, int]:
+        """
+        Convert current position from original maze size to mask size.
+
+        Args:
+            position: Tuple[int, int]: (y, x) coordinates
+
+        Returns:
+            (y, x) coordinates
+        """
         yoriginal, xoriginal = self.shape
         ymaze, xmaze = self.maze.shape
         x = int(position[1] / (xoriginal/xmaze))
@@ -297,6 +344,14 @@ class Maze(gym.Env):
 
     def get_state(self) -> List[int]:    
         """
+        Get the current state as a vector.
+
+        Returns:
+            state: List[int] with the current positions:
+                0: agent global position
+                1: start global position
+                2: goal global position
+                3+ maze structure in a vector
         """
         maze = self.maze if not self.occlusion else self.create_mask()
         maze = maze[1:-1, 1:-1]
@@ -362,6 +417,9 @@ class Maze(gym.Env):
             self.pathways = self.define_pathways(self._pathways)
 
         self.agent = self.start
+
+        if self.key_and_door:
+            self.door, self.key = self.set_key_and_door()
         return self.get_state() if not render else self.render("rgb_array")
 
     def generate(self, path: str, amount: int = 1) -> None:
@@ -395,6 +453,9 @@ class Maze(gym.Env):
             0           Maze paths
             1           Start position
             2           Goal position
+
+        Args:
+            path: str = path to save the current maze
         '''
         file = path.split('/')[-1]
         path = '/'.join(path.split('/')[:-1])
@@ -405,9 +466,12 @@ class Maze(gym.Env):
             f.write(f'{self._pathways};{self.start};{self.end}')
 
     def load(self, path: str) -> None:
-        '''
+        """
         Load the maze from a file.
-        '''
+
+            Args:
+                path: str = path to save the file
+        """
         with open(path, 'r') as f:
             for line in f:
                 info = line
@@ -422,9 +486,12 @@ class Maze(gym.Env):
         self.pathways = self.define_pathways(pathways)
         return self.reset(agent=True, render=False)
 
-    def create_mask(self) -> list:
+    def create_mask(self) -> List[List[int]]:
         '''
         Create mask for occlusion based on the agent current position and maze structure.
+
+        Returns:
+            mask: List[List[int]] = mask of the given maze for occlusion
         '''
 
         tiles = []
@@ -498,13 +565,13 @@ class Maze(gym.Env):
 
         return mask
 
-    def solve(self, mode: str = 'shortest') -> list:
-        '''
+    def solve(self, mode: str = 'shortest') -> List[Tuple[int, int]]:
+        """
         Solve the current maze
 
         Param:
             mode = amount of paths to return [shortest/all].
-        '''
+        """
         if mode not in ['shortest', 'all']:
             raise Exception("mode should be 'shortest' or 'all'")
 
@@ -516,9 +583,17 @@ class Maze(gym.Env):
         else:
             return paths
 
-    def change_start_and_goal(self, min_distance=None) -> tuple:
-        '''
-        '''
+    def change_start_and_goal(self, min_distance=None) -> Tuple[Tuple[int]]:
+        """
+        Changes the start and goal of the maze to not be always at the bottom left and upper right corners.
+
+        Args:
+            min_distance: how far the start and goal should be. If nothing is passed it uses (width + height) // 2
+
+        Returns:
+            start: Tuple[int] = (y, x) coordinates
+            end:: Tuple[int] = (y, x) coordinates
+        """
         if min_distance is None:
             w, h = self.shape
             min_distance = (w + h) // 2
@@ -556,11 +631,35 @@ class Maze(gym.Env):
             return start, end
 
     def agent_random_position(self) -> None:
+        """
+        Put the agent in a random position of the maze. This is mostly used if you want to create a dataset
+        with diverse positions for your agent.
+        """
         self.reset()
         self.agent = (
             random.randint(0, self.shape[0] - 1),
             random.randint(0, self.shape[1] - 1)
         )
+
+    # TODO add documentation
+    # FIXME check if the key is reachable from the start
+    def set_key_and_door(self, min_distance: int = None) -> Tuple[List[int], List[int]]:
+        avoid = [self.get_global_position(self.start), self.get_global_position(self.end)]
+        min_distance = (self.shape[0] + self.shape[1]) // 2 if min_distance is None else min_distance
+        paths = self.solve(mode='all')
+        intersection = list(set(paths[0]).intersection(*paths[1:]))
+
+        distance = 0
+        while distance < min_distance:
+            door = np.random.choice(intersection, 1)[0]
+            distance = np.abs(np.array([0, 0]) - self.get_local_position(door)).sum()
+            distance = 0 if door in avoid else distance
+
+        possible_positions = list(range(0, door))
+        key = np.random.choice(possible_positions, 1)[0]
+        while np.array([key in path for path in paths]).all():
+            key = np.random.choice(possible_positions, 1)[0]
+        return self.get_local_position(door), self.get_local_position(key)
 
     def __hash__(self) -> int:
         '''
