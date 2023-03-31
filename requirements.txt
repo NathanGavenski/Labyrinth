@@ -1,10 +1,7 @@
-networkx
-gym
+gym==0.21.0
 matplotlib
 tqdm
-tensorflow==1.15
 opencv-python
-matplotlib
-stable-baselines3
-mpi4py
-imitation
+# stable-baselines3
+# mpi4py
+# imitation

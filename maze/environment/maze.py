@@ -52,10 +52,10 @@ class Maze(gym.Env):
     '''
 
     actions = {
-        0: (0, 1),
-        1: (1, 0),
-        2: (0, -1),
-        3: (-1, 0)
+        0: (1, 0),
+        1: (0, 1),
+        2: (-1, 0),
+        3: (0, -1)
     }
 
     def __init__(
@@ -123,11 +123,12 @@ class Maze(gym.Env):
 
         return transform_edges_into_walls(visited, maze.shape), visited
 
-    def get_global_position(self, position: list) -> int:
+    def get_global_position(self, position: List[int], size: List[int] = None) -> int:
         '''
         Get global position from a tile.
         '''
-        return position[1] * self.shape[0] + position[0]
+        size = self.shape if size is None else size
+        return position[0] * size[0] + position[1]
 
     def get_local_position(self, position: int) -> List[int]:
         '''
@@ -171,8 +172,10 @@ class Maze(gym.Env):
             human       render a view (image)
             rgb_array   render current state as a numpy array
         '''
+        if not self.reseted:
+            raise Exception("Please reset the environment first.")
 
-        w, h = self.shape
+        h, w = self.shape
         screen_width = self.screen_width
         screen_height = self.screen_height
         tile_h = screen_height / h
@@ -184,10 +187,10 @@ class Maze(gym.Env):
             self.viewer = rendering.Viewer(screen_width, screen_height)
 
             # Draw start
-            left = self.start[0] * tile_w
-            right = (self.start[0] + 1) * tile_w
-            top = self.start[1] * tile_h
-            bottom = (self.start[1] + 1) * tile_h
+            left = self.start[1] * tile_w
+            right = (self.start[1] + 1) * tile_w
+            top = self.start[0] * tile_h
+            bottom = (self.start[0] + 1) * tile_h
             start = rendering.FilledPolygon([
                 (left, bottom),
                 (left, top),
@@ -198,10 +201,10 @@ class Maze(gym.Env):
             self.viewer.add_geom(start)
 
             # Draw end
-            left = self.end[0] * tile_w
-            right = (self.end[0] + 1) * tile_w
-            top = self.end[1] * tile_h
-            bottom = (self.end[1] + 1) * tile_h
+            left = self.end[1] * tile_w
+            right = (self.end[1] + 1) * tile_w
+            top = self.end[0] * tile_h
+            bottom = (self.end[0] + 1) * tile_h
             end = rendering.FilledPolygon([
                 (left, bottom),
                 (left, top),
@@ -212,10 +215,10 @@ class Maze(gym.Env):
             self.viewer.add_geom(end)
 
             # Draw agent
-            left = self.agent[0] * tile_w
-            right = (self.agent[0] + 1) * tile_w
-            bottom = self.agent[1] * tile_h
-            top = (self.agent[1] + 1) * tile_h
+            left = self.agent[1] * tile_w
+            right = (self.agent[1] + 1) * tile_w
+            bottom = self.agent[0] * tile_h
+            top = (self.agent[0] + 1) * tile_h
             agent = rendering.FilledPolygon([
                 (left + tile_w // 2, bottom),
                 (left, top - tile_h // 2),
@@ -255,16 +258,20 @@ class Maze(gym.Env):
         if self.occlusion:
             from gym.envs.classic_control import rendering
             mask = self.create_mask()
-            for x, tiles in enumerate(mask):
-                if (x > 0 and x < self.shape[0] * 2):
-                    for y, tile in enumerate(tiles):
-                        if tile == 1 and (y > 0 and y < self.shape[0] * 2) and (x % 2 != 0 and y % 2 != 0):
+            for y, tiles in enumerate(mask):
+                if (y > 0 and y < self.shape[0] * 2):
+                    for x, tile in enumerate(tiles):
+                        if tile == 1 and (x > 0 and x < self.shape[1] * 2) and (x % 2 != 0 and y % 2 != 0):
                             _x = x // 2
                             _y = y // 2
-                            left = _y * tile_w
-                            right = (_y + 1) * tile_w
-                            bottom = _x * tile_h
-                            top = (_x + 1) * tile_h
+
+                            if (_y, _x) in [self.start, self.end]:
+                                continue
+
+                            left = _x * tile_w
+                            right = (_x + 1) * tile_w
+                            bottom = _y * tile_h
+                            top = (_y + 1) * tile_h
                             mask = rendering.FilledPolygon([
                                 (left, bottom),
                                 (left, top),
@@ -274,11 +281,37 @@ class Maze(gym.Env):
                             mask.set_color(*Colors.BLACK.value)
                             self.viewer.add_onetime(mask)
 
-        new_x = self.agent[0] * tile_w - self.start[0] * tile_w
-        new_y = self.agent[1] * tile_h - self.start[1] * tile_h
+        new_x = self.agent[1] * tile_w - self.start[1] * tile_w
+        new_y = self.agent[0] * tile_h - self.start[0] * tile_h
         self.agent_transition.set_translation(new_x, new_y)
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
+    
+    def translate_position(self, position):
+        yoriginal, xoriginal = self.shape
+        ymaze, xmaze = self.maze.shape
+        x = int(position[1] / (xoriginal/xmaze))
+        y = int(position[0] / (yoriginal/ymaze))
+        return (y, x)
+
+    def get_state(self) -> List[int]:    
+        """
+        """
+        maze = self.maze[1:-1, 1:-1]
+
+        agent = self.translate_position(self.agent)
+        start = self.translate_position(self.start)
+        goal = self.translate_position(self.end)
+        agent = self.get_global_position(agent, maze.shape)
+        start = self.get_global_position(start, maze.shape)
+        goal = self.get_global_position(goal, maze.shape)
+
+        maze = maze.flatten()
+
+        state = np.array([agent, start, goal])
+        state = np.hstack((state, maze))
+        return state
+
 
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
     def step(self, action: int) -> list:
@@ -298,9 +331,9 @@ class Maze(gym.Env):
         done = (np.array(self.agent) == self.end).all() or self.step_count >= self.max_episode_steps
         reward = -.1 / (self.shape[0] * self.shape[1]) if not (np.array(self.agent) == self.end).all() else 1
 
-        return self.render('rgb_array'), reward, done, {'state': np.hstack((self.agent, self.maze.flatten()))}
+        return self.get_state(), reward, done, {'state': np.hstack((self.agent, self.maze.flatten()))}
 
-    def reset(self, agent=True, render=True) -> None:
+    def reset(self, agent=True, render=False) -> None:
         '''
         Reset the maze. If agent is True, return agent to the start tile.
         If agent is False, return maze to a new one.
@@ -315,7 +348,7 @@ class Maze(gym.Env):
             self.pathways = self.define_pathways(self._pathways)
 
         self.agent = self.start
-        return self.render('rgb_array') if render else None
+        return self.get_state() if not render else self.render("rgb_array")
 
     def generate(self, path: str, amount: int = 1) -> None:
         '''
@@ -379,10 +412,12 @@ class Maze(gym.Env):
         '''
         Create mask for occlusion based on the agent current position and maze structure.
         '''
+
         tiles = []
-        for x in range(5):
-            for y in range(5):
-                tiles.append(np.array((x, y)))
+        for y in range(self.shape[0]):
+            for x in range(self.shape[1]):
+                tiles.append(np.array((y, x)))
+
         maze = self.maze
         mask = deepcopy(maze)
 
@@ -390,26 +425,26 @@ class Maze(gym.Env):
             if (tile == self.agent).all():
                 continue
             elif (tile == self.agent).any():
-                if tile[1] == self.agent[1]:  # Horizontal mask
-                    agent_column = self.agent[0] * 2 + 1
-                    target_column = tile[0] * 2 + 1
-                    row = tile[1] * 2 + 1
-                    lower_bound = agent_column if agent_column < target_column else target_column
-                    upper_bound = agent_column if agent_column > target_column else target_column
-                    if (maze[row, lower_bound:upper_bound+1] == 1).any():
-                        mask[row, target_column] = 1
-                else:  # Vertical mask
-                    agent_row = self.agent[1] * 2 + 1
-                    target_row = tile[1] * 2 + 1
-                    column = tile[0] * 2 + 1
+                if tile[1] == self.agent[1]:  # Vertical mask
+                    agent_row = self.agent[0] * 2 + 1
+                    target_row = tile[0] * 2 + 1
+                    column = tile[1] * 2 + 1
                     lower_bound = agent_row if agent_row < target_row else target_row
                     upper_bound = agent_row if agent_row > target_row else target_row
-                    if (maze[lower_bound:upper_bound+1, column] == 1).any():
+                    if (maze[lower_bound:upper_bound + 1, column] == 1).any():
                         mask[target_row, column] = 1
-                    pass
-            else:  # Diagonal mask FIXME
-                target_column, target_row = tile * 2 + 1
-                agent_column, agent_row = np.array(self.agent) * 2 + 1
+                else:  # Horizontal mask
+                    agent_column = self.agent[1] * 2 + 1
+                    target_column = tile[1] * 2 + 1
+                    row = tile[0] * 2 + 1
+                    lower_bound = agent_column if agent_column < target_column else target_column
+                    upper_bound = agent_column if agent_column > target_column else target_column
+                    if (maze[row, lower_bound:upper_bound + 1] == 1).any():
+                        mask[row, target_column] = 1
+
+            else:  # Diagonal mask
+                target_row, target_column = tile * 2 + 1
+                agent_row, agent_column = np.array(self.agent) * 2 + 1
 
                 column_lower_bound, column_upper_bound, column = (agent_column, target_column, False) \
                     if agent_column < target_column \
@@ -420,7 +455,7 @@ class Maze(gym.Env):
                     else (target_row, agent_row, True)
 
                 matrix = maze[
-                    row_lower_bound:row_upper_bound+1, 
+                    row_lower_bound:row_upper_bound+1,
                     column_lower_bound:column_upper_bound+1
                 ]
 
@@ -456,6 +491,9 @@ class Maze(gym.Env):
         Param:
             mode = amount of paths to return [shortest/all].
         '''
+        if mode not in ['shortest', 'all']:
+            raise Exception("mode should be 'shortest' or 'all'")
+
         with recursionLimit(100000):
             paths = self.dfs.find_paths(self.pathways)
 
