@@ -25,6 +25,7 @@ def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> l
         neighbors = np.array([+w, +1])  # up, right
 
     possible_neighbors = np.array(current_pos + neighbors)
+
     delete = []
 
     # Test up neighbor
@@ -49,6 +50,7 @@ def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> l
     neighbors = []
     for neighbor in np.delete(possible_neighbors, delete, 0):
         neighbors.append((current_pos, neighbor))
+
     return neighbors
 
 

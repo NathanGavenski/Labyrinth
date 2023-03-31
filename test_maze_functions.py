@@ -39,8 +39,9 @@ class TestCases(unittest.TestCase):
         cls.env.close()
 
     def test_init(self):
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=False)
         state = env.reset()
+        print(state)
         
         maze_size = env.shape
         maze_size = ((maze_size[0] * 2) - 1) ** 2
@@ -166,6 +167,16 @@ class TestCases(unittest.TestCase):
         state = env.render("rgb_array")
         test_state = np.array(Image.open("./maze/environment/utils/test/occlusion_test.png"))
         assert (state == test_state).all()
+
+        env.close()
+
+        TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=True)
+        state = env.load("./maze/environment/utils/test/occlusion_vector_test.txt")
+        with open("./maze/environment/utils/test/vector_occlusion_test.txt") as f:
+            for line in f:
+                test_state = line
+        assert (state == ast.literal_eval(test_state)).all()
+
 
 if __name__ == "__main__":
     unittest.main()

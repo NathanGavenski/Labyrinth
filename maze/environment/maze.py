@@ -130,12 +130,13 @@ class Maze(gym.Env):
         size = self.shape if size is None else size
         return position[0] * size[0] + position[1]
 
-    def get_local_position(self, position: int) -> List[int]:
+    def get_local_position(self, position: int, size: List[int] = None) -> List[int]:
         '''
         Get local position from a tile.
         '''
-        column = position // self.shape[1]
-        row = position - (column * self.shape[1])
+        s = self.shape[1] if size is None else size[1]
+        column = position // s
+        row = position - (column * s)
         return [column, row]
 
     def set_occlusion_on(self) -> None:
@@ -297,7 +298,8 @@ class Maze(gym.Env):
     def get_state(self) -> List[int]:    
         """
         """
-        maze = self.maze[1:-1, 1:-1]
+        maze = self.maze if not self.occlusion else self.create_mask()
+        maze = maze[1:-1, 1:-1]
 
         agent = self.translate_position(self.agent)
         start = self.translate_position(self.start)
@@ -306,7 +308,19 @@ class Maze(gym.Env):
         start = self.get_global_position(start, maze.shape)
         goal = self.get_global_position(goal, maze.shape)
 
+        if self.occlusion:
+            tiles = [x for x in range(goal+1) if x % 2 != 0]
+            for tile in tiles:
+                n = get_neighbors(tile, shape=maze.shape)
+                n = [self.get_local_position(neighbor, maze.shape) for i, neighbor in n]
+                values = np.array([maze[y, x] for y, x in n])
+                if (values == 1).all():
+                    y, x = self.get_local_position(tile, maze.shape)
+                    maze[y, x] = 1
+
         maze = maze.flatten()
+        maze[start] = 0
+        maze[goal] = 0
 
         state = np.array([agent, start, goal])
         state = np.hstack((state, maze))
