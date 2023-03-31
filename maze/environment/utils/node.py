@@ -56,7 +56,7 @@ class Node:
 
     def __repr__(self) -> str:
 
-        return f'{[edge.identifier for edge in self.edges]}'
+        return f'{[edge for edge in self.edges]}'
 
     def __str__(self) -> str:
         current_available_edges = []

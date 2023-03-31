@@ -4,7 +4,7 @@ register(
     id="Maze-v0",
     entry_point="maze.environment.maze:Maze",
     order_enforce=False,
-    kwargs={'shape': (10, 10), 'occlusion': False}
+    kwargs={'shape': (10, 10), 'occlusion': False, 'key_and_door': False}
 )
 
 register(

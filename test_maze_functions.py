@@ -10,7 +10,8 @@ import maze
 import numpy as np
 from PIL import Image
 
-# occlusion option
+# door and key
+# portals
 
 def get_global_position(position: List[int], size: List[int] = [10, 10]) -> int:
     '''
@@ -176,6 +177,12 @@ class TestCases(unittest.TestCase):
             for line in f:
                 test_state = line
         assert (state == ast.literal_eval(test_state)).all()
+
+
+    def test_key_and_door(self):
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        env.load("./maze/environment/utils/test/structure_test.txt")
+        Image.fromarray(env.render("rgb_array")).save("teste2.png")
 
 
 if __name__ == "__main__":
