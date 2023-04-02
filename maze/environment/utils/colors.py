@@ -8,3 +8,4 @@ class Colors(enum.Enum):
     WHITE = (255, 255, 255)
     GREY = (106, 106, 106)
     GOLD = (255, 215, 0)
+    BROWN = (0.8, 0.6, 0.4)

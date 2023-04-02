@@ -42,7 +42,6 @@ class TestCases(unittest.TestCase):
     def test_init(self):
         TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=False)
         state = env.reset()
-        print(state)
         
         maze_size = env.shape
         maze_size = ((maze_size[0] * 2) - 1) ** 2
@@ -131,16 +130,6 @@ class TestCases(unittest.TestCase):
         end = env.get_global_position((9, 9), (10, 10))
         assert [9, 9] == env.get_local_position(end)
 
-    def test_solve_shortest(self):
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
-        env.load("./maze/environment/utils/test/structure_test.txt")
-        solve = env.solve()
-        with open("./maze/environment/utils/test/solve_test.txt") as f:
-            for line in f:
-                test_solve = line
-
-        assert solve == ast.literal_eval(test_solve)
-
     def test_change_start_and_goal(self):
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
         env.load("./maze/environment/utils/test/structure_test.txt")
@@ -178,11 +167,59 @@ class TestCases(unittest.TestCase):
                 test_state = line
         assert (state == ast.literal_eval(test_state)).all()
 
-
     def test_key_and_door(self):
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        state = env.load("./maze/environment/utils/test/key_and_door_test.txt")
+
+        with open("./maze/environment/utils/test/key_and_door_test.txt", 'r') as f:
+            for line in f:
+                info = line
+
+        visited, start, end, key, door = info.split(';')
+        key = ast.literal_eval(key)
+        door = ast.literal_eval(door)
+
+        maze_size = env.shape
+        maze_size = ((maze_size[0] * 2) - 1) ** 2
+
+        assert door == env.door
+        assert key == env.key
+        assert state[3] == 2
+        assert state[4] == 316
+        assert state.shape[0] == maze_size + 5
+
+    def test_solve_shortest(self):
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
         env.load("./maze/environment/utils/test/structure_test.txt")
-        Image.fromarray(env.render("rgb_array")).save("teste2.png")
+        solve = env.solve()
+        with open("./maze/environment/utils/test/solve_test.txt") as f:
+            for line in f:
+                test_solve = line
+
+        assert solve == ast.literal_eval(test_solve)
+        env.close()
+
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        env.load("./maze/environment/utils/test/key_and_door_test.txt")
+
+        with open("./maze/environment/utils/test/solve_key_and_door.txt", 'r') as f:
+            for line in f:
+                test_solve = line
+        assert (env.solve(mode="shortest") == ast.literal_eval(test_solve)).all()
+
+    def test_solve_all(self):
+        TestCases.env = env = gym.make("Maze-v0", shape=(100, 100), key_and_door=True)
+        env.load("./maze/environment/utils/test/structure_solve_all_test.txt")
+        x = env.solve("all")
+
+        env.close()
+        TestCases.env = env = gym.make("Maze-v0", shape=(100, 100), key_and_door=False)
+        env.load("./maze/environment/utils/test/structure_solve_all_test.txt")
+        y = env.solve("all")
+
+        for _x, _y in zip(x, y):
+            assert len(_x) > len(_y)
+            assert (set(_y) - set(_x)) == set()
 
 
 if __name__ == "__main__":
