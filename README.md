@@ -37,7 +37,10 @@ The maze comes with different settings, such as occlusions, door and key, telepo
 
 ### Occlusion
 
-In order to use occlusion when making the environment just use:
+In this setting the agent only has partial observations which always show the goal, the start and the agent field of view.
+The same happens to the vector space. Where 0 will be the visible tiles and walls, while 1 are the non-visible ones.
+
+In order to use ``occlusion`` when making the environment just use:
 ```python
 env = gym.make("Maze-v0", occlusion=True)
 ```
@@ -46,12 +49,19 @@ env = gym.make("Maze-v0", occlusion=True)
 
 ![](./maze/environment/utils/test/occlusion_test.png)
 
-In this setting the agent only has partial observations which always show the goal, the start and the agent field of view.
-The same happens to the vector space. Where 0 will be the visible tiles and walls, while 1 are the non-visible ones.
+---
 
-### door and key
+### Key and Door
+In this setting the agent has to first grab a key, which is always outside of the path from the start to the end, to 
+open the door. After grabing the key the door will disappear and the agent can solve walk to the end.
 
-Under development
+In order to use the ``Key and Door`` task in the environment just use:
+```python
+env = gym.make("Maze-v0", key_and_door=True)
+```
+#### Key and Door example
+
+![](./maze/environment/utils/test/render_key_and_door_test.png)
 
 ### teleport
 

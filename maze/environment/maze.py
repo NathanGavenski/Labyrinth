@@ -390,7 +390,8 @@ class Maze(gym.Env):
         state = np.hstack((state, maze))
         return state
 
-
+    # FIXME verify if the agent has grabbed the key and not allowed to walk through the door
+    # FIXME open the door once the agent grabbed the key
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
     def step(self, action: int) -> tuple[list[int], float | int, bool, dict[str, List[int]]]:
         '''
@@ -587,7 +588,6 @@ class Maze(gym.Env):
 
         return mask
 
-    # FIXME the solution has to change if it is a problem of key and door
     def solve(self, mode: str = 'shortest') -> List[Tuple[int, int]]:
         """
         Solve the current maze
