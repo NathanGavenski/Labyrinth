@@ -28,6 +28,8 @@ def translate_position(position, shape, maze_shape):
 
 class TestCases(unittest.TestCase):
 
+    test_files_path = "./maze/environment/utils/test/"
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.env = None
@@ -182,11 +184,14 @@ class TestCases(unittest.TestCase):
         maze_size = env.shape
         maze_size = ((maze_size[0] * 2) - 1) ** 2
 
+        test_render = np.array(Image.open(f"{self.test_files_path}render_key_and_door_test.png"))
+
         assert door == env.door
         assert key == env.key
         assert state[3] == 2
         assert state[4] == 316
         assert state.shape[0] == maze_size + 5
+        assert (env.render("rgb_array") == test_render).all()
 
     def test_solve_shortest(self):
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
