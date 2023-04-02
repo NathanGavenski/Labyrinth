@@ -35,6 +35,9 @@ class Node:
         )
         return random.choice(unvisted_edges)
     
+    def get_neighbors(self) -> object:
+        return self.edges
+    
     def __len__(self):
         current_available_edges = []
         for node in self.edges:

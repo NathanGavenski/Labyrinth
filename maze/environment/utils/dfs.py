@@ -1,4 +1,7 @@
 from collections import defaultdict
+from typing import List
+
+import numpy as np
 
 from .node import Node
 from .utils import recursionLimit
@@ -15,16 +18,22 @@ class DFS:
         '''
         self.start = 0 if start is None else start
         self.end = shape[0] * shape[1] - 1 if end is None else end
+        self.key = None
+        self.door = None
+        self.key_and_door = False
         self.shape = shape
         self.graph = graph
         self.nodes = []
         self.paths = []
         self.reset()
         
-    def reset(self):
-        '''
+    def reset(self) -> None:
+        """
         Reset the Node graph.
-        '''
+
+        Returns:
+            None
+        """
         del self.nodes
 
         edges_dict = defaultdict(list)
@@ -37,17 +46,33 @@ class DFS:
 
         for key, value in edges_dict.items():
             self.nodes[key].set_neighbor(value)
-            
-    def generate_path(self, visited:list, start:int=None) -> list:
-        '''
-        Generates a maze-like with DFS. 
 
-        visited: list of visited nodes (default: empty)
-        start: where to start the maze (default: None - self.start)
-        
-        Returns a list of tuples with all edges that form the paths.
-        To form a maze remove these edges from the env.
-        '''
+    def set_key_and_door(self, key: int, door: int) -> None:
+        """
+        Set key and door positions (global) and key_and_door mode
+
+        Args:
+            key: int = global position for key
+            door: int = global position for door
+
+        Returns:
+            None
+        """
+        self.key = key
+        self.door = door
+        self.key_and_door = True
+
+    def generate_path(self, visited: List[int], start: int = None) -> List[int]:
+        """
+        Generates a maze-like with DFS.
+
+        Args:
+            visited: List[int] = list of visited nodes (default: empty)
+            start: int = where to start the maze (default: None - self.start)
+
+        Returns:
+            a list of tuples with all edges that form the paths. To form a maze remove these edges from the env.
+        """
         current = self.start if start is None else start
         
         if start is None:
@@ -64,13 +89,16 @@ class DFS:
                 visited = self.generate_path(visited, node.identifier)
         return visited
 
-    def find_paths(self, edges: defaultdict) -> list:
-        '''
+    def find_paths(self, edges: defaultdict) -> List[List[int]]:
+        """
         Discover all possible paths to the goal of the maze.
-        edges: defaultdict with the node identifier and its neighbors.
 
-        Returns a list of list of all the nodes that take the agent to its goal.
-        '''
+        Args:
+            edges: defaultdict = Dict with the node identifier and its neighbors.
+
+        Returns:
+             a list of list of all the nodes that take the agent to its goal.
+        """
         nodes_dict = {x: Node(x, []) for x in edges.keys()}
 
         for x, y in edges.items():
@@ -78,16 +106,31 @@ class DFS:
                 nodes_dict[x].add_edge(nodes_dict[node])
             
         self.path = []
-        self._find_paths(set(), nodes_dict, nodes_dict[self.start], [])
+        if not self.key_and_door:
+            self._find_paths(set(), nodes_dict, nodes_dict[self.start], [], self.end)
+        else:
+            self._find_paths(set(), nodes_dict, nodes_dict[self.start], [], self.key)
+            key, self.path = self.path, []
+            self._find_paths(set(), nodes_dict, nodes_dict[self.key], [], self.door)
+            door, self.path = self.path, []
+            self._find_paths(set(), nodes_dict, nodes_dict[self.door], [], self.end)
+            end, self.path = self.path, []
+
+            for path in key:
+                for _path in door:
+                    for __path in end:
+                        paths = np.append(path[:-1], _path[:-1])
+                        self.path.append(np.append(paths, __path))
+
         return self.path
             
-    def _find_paths(self, visited, graph, node, path) -> None:
+    def _find_paths(self, visited, graph, node, path, end) -> None:
         '''
         Auxiliary recursion function for the find_paths().
         '''
         path = list(tuple(path))
 
-        if node.identifier == self.end:
+        if node.identifier == end:
             path.append(node.identifier)
             self.path.append(path)
             return
@@ -96,4 +139,4 @@ class DFS:
             path.append(node.identifier)
             visited.add(node.identifier)
             for neighbor in node:
-                self._find_paths(visited, graph, neighbor, path)
+                self._find_paths(visited, graph, neighbor, path, end)

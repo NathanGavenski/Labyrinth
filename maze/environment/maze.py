@@ -3,12 +3,13 @@ from collections import defaultdict
 from copy import deepcopy
 import os
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Union, Any, Dict
 
 import gym
 from gym import spaces
 from gym.utils import seeding
 import numpy as np
+from numpy import ndarray
 
 from .utils import transform_edges_into_walls, Colors
 from .utils import get_neighbors, DFS, recursionLimit
@@ -95,6 +96,10 @@ class Maze(gym.Env):
         self.observation_space = spaces.Box(0, 255, (screen_width, screen_height, 3), np.uint8)
 
         self.key_and_door = key_and_door
+        self.key, self.door = None, None
+
+        if self.key_and_door and self.occlusion:
+            raise Exception("Both modes cannot be active at the same time.")
 
     def seed(self, seed: int = None) -> List[int]:
         '''
@@ -127,7 +132,7 @@ class Maze(gym.Env):
 
         return transform_edges_into_walls(visited, maze.shape), visited
 
-    def get_global_position(self, position: List[int], size: List[int] = None) -> int:
+    def get_global_position(self, position: List[int] | Tuple[int, int], size: List[int] = None) -> int:
         '''
         Get global position from a tile.
         '''
@@ -317,7 +322,7 @@ class Maze(gym.Env):
                 (right, top),
                 (right, bottom)
             ])
-            door_rendering.set_color(*Colors.BLACK.value)
+            door_rendering.set_color(*Colors.BROWN.value)
             self.viewer.add_onetime(door_rendering)
 
         new_x = self.agent[1] * tile_w - self.start[1] * tile_w
@@ -342,7 +347,7 @@ class Maze(gym.Env):
         y = int(position[0] / (yoriginal/ymaze))
         return (y, x)
 
-    def get_state(self) -> List[int]:    
+    def get_state(self) -> List[int] | ndarray:
         """
         Get the current state as a vector.
 
@@ -356,12 +361,13 @@ class Maze(gym.Env):
         maze = self.maze if not self.occlusion else self.create_mask()
         maze = maze[1:-1, 1:-1]
 
-        agent = self.translate_position(self.agent)
-        start = self.translate_position(self.start)
-        goal = self.translate_position(self.end)
-        agent = self.get_global_position(agent, maze.shape)
-        start = self.get_global_position(start, maze.shape)
-        goal = self.get_global_position(goal, maze.shape)
+        agent = self.get_global_position(self.translate_position(self.agent), maze.shape)
+        start = self.get_global_position(self.translate_position(self.start), maze.shape)
+        goal = self.get_global_position(self.translate_position(self.end), maze.shape)
+
+        if self.key_and_door:
+            key = self.get_global_position(self.translate_position(self.key), maze.shape)
+            door = self.get_global_position(self.translate_position(self.door), maze.shape)
 
         if self.occlusion:
             tiles = [x for x in range(goal+1) if x % 2 != 0]
@@ -378,12 +384,15 @@ class Maze(gym.Env):
         maze[goal] = 0
 
         state = np.array([agent, start, goal])
+        if self.key_and_door:
+            state = np.hstack((state, [key, door]))
+
         state = np.hstack((state, maze))
         return state
 
 
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
-    def step(self, action: int) -> list:
+    def step(self, action: int) -> tuple[list[int], float | int, bool, dict[str, List[int]]]:
         '''
         Perform a step in the environment.
         '''
@@ -400,7 +409,7 @@ class Maze(gym.Env):
         done = (np.array(self.agent) == self.end).all() or self.step_count >= self.max_episode_steps
         reward = -.1 / (self.shape[0] * self.shape[1]) if not (np.array(self.agent) == self.end).all() else 1
 
-        return self.get_state(), reward, done, {'state': np.hstack((self.agent, self.maze.flatten()))}
+        return self.get_state(), reward, done, {}
 
     def reset(self, agent=True, render=False) -> None:
         '''
@@ -418,7 +427,7 @@ class Maze(gym.Env):
 
         self.agent = self.start
 
-        if self.key_and_door:
+        if self.key_and_door and self.door is None and self.key is None:
             self.door, self.key = self.set_key_and_door()
         return self.get_state() if not render else self.render("rgb_array")
 
@@ -463,7 +472,10 @@ class Maze(gym.Env):
             os.makedirs(path)
 
         with open(f'{path}/{file}', 'w') as f:
-            f.write(f'{self._pathways};{self.start};{self.end}')
+            if not self.key_and_door:
+                f.write(f'{self._pathways};{self.start};{self.end}')
+            else:
+                f.write(f'{self._pathways};{self.start};{self.end};{self.key};{self.door}')
 
     def load(self, path: str) -> None:
         """
@@ -476,7 +488,13 @@ class Maze(gym.Env):
             for line in f:
                 info = line
 
-        visited, start, end = info.split(';')
+        try:
+            visited, start, end, key, door = info.split(';')
+            self.key = ast.literal_eval(key)
+            self.door = ast.literal_eval(door)
+        except ValueError:
+            visited, start, end = info.split(';')
+
         pathways = ast.literal_eval(visited)
         self.start = ast.literal_eval(start)
         self.end = ast.literal_eval(end)
@@ -484,6 +502,10 @@ class Maze(gym.Env):
         self.agent = self.start
 
         self.pathways = self.define_pathways(pathways)
+
+        if self.key_and_door and self.key is None and self.door is None:
+            self.set_key_and_door()
+
         return self.reset(agent=True, render=False)
 
     def create_mask(self) -> List[List[int]]:
@@ -565,6 +587,7 @@ class Maze(gym.Env):
 
         return mask
 
+    # FIXME the solution has to change if it is a problem of key and door
     def solve(self, mode: str = 'shortest') -> List[Tuple[int, int]]:
         """
         Solve the current maze
@@ -576,6 +599,12 @@ class Maze(gym.Env):
             raise Exception("mode should be 'shortest' or 'all'")
 
         with recursionLimit(100000):
+            if self.key_and_door and self.key is not None and self.door is not None:
+                self.dfs.set_key_and_door(
+                    self.get_global_position(self.key),
+                    self.get_global_position(self.door)
+                )
+
             paths = self.dfs.find_paths(self.pathways)
 
         if mode == 'shortest':
@@ -583,7 +612,7 @@ class Maze(gym.Env):
         else:
             return paths
 
-    def change_start_and_goal(self, min_distance=None) -> Tuple[Tuple[int]]:
+    def change_start_and_goal(self, min_distance=None) -> List[List[int]] | Tuple[ndarray, List[int] | List[List[int]]]:
         """
         Changes the start and goal of the maze to not be always at the bottom left and upper right corners.
 
@@ -641,35 +670,52 @@ class Maze(gym.Env):
             random.randint(0, self.shape[1] - 1)
         )
 
-    # TODO add documentation
-    # FIXME check if the key is reachable from the start
     def set_key_and_door(self, min_distance: int = None) -> Tuple[List[int], List[int]]:
+        """
+
+        Args:
+            min_distance: int = min distance from start to door. If none is informed the environment uses
+            (Height + Width) // 2.
+
+        Returns:
+            (door, key): Tuple[List[int], List[int]] = local position from both door and key.
+        """
         avoid = [self.get_global_position(self.start), self.get_global_position(self.end)]
         min_distance = (self.shape[0] + self.shape[1]) // 2 if min_distance is None else min_distance
         paths = self.solve(mode='all')
         intersection = list(set(paths[0]).intersection(*paths[1:]))
 
-        distance = 0
+        door, distance = 0, 0
         while distance < min_distance:
             door = np.random.choice(intersection, 1)[0]
             distance = np.abs(np.array([0, 0]) - self.get_local_position(door)).sum()
             distance = 0 if door in avoid else distance
 
-        possible_positions = list(range(0, door))
+        def find_all_childs(possible_tiles, node_list):
+            initial_len = len(possible_tiles)
+            for node in node_list:
+                edges = [edge for edge in self.dfs.nodes[node].edges if edge not in node_list]
+                if len(edges) > 0:
+                    for edge in edges:
+                        if edge < door:
+                            possible_tiles.append(edge)
+            if initial_len < len(possible_tiles):
+                return find_all_childs(possible_tiles, possible_tiles)
+            else:
+                return possible_tiles
+
+        possible_positions = find_all_childs([], paths[0][:paths[0].index(door)])
         key = np.random.choice(possible_positions, 1)[0]
-        while np.array([key in path for path in paths]).all():
-            key = np.random.choice(possible_positions, 1)[0]
         return self.get_local_position(door), self.get_local_position(key)
 
     def __hash__(self) -> int:
-        '''
+        """
         Create a hash of the edges of the maze.
 
-        Note: in order to have a consistent hash, 
-        it sorts the inner tuples (the edges), and
-        the tuples (the list of edges), and remove 
-        duplicates before hashing the maze.
-        '''
+        Returns:
+            hash: in order to have a consistent hash, it sorts the inner tuples (the edges), and the tuples
+            (the list of edges), and remove duplicates before hashing the maze.
+        """
         pathways = list(map(sorted, self._pathways))
         pathways.sort()
         pathways = tuple(set(map(tuple, pathways)))
