@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
@@ -7,7 +7,7 @@ from .node import Node
 from .utils import recursionLimit
 
 class DFS:
-    def __init__(self, graph: list, shape: tuple, start : int = None, end : int = None):
+    def __init__(self, graph: list, shape: tuple, start: int = None, end: int = None):
         '''
         Depth first search algorithm for the maze generation.
 
@@ -62,7 +62,7 @@ class DFS:
         self.door = door
         self.key_and_door = True
 
-    def generate_path(self, visited: List[int], start: int = None) -> List[int]:
+    def generate_path(self, visited: List[Tuple[int, int]], start: int = None) -> List[int]:
         """
         Generates a maze-like with DFS.
 

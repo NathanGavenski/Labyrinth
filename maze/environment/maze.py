@@ -127,6 +127,8 @@ class Maze(gym.Env):
 
             self.dfs = DFS(edges, maze.shape, start=start, end=end)
             visited = self.dfs.generate_path([])
+            self.dfs.graph = visited
+            self.dfs.reset()
         else:
             self.dfs = DFS(visited, maze.shape, start=start, end=end)
 
@@ -295,35 +297,37 @@ class Maze(gym.Env):
 
         if self.key_and_door:
             from gym.envs.classic_control import rendering
-            ky, kx = self.key
-            left = kx * tile_w + tile_w * 0.25
-            right = (kx + 1) * tile_w - tile_w * 0.25
-            bottom = ky * tile_h + tile_h * 0.25
-            top = (ky + 1) * tile_h - tile_h * 0.25
+            if self.key is not None:
+                ky, kx = self.key
+                left = kx * tile_w + tile_w * 0.25
+                right = (kx + 1) * tile_w - tile_w * 0.25
+                bottom = ky * tile_h + tile_h * 0.25
+                top = (ky + 1) * tile_h - tile_h * 0.25
 
-            key_rendering = rendering.FilledPolygon([
-                (left, bottom),
-                (left, top),
-                (right, top),
-                (right, bottom)
-            ])
-            key_rendering.set_color(*Colors.GOLD.value)
-            self.viewer.add_onetime(key_rendering)
+                key_rendering = rendering.FilledPolygon([
+                    (left, bottom),
+                    (left, top),
+                    (right, top),
+                    (right, bottom)
+                ])
+                key_rendering.set_color(*Colors.GOLD.value)
+                self.viewer.add_onetime(key_rendering)
 
-            dy, dx = self.door
-            left = dx * tile_w
-            right = (dx + 1) * tile_w
-            bottom = dy * tile_h
-            top = (dy + 1) * tile_h
+            if self.door is not None:
+                dy, dx = self.door
+                left = dx * tile_w
+                right = (dx + 1) * tile_w
+                bottom = dy * tile_h
+                top = (dy + 1) * tile_h
 
-            door_rendering = rendering.FilledPolygon([
-                (left, bottom),
-                (left, top),
-                (right, top),
-                (right, bottom)
-            ])
-            door_rendering.set_color(*Colors.BROWN.value)
-            self.viewer.add_onetime(door_rendering)
+                door_rendering = rendering.FilledPolygon([
+                    (left, bottom),
+                    (left, top),
+                    (right, top),
+                    (right, bottom)
+                ])
+                door_rendering.set_color(*Colors.BROWN.value)
+                self.viewer.add_onetime(door_rendering)
 
         new_x = self.agent[1] * tile_w - self.start[1] * tile_w
         new_y = self.agent[0] * tile_h - self.start[0] * tile_h
@@ -366,8 +370,8 @@ class Maze(gym.Env):
         goal = self.get_global_position(self.translate_position(self.end), maze.shape)
 
         if self.key_and_door:
-            key = self.get_global_position(self.translate_position(self.key), maze.shape)
-            door = self.get_global_position(self.translate_position(self.door), maze.shape)
+            key = self.get_global_position(self.translate_position(self.key), maze.shape) if self.key else -1
+            door = self.get_global_position(self.translate_position(self.door), maze.shape) if self.door else -1
 
         if self.occlusion:
             tiles = [x for x in range(goal+1) if x % 2 != 0]
@@ -390,7 +394,6 @@ class Maze(gym.Env):
         state = np.hstack((state, maze))
         return state
 
-    # FIXME verify if the agent has grabbed the key and not allowed to walk through the door
     # FIXME open the door once the agent grabbed the key
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] * self.shape[1]) * len(shortest_path) )
     def step(self, action: int) -> tuple[list[int], float | int, bool, dict[str, List[int]]]:
@@ -404,6 +407,15 @@ class Maze(gym.Env):
         agent_global_position = self.get_global_position(self.agent)
         destiny_global_position = self.get_global_position(destiny)
         if destiny_global_position in self.pathways[agent_global_position]:
+            if self.key_and_door and (np.array(tuple(destiny)) == self.door).all():
+                if self.key is not None:
+                    destiny = self.agent
+                else:
+                    self.door = None
+
+            if self.key_and_door and (np.array(tuple(destiny)) == self.key).all():
+                self.key = None
+
             self.agent = tuple(destiny)
 
         self.step_count += 1
@@ -423,9 +435,7 @@ class Maze(gym.Env):
         if not agent or self.maze is None:
             with recursionLimit(10000):
                 self.maze, self._pathways = self._generate()
-
             self.pathways = self.define_pathways(self._pathways)
-
         self.agent = self.start
 
         if self.key_and_door and self.door is None and self.key is None:
@@ -502,10 +512,10 @@ class Maze(gym.Env):
         self.maze, self._pathways = self._generate(visited=pathways)
         self.agent = self.start
 
-        self.pathways = self.define_pathways(pathways)
+        self.pathways = self.define_pathways(self._pathways)
 
         if self.key_and_door and self.key is None and self.door is None:
-            self.set_key_and_door()
+            self.door, self.key = self.set_key_and_door()
 
         return self.reset(agent=True, render=False)
 
@@ -704,8 +714,11 @@ class Maze(gym.Env):
             else:
                 return possible_tiles
 
-        possible_positions = find_all_childs([], paths[0][:paths[0].index(door)])
-        key = np.random.choice(possible_positions, 1)[0]
+        try:
+            possible_positions = find_all_childs([], paths[0][:paths[0].index(door)])
+            key = np.random.choice(possible_positions, 1)[0]
+        except ValueError:
+            return self.set_key_and_door(min_distance)
         return self.get_local_position(door), self.get_local_position(key)
 
     def __hash__(self) -> int:
