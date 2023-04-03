@@ -10,6 +10,9 @@ import maze
 import numpy as np
 from PIL import Image
 
+from maze.create_expert import state_to_action
+
+
 # door and key
 # portals
 
@@ -225,6 +228,42 @@ class TestCases(unittest.TestCase):
         for _x, _y in zip(x, y):
             assert len(_x) > len(_y)
             assert (set(_y) - set(_x)) == set()
+
+    def test_door(self):
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        state = env.reset()
+        door = env.get_global_position(env.door)
+
+        env.key_and_door = False
+        path = env.solve("shortest")
+        env.key_and_door = True
+
+        agent = None
+        for idx, tile in enumerate(path):
+            if idx < len(path) - 1:
+                action = state_to_action(tile, path[idx + 1], shape=(10, 10))
+                if path[idx + 1] == door:
+                    agent = state[0]
+                state, _, _, _ = env.step(action)
+
+                if agent is not None:
+                    assert agent == state[0]
+                    break
+
+        assert agent is not None
+
+    def test_key(self):
+
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        env.reset()
+        path = env.solve("shortest")
+
+        for idx, tile in enumerate(path):
+            if idx < len(path) - 1:
+                action = state_to_action(tile, path[idx + 1], shape=(10, 10))
+                state, _, _, _ = env.step(action)
+
+        assert env.agent == env.end
 
 
 if __name__ == "__main__":
