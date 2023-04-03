@@ -53,15 +53,14 @@ env = gym.make("Maze-v0", occlusion=True)
 
 ### Key and Door
 In this setting the agent has to first grab a key, which is always outside of the path from the start to the end, to 
-open the door. After grabing the key the door will disappear and the agent can solve walk to the end.
-
+open the door. After grabing the key the door will not disappear and the agent has to walk on it to open.
 In order to use the ``Key and Door`` task in the environment just use:
 ```python
 env = gym.make("Maze-v0", key_and_door=True)
 ```
 #### Key and Door example
 
-![](./maze/environment/utils/test/render_key_and_door_test.png)
+![](./assets/key_and_door.gif)
 
 ### teleport
 
