@@ -47,9 +47,8 @@ env = gym.make("Maze-v0", occlusion=True)
 
 #### Occlusion example
 
-![](./maze/environment/utils/test/occlusion_test.png)
+![](./assets/occlusion.gif)
 
----
 
 ### Key and Door
 In this setting the agent has to first grab a key, which is always outside of the path from the start to the end, to 

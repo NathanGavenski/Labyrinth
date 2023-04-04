@@ -1,6 +1,5 @@
 import ast
 import os
-import time
 from typing import List
 import unittest
 import shutil 
@@ -11,10 +10,6 @@ import numpy as np
 from PIL import Image
 
 from maze.create_expert import state_to_action
-
-
-# door and key
-# portals
 
 def get_global_position(position: List[int], size: List[int] = [10, 10]) -> int:
     '''
@@ -254,7 +249,7 @@ class TestCases(unittest.TestCase):
 
     def test_key(self):
 
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=False, occlusion=True)
         env.reset()
         path = env.solve("shortest")
 
