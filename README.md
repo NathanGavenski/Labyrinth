@@ -5,7 +5,7 @@ A maze environment for training and evaluating agents. All mazes are (y, x) size
 save(path): save the current maze structure, start and finish. 
 load(path): load a saved structure.
 solve(mode): give solutions for the maze using deapth-first-search (DFS).
-    mode: "all" - all possible solutions, "shortes" - one solution (the shortest)
+    mode: "all" - all possible solutions, "shortest" - one solution (the shortest)
 ```
 
 ---
