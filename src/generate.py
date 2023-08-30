@@ -8,7 +8,7 @@ import pathlib
 import gym
 from tqdm import tqdm
 
-import environment
+import maze
 
 
 def get_args():

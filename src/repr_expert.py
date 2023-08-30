@@ -1,7 +1,7 @@
 import argparse
 from collections import defaultdict
-from os import listdir
-from os.path import isfile, join
+from os import listdir, makedirs
+from os.path import isfile, join, exists
 
 import gym
 from matplotlib import pyplot as plt
@@ -11,7 +11,7 @@ from tqdm import tqdm
 import seaborn as sns
 sns.set_theme()
 
-import environment
+import maze
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -99,12 +99,14 @@ if __name__ == '__main__':
         for i in range((args.width * args.height)):
             visited_tiles[i] = 0
 
+        max_visited = 0
         mazes = mazes if not args.verbose else tqdm(mazes)
         for maze in mazes:
-            env = gym.make('Maze-v0', shape=(args.width, args.height))
+            env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
             env.reset()
             env.load(maze)
             solutions = env.solve(mode='all')
+            max_visited += len(solutions)
             for solution in solutions:
                 for tile in solution:
                     visited_tiles[tile] += 1
@@ -114,7 +116,7 @@ if __name__ == '__main__':
         data = np.zeros((args.width, args.height))
         for tile, times in visited_tiles.items():
             x, y = global_position_to_local(tile, shape=(args.width, args.height))
-            data[x, y] = (times / len(mazes))
+            data[x, y] = (times / max_visited)
         diff[_type] = data
         plot_heatmap(data, _type, ax)    
 
@@ -122,6 +124,8 @@ if __name__ == '__main__':
     plot_heatmap(heatmap_diff, 'diff', axis[-1])
     plt.tight_layout()
     if args.save:
-        plt.savefig(f'./plots/heatmap.png')
+        if not exists('./plots/'):
+            makedirs('./plots/')
+        plt.savefig(f'./plots/heatmap{args.width}.png')
     else:
         plt.show()
