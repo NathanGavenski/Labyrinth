@@ -6,11 +6,10 @@ import shutil
 
 import gym
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
+from PIL import Image
 
-from maze import environment
-
+import maze
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -33,7 +32,16 @@ def get_args():
         type=str
     )
     parser.add_argument(
+        '--amount',
+        type=int
+    )
+    parser.add_argument(
         '--unbiased',
+        action='store_true',
+        help='Swaps start and goal for each maze in order to reduce bias'
+    )
+    parser.add_argument(
+        '--random_start',
         action='store_true',
         help='Swaps start and goal for each maze in order to reduce bias'
     )
@@ -61,22 +69,6 @@ def get_args():
     return parser.parse_args()
 
 
-def state_to_action(source: int, target: int, shape: tuple) -> int:
-    w, h = shape
-
-    # Test left or right
-    if source // w == target // w:
-        if target > source:
-            return 1
-        else:
-            return 3
-    else:
-        if target > source:
-            return 0
-        else:
-            return 2
-
-
 if __name__ == '__main__':
 
     args = get_args()
@@ -84,7 +76,7 @@ if __name__ == '__main__':
     mypath = f'{args.path}/train/'
     mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
-    if args.unbiased:
+    if args.unbiased or args.random_start:
         mazes = np.repeat(mazes, args.times, axis=0)
 
     if os.path.exists(args.save_path):
@@ -95,55 +87,49 @@ if __name__ == '__main__':
         os.makedirs(args.save_path)
 
     image_idx = 0
-    dataset = np.ndarray(shape=[0, 9])
-    for maze_idx, maze in enumerate(tqdm(mazes)):
+    dataset = np.ndarray(shape=[0, 4])
+    amount_per_maze = (args.amount + 1 * len(mazes)) // len(mazes)
+    pbar = tqdm(range(args.amount))
+    for maze_idx, maze in enumerate(mazes):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
         env.load(maze)
-        
+
         if args.unbiased and (maze_idx % args.times != 0):
             env.change_start_and_goal()
 
-        solutions = env.solve(mode='all')
+        if args.random_start and (maze_idx % args.times != 0):
+            env.agent_random_position()
 
-        for solution_idx, solution in enumerate(solutions):
-            env.reset(agent=True)
-            done = False
+        state = env.agent
+        idx = 0
+        done = False
+        while idx < amount_per_maze - 1:
+            image = env.render('rgb_array')
+            action = np.random.randint(0, 4)
+            _, reward, done, info = env.step(action) 
+            next_state = env.agent
 
-            total_reward = 0
-            for idx, tile in enumerate(solution):
+            if (state != next_state):
+                # state
+                np.save(f'{args.save_path}/{image_idx}', image)
+                image_idx += 1
+
+                # next state
                 image = env.render('rgb_array')
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
 
-                if idx < len(solution) - 1:
-                    action = state_to_action(
-                        tile,
-                        solution[idx+1],
-                        shape=(args.width, args.height)
-                    )
-                    state, reward, done, info = env.step(action)
-                    total_reward += reward
+                entry = [maze_idx, image_idx - 2, action, image_idx - 1]
+                dataset = np.append(dataset, np.array(entry).astype(int)[None], axis=0)
+                pbar.update()
+                idx += 1
 
-                if not done:
-                    entry = [
-                        maze_idx,  # maze version
-                        solution_idx,  # solution number
-                        image_idx-1,  # state 
-                        action,  # action
-                        image_idx,  # next_state
-                        0,  # episode reward
-                        reward,  # step reward
-                        True if idx == 0 else False,  # episode_starts
-                        False,  # episode_ends                        
-                    ]
-                    dataset = np.append(
-                        dataset,
-                        np.array(entry)[None],
-                        axis=0
-                    )
-                elif done:
-                    dataset[-1, 5] = total_reward
-                    dataset[-1, -1] = True
+            if done:
+                env.reset(agent=True)
+                state = env.agent
+            else:
+                state = next_state
 
-            env.close()
-    np.save(f'{args.save_path}/dataset', dataset)
+        env.close()
+
+    np.save(f'{args.save_path}/dataset', dataset.astype(int))

@@ -70,6 +70,7 @@ class Maze(gym.Env):
             max_episode_steps: int = 1000,
             occlusion: bool = False,
             key_and_door: bool = False,
+            icy_floor: bool = False,
     ) -> None:
         super().__init__()
         self.shape = shape
@@ -97,6 +98,9 @@ class Maze(gym.Env):
 
         self.key_and_door = key_and_door
         self.key, self.door = None, None
+        
+        self.icy_floor = icy_floor
+        self.ice_floors = None
 
         if self.key_and_door and self.occlusion:
             raise Exception("Both modes cannot be active at the same time.")
@@ -440,6 +444,10 @@ class Maze(gym.Env):
 
         if self.key_and_door and self.door is None and self.key is None:
             self.door, self.key = self.set_key_and_door()
+
+        if self.icy_floor and self.ice_floors is None:
+            self.ice_floors = self.set_ice_floors()
+
         return self.get_state() if not render else self.render("rgb_array")
 
     def generate(self, path: str, amount: int = 1) -> None:
@@ -733,3 +741,14 @@ class Maze(gym.Env):
         pathways.sort()
         pathways = tuple(set(map(tuple, pathways)))
         return hash(pathways)
+
+    def set_ice_floors(self) -> List[int]:
+        possible_paths = self.solve(mode="all")
+
+        print("Quantity of solvable paths:", len(possible_paths))
+        print("Paths:")
+        print(possible_paths)
+
+        # if there is only one solution we should create a new one
+        # if there are two solution we should figure it out where 
+        raise NotImplementedError()

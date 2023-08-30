@@ -1,7 +1,0 @@
-gym==0.21.0
-matplotlib
-tqdm
-opencv-python
-# stable-baselines3
-# mpi4py
-# imitation

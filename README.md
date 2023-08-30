@@ -61,7 +61,7 @@ env = gym.make("Maze-v0", key_and_door=True)
 
 ![](./assets/key_and_door.gif)
 
-### teleport
+### Icy floor
 
 Under development
 
