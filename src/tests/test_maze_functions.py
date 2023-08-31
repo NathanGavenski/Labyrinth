@@ -171,7 +171,7 @@ class TestCases(unittest.TestCase):
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
         env.reset()
         end = env.get_global_position((9, 9), (10, 10))
-        assert [9, 9] == env.get_local_position(end)
+        assert (9, 9) == env.get_local_position(end)
 
     def test_change_start_and_goal(self):
         """Test the change_start_and_goal function."""

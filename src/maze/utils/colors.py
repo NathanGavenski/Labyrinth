@@ -1,6 +1,8 @@
+"""Enum class for colors."""
 import enum
 
 class Colors(enum.Enum):
+    """Enum class for colors."""
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)

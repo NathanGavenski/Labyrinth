@@ -1,7 +1,7 @@
+"""Utils package for the maze module."""
 import resource
 import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -12,6 +12,20 @@ class SettingsException(Exception):
         self.message = message
         super().__init__(self.message)
 
+
+class ResetException(Exception):
+    """Exception raised when not resetting the maze."""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(self.message)
+
+class ActionException(Exception):
+    """Action not in action space."""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(self.message)
 
 def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> list:
     '''
@@ -26,22 +40,22 @@ def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> l
         Directed nodes: [0, 1] and [1, 0] are viable options
         Undirected nodes: only [0, 1] is a viable option
     '''
-    w, h = shape
+    width, height = shape
     if not undirected:
-        neighbors = np.array([+w, +1, -w, -1])  # up, right, down, left
+        neighbors = np.array([+width, +1, -width, -1])  # up, right, down, left
     else:
-        neighbors = np.array([+w, +1])  # up, right
+        neighbors = np.array([+width, +1])  # up, right
 
     possible_neighbors = np.array(current_pos + neighbors)
 
     delete = []
 
     # Test up neighbor
-    if possible_neighbors[0] > w * h - 1:
+    if possible_neighbors[0] > width * height - 1:
         delete.append(0)
 
     # Test right neighbor
-    if possible_neighbors[1] % w == 0:
+    if possible_neighbors[1] % width == 0:
         delete.append(1)
 
     # Test down neighbor
@@ -50,8 +64,8 @@ def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> l
 
     # Test left neighbor
     if not undirected:
-        left = int(possible_neighbors[3] / w)
-        pos = int(current_pos / w)
+        left = int(possible_neighbors[3] / width)
+        pos = int(current_pos / width)
         if left != pos or possible_neighbors[3] < 0:
             delete.append(3)
 
@@ -87,7 +101,7 @@ def remove_redundant_nodes(edges: list) -> list:
 
 
 def transform_edges_into_walls(edges: list, shape: tuple) -> list:
-    '''
+    """
     Constructs an array like maze ploting walls and squares.
     Where there is an edge, it removes the wall to create a passage.
 
@@ -95,58 +109,44 @@ def transform_edges_into_walls(edges: list, shape: tuple) -> list:
         edges : list = list of edges (walls) that need 
         to be removed from the maze.
         shape : tuple = maze shape (width, height).
-    '''
-    w, h = shape
-    walls = np.zeros(shape=[h*2+1, w*2+1])
-    vertical_walls = list(range(0, h*2+1, 2))
-    horizontal_walls = list(range(0, w*2+1, 2))
+    """
+    width, height = shape
+    walls = np.zeros(shape=[height * 2 + 1, width * 2 + 1])
+    vertical_walls = list(range(0, height * 2 + 1, 2))
+    horizontal_walls = list(range(0, width * 2 + 1, 2))
     walls[:, vertical_walls] = 1
     walls[horizontal_walls, :] = 1
     for edge in edges:
-        if int(edge[0] / w) == int(edge[1] / w):  # same row
-            x, y = edge
-            _max, _min = max(x, y), min(x, y)
-            row = int(_min / w) * 2 + 1
-            column = vertical_walls[_max - (int(_max/w) * w)]
+        if int(edge[0] / width) == int(edge[1] / width):  # same row
+            x_position, y_position = edge
+            _max, _min = max(x_position, y_position), min(x_position, y_position)
+            row = int(_min / width) * 2 + 1
+            column = vertical_walls[_max - (int(_max/width) * width)]
             walls[row, column] = 0
         else:  # different row
-            x, y = edge
-            _max, _min = max(x, y), min(x, y)
-            row = horizontal_walls[int(_min/w)+1]
-            column = (_max - int(_max/w) * w) * 2 + 1
+            x_position, y_position = edge
+            _max, _min = max(x_position, y_position), min(x_position, y_position)
+            row = horizontal_walls[int(_min/width)+1]
+            column = (_max - int(_max/width) * width) * 2 + 1
             walls[row, column] = 0
     return walls
 
 
-def plot_graph(edges: list, shape: tuple) -> None:
-    '''
-    Plot the edges in a graph format.
-
-    Args:
-        edges : list = list of edges (walls) that need 
-        to be removed from the maze.
-        shape : tuple = maze shape (height, width).
-    '''
-    edges = sorted(edges)
-    graph = nx.Graph()
-    graph.add_edges_from(edges)
-    pos = []
-    for x in range(shape[0]):
-        for y in range(shape[1]):
-            pos.append((x, y))
-    nx.drawing.nx_pylab.draw_networkx(graph, pos)
-    plt.show()
-
-
-class recursionLimit:
-    '''
-    Class for setting a higher recursion limit.
-    '''
+class RecursionLimit:
+    """Class for setting a higher recursion limit."""
 
     def __init__(self, limit: int) -> None:
+        """Set the recursion limit.
+
+        Args:
+            limit (int): Recursion limit.
+        """
         self.limit = limit
+        self.old_memory_limit = None
+        self.old_size_limit = None
 
     def __enter__(self) -> None:
+        """Enter the recursion limit context."""
         self.old_size_limit = sys.getrecursionlimit()
         self.old_memory_limit = resource.getrlimit(resource.RLIMIT_STACK)
         sys.setrecursionlimit(self.limit)
@@ -156,6 +156,7 @@ class recursionLimit:
         )
 
     def __exit__(self, *args) -> None:
+        """Exit the recursion limit context."""
         sys.setrecursionlimit(self.old_size_limit)
         resource.setrlimit(
             resource.RLIMIT_STACK,
