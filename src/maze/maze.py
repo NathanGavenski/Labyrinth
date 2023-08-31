@@ -397,7 +397,7 @@ class Maze(gym.Env):
         new_y = self.agent[0] * tile_h - self.start[0] * tile_h
         self.agent_transition.set_translation(new_x, new_y)
 
-        return self.viewer.render(return_rgb_array=mode == "rgb_array")
+        return self.viewer.render(return_rgb_array = mode == "rgb_array")
 
     def translate_position(self, position: Tuple[int, int]) -> Tuple[int, int]:
         """
@@ -540,7 +540,6 @@ class Maze(gym.Env):
         if not agent or self.maze is None:
             with RecursionLimit(10000):
                 self.maze, self._pathways = self._generate()
-                print(self.maze, self._pathways)
             self.pathways = self.define_pathways(self._pathways)
         self.agent = self.start
 
