@@ -1,17 +1,25 @@
+"""Create random dataset for imitation learning."""
 import argparse
 import os
 from os import listdir
 from os.path import isfile, join
 import shutil
+from typing import Any, List
 
 import gym
 import numpy as np
 from tqdm import tqdm
-from PIL import Image
 
-import maze
+# pylint: disable=[W0611]
+from . import maze
 
-def get_args():
+
+def get_args() -> argparse.Namespace:
+    """Get arguments from command line.
+
+    Returns:
+        arguments (Namespace): Arguments from command line.
+    """
     parser = argparse.ArgumentParser(
         description="Args for creating expert dataset."
     )
@@ -69,10 +77,16 @@ def get_args():
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+def generate(args: argparse.Namespace) -> List[Any]:
+    """Create random dataset for imitation learning.
 
-    args = get_args()
+    Args:
+        args (argparse.Namespace): Arguments from command line.
 
+    Returns:
+        List[Any]: Random dataset for imitation learning. 
+        TODO explain what is in the dataset.
+    """
     mypath = f'{args.path}/train/'
     mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
@@ -90,9 +104,9 @@ if __name__ == '__main__':
     dataset = np.ndarray(shape=[0, 4])
     amount_per_maze = (args.amount + 1 * len(mazes)) // len(mazes)
     pbar = tqdm(range(args.amount))
-    for maze_idx, maze in enumerate(mazes):
+    for maze_idx, _maze in enumerate(mazes):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
-        env.load(maze)
+        env.load(_maze)
 
         if args.unbiased and (maze_idx % args.times != 0):
             env.change_start_and_goal()
@@ -100,16 +114,16 @@ if __name__ == '__main__':
         if args.random_start and (maze_idx % args.times != 0):
             env.agent_random_position()
 
-        state = env.agent
         idx = 0
         done = False
+        state = env.agent
         while idx < amount_per_maze - 1:
             image = env.render('rgb_array')
             action = np.random.randint(0, 4)
-            _, reward, done, info = env.step(action) 
+            _, _, done, _ = env.step(action)
             next_state = env.agent
 
-            if (state != next_state):
+            if state != next_state:
                 # state
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
@@ -120,7 +134,8 @@ if __name__ == '__main__':
                 image_idx += 1
 
                 entry = [maze_idx, image_idx - 2, action, image_idx - 1]
-                dataset = np.append(dataset, np.array(entry).astype(int)[None], axis=0)
+                dataset = np.append(
+                    dataset, np.array(entry).astype(int)[None], axis=0)
                 pbar.update()
                 idx += 1
 
@@ -131,5 +146,10 @@ if __name__ == '__main__':
                 state = next_state
 
         env.close()
+    return dataset.astype(int)
 
-    np.save(f'{args.save_path}/dataset', dataset.astype(int))
+
+if __name__ == '__main__':
+    arguments = get_args()
+    random_dataset = generate(arguments)
+    np.save(f'{arguments.save_path}/dataset', random_dataset)

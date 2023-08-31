@@ -13,5 +13,6 @@
         "**/Thumbs.db": true,
         "**/.pytest_cache": true,
         "**/__pycache__": true
-    }
+    },
+    "editor.rulers": [100]
 }
