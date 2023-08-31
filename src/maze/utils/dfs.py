@@ -134,7 +134,7 @@ class DFS:
                 for _path in door:
                     for __path in end:
                         paths = np.append(path[:-1], _path[:-1])
-                        self.path.append(np.append(paths, __path))
+                        self.path.append(np.append(paths, __path).tolist())
 
         return self.path
 
