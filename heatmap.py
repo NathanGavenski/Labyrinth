@@ -24,7 +24,7 @@ if __name__ == "__main__":
     rewards = defaultdict(int)
     for reward in x['episode_returns']:
         rewards[reward] += 1
-        
+
     begginings = np.where(x['episode_starts'] == True)[0]
     ends = np.append(begginings[1:], x['episode_starts'].shape[0])
     split = int(begginings.shape[0] // 2)
@@ -51,19 +51,20 @@ if __name__ == "__main__":
         episode[:, x_idx] = (episode[:, x_idx] - episode[:, x_idx].min()) / (episode[:, x_idx].max() - episode[:, x_idx].min())
         episode[:, y_idx] = (episode[:, y_idx] - episode[:, y_idx].min()) / (episode[:, y_idx].max() - episode[:, y_idx].min())
 
-        x_max, x_min = episode[:,x_idx].max(), episode[:,x_idx].min()
-        y_max, y_min = episode[:,y_idx].max(), episode[:,y_idx].min()
+        x_max, x_min = episode[:, x_idx].max(), episode[:, x_idx].min()
+        y_max, y_min = episode[:, y_idx].max(), episode[:, y_idx].min()
 
         x_ratio = abs((x_max - x_min) / size)
         y_ratio = abs((y_max - y_min) / size)
 
-        data = np.zeros(shape=(size+1, size+1))
+        data = np.zeros(shape=(size + 1, size + 1))
         for state in episode:
             x = int(state[x_idx] / x_ratio)
             y = int(state[y_idx] / y_ratio)
             data[x, y] += 1
 
-        data = (data - data.min(axis=0)) / (data.max(axis=0) - data.min(axis=0))
+        data = (data - data.min(axis=0)) / \
+            (data.max(axis=0) - data.min(axis=0))
         datas.append(data)
 
     fig = plt.figure(figsize=(20, 5))
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     ax.set_yticks([])
     ax.set_xticks([])
     ax.set_title('Evaluation set')
-    
+
     ax = sns.heatmap(
         np.abs(datas[0] - datas[1]),
         annot=False,

@@ -5,6 +5,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+class SettingsException(Exception):
+    """Exception raised for errors in the settings."""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(self.message)
+
+
 def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> list:
     '''
     Find all possile neighbors of a node in a maze like grid.

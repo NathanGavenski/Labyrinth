@@ -1,18 +1,25 @@
+"""Create teacher dataset for imitation learning."""
 import argparse
 import os
 from os import listdir
 from os.path import isfile, join
 import shutil
+from typing import Any, List, Tuple
 
 import gym
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
 
+# pylint: disable=[W0611]
 from . import maze
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
+    """Get arguments from command line.
+
+    Returns:
+        argparse.Namespace: arguments from command line
+    """
     parser = argparse.ArgumentParser(
         description="Args for creating expert dataset."
     )
@@ -61,26 +68,40 @@ def get_args():
     return parser.parse_args()
 
 
-def state_to_action(source: int, target: int, shape: tuple) -> int:
-    w, h = shape
+def state_to_action(source: int, target: int, shape: Tuple[int, int]) -> int:
+    """Convert global index states into action (UP, DOWN, LEFT and RIGHT).
+
+    Args:
+        source (int): global index for the source in the maze.
+        target (int): global index for the target in the maze.
+        shape (Tuple[int, int]): maze shape.
+
+    Returns:
+        int: action to take.
+    """
+    width, _ = shape
 
     # Test left or right
-    if source // w == target // w:
+    if source // width == target // width:
         if target > source:
             return 1
-        else:
-            return 3
-    else:
-        if target > source:
-            return 0
-        else:
-            return 2
+        return 3
+
+    if target > source:
+        return 0
+    return 2
 
 
-if __name__ == '__main__':
+def create(args: argparse.Namespace) -> List[Any]:
+    """Create expert dataset for imitation learning.
 
-    args = get_args()
-
+    Args:
+        args (argparse.Namespace): Arguments from command line
+    
+    Returns:
+        List[Any]: Expert dataset for Imitation Learning.
+        TODO explain what is in the dataset.
+    """
     mypath = f'{args.path}/train/'
     mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
@@ -96,10 +117,10 @@ if __name__ == '__main__':
 
     image_idx = 0
     dataset = np.ndarray(shape=[0, 9])
-    for maze_idx, maze in enumerate(tqdm(mazes)):
+    for maze_idx, _maze in enumerate(tqdm(mazes)):
         env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
-        env.load(maze)
-        
+        env.load(_maze)
+
         if args.unbiased and (maze_idx % args.times != 0):
             env.change_start_and_goal()
 
@@ -118,32 +139,34 @@ if __name__ == '__main__':
                 if idx < len(solution) - 1:
                     action = state_to_action(
                         tile,
-                        solution[idx+1],
+                        solution[idx + 1],
                         shape=(args.width, args.height)
                     )
-                    state, reward, done, info = env.step(action)
+                    _, reward, done, _ = env.step(action)
                     total_reward += reward
 
                 if not done:
                     entry = [
                         maze_idx,  # maze version
                         solution_idx,  # solution number
-                        image_idx-1,  # state 
+                        image_idx - 1,  # state
                         action,  # action
                         image_idx,  # next_state
                         0,  # episode reward
                         reward,  # step reward
-                        True if idx == 0 else False,  # episode_starts
-                        False,  # episode_ends                        
+                        idx == 0,  # episode_starts
+                        False,  # episode_ends
                     ]
-                    dataset = np.append(
-                        dataset,
-                        np.array(entry)[None],
-                        axis=0
-                    )
+                    dataset = np.append(dataset, np.array(entry)[None], axis=0)
                 elif done:
                     dataset[-1, 5] = total_reward
                     dataset[-1, -1] = True
 
             env.close()
-    np.save(f'{args.save_path}/dataset', dataset)
+    return dataset
+
+
+if __name__ == '__main__':
+    arguments = get_args()
+    expert_dataset = create(arguments)
+    np.save(f'{arguments.save_path}/dataset', expert_dataset)
