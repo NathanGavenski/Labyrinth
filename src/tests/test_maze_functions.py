@@ -257,7 +257,7 @@ class TestCases(unittest.TestCase):
         with open("./src/tests/assets/solve_key_and_door.txt", 'r', encoding="utf-8") as _file:
             for line in _file:
                 test_solve = line
-        assert (env.solve(mode="shortest") == ast.literal_eval(test_solve)).all()
+        assert env.solve(mode="shortest") == ast.literal_eval(test_solve)
 
     def test_solve_all(self):
         """Test the solve function with the all option."""
