@@ -1,9 +1,14 @@
 """Node class for DFS algorithm."""
 import random
 from typing import List, Tuple
-from typing_extensions import Self
+
+try:
+    from typing_extensions import Self
+except ImportError:
+    from typing import Self
 
 import numpy as np
+
 
 class Node:
     """Node class."""
