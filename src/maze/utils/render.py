@@ -9,6 +9,16 @@ from src.maze.utils import Colors
 
 
 class RenderUtils:
+    """Render class responsible for rendering the environment.
+
+    Args:
+        shape (list[int]): (x, y) size for maze.
+        viewer (Viewer, optional): viewer to render environment. Defaults to None.
+        screen_info (list[int], optional): size of the viewer screen. Defaults to None.
+
+    Raises:
+        Exception: screen_info and viewer can not be None at the same time.
+    """
 
     def __init__(
         self,
@@ -44,6 +54,14 @@ class RenderUtils:
         self,
         maze: list[int],
     ) -> Self:
+        """Renders walls for the maze.
+
+        Args:
+            maze (list[int]): Maze walls from _generate().
+
+        Returns:
+            self (self): return instance.
+        """
         for x, tiles in enumerate(maze):
             if self.shape[0] * 2 > x > 0:
                 for y, tile in enumerate(tiles):
@@ -69,6 +87,14 @@ class RenderUtils:
         return self
 
     def draw_agent(self, agent: list[int]) -> Self:
+        """Renders agent for the maze. Sets agent_transition.
+
+        Args:
+            agent (list[int]): agent (x, y) position.
+
+        Returns:
+            self (self): return instance.
+        """
         left = agent[1] * self.tile_w
         right = (agent[1] + 1) * self.tile_w
         bottom = agent[0] * self.tile_h
@@ -86,6 +112,14 @@ class RenderUtils:
         return self
 
     def draw_end(self, end: list[int]) -> Self:
+        """Renders end tile. Sets end position.
+
+        Args:
+            end (list[int]): end (x, y) position.
+
+        Returns:
+            self (self): return instance.
+        """
         self.end = end
 
         left = end[1] * self.tile_w
@@ -103,6 +137,14 @@ class RenderUtils:
         return self
 
     def draw_start(self, start: list[int]) -> Self:
+        """Renders start tile. Sets start position.
+
+        Args:
+            start (list[int]): start (x, y) position.
+
+        Returns:
+            self (self): return instance.
+        """
         self.start = start
 
         left = start[1] * self.tile_w
@@ -120,6 +162,14 @@ class RenderUtils:
         return self
 
     def draw_mask(self, mask: list[list[int]]) -> Self:
+        """Renders mask.
+
+        Args:
+            mask (list[list[int]]): mask based on agent position.
+
+        Returns:
+            self (self): return instance.
+        """
         for y, tiles in enumerate(mask):
             if self.shape[0] * 2 > y > 0:
                 for x, tile in enumerate(tiles):
@@ -148,6 +198,14 @@ class RenderUtils:
         return self
 
     def draw_key(self, key: list[int]) -> Self:
+        """Renders key.
+
+        Args:
+            key (list[int]): key (x, y) position.
+
+        Returns:
+            self (self): return instance.
+        """
         key_y, key_x = key
         left = key_x * self.tile_w + self.tile_w * 0.25
         right = (key_x + 1) * self.tile_w - self.tile_w * 0.25
@@ -165,6 +223,14 @@ class RenderUtils:
         return self
 
     def draw_door(self, door: list[int]) -> Self:
+        """Renders door.
+
+        Args:
+            door (list[int]): door (x, y) position.
+
+        Returns:
+            self (self): return instance.
+        """
         door_y, door_x = door
         left = door_x * self.tile_w
         right = (door_x + 1) * self.tile_w
