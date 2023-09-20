@@ -1,3 +1,4 @@
 pytest
 pylint
 pytest-cov
+watcher-cli

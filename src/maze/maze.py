@@ -16,6 +16,7 @@ from numpy import ndarray
 from .utils import transform_edges_into_walls, Colors
 from .utils import get_neighbors, DFS, RecursionLimit
 from .utils import SettingsException, ResetException, ActionException
+from .utils.render import RenderUtils
 
 
 # FIXME typing
@@ -94,7 +95,7 @@ class Maze(gym.Env):
         """
         super().__init__()
         self.shape = shape
-        self.viewer = None
+        self.render_utils = None
         self.state = None
         self.reseted = False
         self.dfs = None
@@ -142,8 +143,10 @@ class Maze(gym.Env):
 
     def _generate(
             self,
-            visited: List[int] = None
-        ) -> Tuple[List[Tuple[int]], List[Tuple[int]]]:
+            visited: List[int] = None,
+            initial: List[int] = None,
+            goal: List[int] = None
+    ) -> Tuple[List[Tuple[int]], List[Tuple[int]]]:
         """Create a maze using DFS algorithm.
 
         Args:
@@ -154,8 +157,11 @@ class Maze(gym.Env):
         """
         maze = np.ndarray(shape=self.shape)
 
-        start = (self.start[0] * self.shape[0]) + self.start[1]
-        end = self.end[0] * self.shape[0] + self.end[1]
+        initial = self.start if initial is None else initial
+        goal = self.end if goal is None else goal
+
+        start = (initial[0] * self.shape[0]) + initial[1]
+        end = goal[0] * self.shape[0] + goal[1]
 
         if visited is None:
             edges = []
@@ -192,7 +198,7 @@ class Maze(gym.Env):
             self,
             position: int,
             size: Tuple[int, int] = None
-        ) -> Tuple[int, int]:
+    ) -> Tuple[int, int]:
         """Get local position from a global position.
 
         Args:
@@ -237,8 +243,7 @@ class Maze(gym.Env):
 
     # TODO change to pygame dependency
     # TODO change key and door to have a transition function
-    # TODO move rendering functions to a utils class (reduce amount of code)
-    def render(self, mode: str = "human") -> Union[Any, bool, None]:
+    def render(self, mode: str = "human") -> list[float] | None:
         """Render the environment current state.
 
         Args:
@@ -252,152 +257,43 @@ class Maze(gym.Env):
             ResetException: If the environment is not reseted.
 
         Returns:
-            Union[Any, bool, None]: Render view or numpy array. 
+            Union[Any, bool, None]: Render view or numpy array.
         """
         if not self.reseted:
             raise ResetException("Please reset the environment first.")
 
-        w, h = self.shape
-        screen_width = self.screen_width
-        screen_height = self.screen_height
-        tile_h = screen_height / h
-        tile_w = screen_width / w
+        if self.render_utils is None:
+            viewer = rendering.Viewer(self.screen_width, self.screen_height)
+            self.render_utils = RenderUtils(self.shape, viewer) \
+                .draw_start(self.start) \
+                .draw_end(self.end) \
+                .draw_agent(self.agent) \
+                .draw_walls(self.maze)
 
-        if self.viewer is None:
-            self.viewer = rendering.Viewer(screen_width, screen_height)
-
-            # Draw start
-            left = self.start[1] * tile_w
-            right = (self.start[1] + 1) * tile_w
-            top = self.start[0] * tile_h
-            bottom = (self.start[0] + 1) * tile_h
-            start = rendering.FilledPolygon([
-                (left, bottom),
-                (left, top),
-                (right, top),
-                (right, bottom)
-            ])
-            start.set_color(*Colors.RED.value)
-            self.viewer.add_geom(start)
-
-            # Draw end
-            left = self.end[1] * tile_w
-            right = (self.end[1] + 1) * tile_w
-            top = self.end[0] * tile_h
-            bottom = (self.end[0] + 1) * tile_h
-            end = rendering.FilledPolygon([
-                (left, bottom),
-                (left, top),
-                (right, top),
-                (right, bottom)
-            ])
-            end.set_color(*Colors.BLUE.value)
-            self.viewer.add_geom(end)
-
-            # Draw agent
-            left = self.agent[1] * tile_w
-            right = (self.agent[1] + 1) * tile_w
-            bottom = self.agent[0] * tile_h
-            top = (self.agent[0] + 1) * tile_h
-            agent = rendering.FilledPolygon([
-                (left + tile_w // 2, bottom),
-                (left, top - tile_h // 2),
-                (right - tile_w // 2, top),
-                (right, bottom + tile_h // 2)
-            ])
-            self.agent_transition = rendering.Transform()
-            agent.add_attr(self.agent_transition)
-            agent.set_color(*Colors.GREEN.value)
-            self.viewer.add_geom(agent)
-
-            # Draw walls
-            for x, tiles in enumerate(self.maze):
-                if self.shape[0] * 2 > x > 0:
-                    for y, tile in enumerate(tiles):
-                        if tile == 1 and self.shape[0] * 2 > y > 0:
-                            if x % 2 == 0 and (y % 2 != 0 or y == 1):  # horizontal wall
-                                _y = x // 2
-                                _x = y // 2 + 1
-                                line = rendering.Line(
-                                    ((_x - 1) * tile_w, _y * tile_h),
-                                    (_x * tile_w, _y * tile_h)
-                                )
-                                line.set_color(*Colors.BLACK.value)
-                                self.viewer.add_geom(line)
-                            elif x % 2 > 0:  # vertical wall
-                                _y = x // 2 + 1
-                                _x = y // 2
-                                line = rendering.Line(
-                                    (_x * tile_w, (_y - 1) * tile_h),
-                                    (_x * tile_w, _y * tile_h)
-                                )
-                                line.set_color(*Colors.BLACK.value)
-                                self.viewer.add_geom(line)
-
-        # Draw Mask
         if self.occlusion:
-            mask = self.create_mask()
-            for y, tiles in enumerate(mask):
-                if self.shape[0] * 2 > y > 0:
-                    for x, tile in enumerate(tiles):
-                        _x = x // 2
-                        _y = y // 2
+            if self.render_utils is None:
+                raise SettingsException("Viewer is not set")
 
-                        if (_y, _x) in [self.start, self.end]:
-                            continue
-
-                        if tile == 1 and self.shape[1] * 2 > x > 0 and (x % 2 != 0 and y % 2 != 0):
-                            left = _x * tile_w
-                            right = (_x + 1) * tile_w
-                            bottom = _y * tile_h
-                            top = (_y + 1) * tile_h
-                            mask = rendering.FilledPolygon([
-                                (left, bottom),
-                                (left, top),
-                                (right, top),
-                                (right, bottom)
-                            ])
-                            mask.set_color(*Colors.BLACK.value)
-                            self.viewer.add_onetime(mask)
+            self.render_utils.draw_mask(self.create_mask())
 
         if self.key_and_door:
-            if self.key is not None:
-                key_y, key_x = self.key
-                left = key_x * tile_w + tile_w * 0.25
-                right = (key_x + 1) * tile_w - tile_w * 0.25
-                bottom = key_y * tile_h + tile_h * 0.25
-                top = (key_y + 1) * tile_h - tile_h * 0.25
+            if self.key is None or self.door is None:
+                raise SettingsException("Door or key not set.")
 
-                key_rendering = rendering.FilledPolygon([
-                    (left, bottom),
-                    (left, top),
-                    (right, top),
-                    (right, bottom)
-                ])
-                key_rendering.set_color(*Colors.GOLD.value)
-                self.viewer.add_onetime(key_rendering)
+            if self.render_utils is None:
+                raise SettingsException("Viewer is not set")
 
-            if self.door is not None:
-                door_y, door_x = self.door
-                left = door_x * tile_w
-                right = (door_x + 1) * tile_w
-                bottom = door_y * tile_h
-                top = (door_y + 1) * tile_h
+            self.render_utils \
+                .draw_key(self.key) \
+                .draw_door(self.door)
 
-                door_rendering = rendering.FilledPolygon([
-                    (left, bottom),
-                    (left, top),
-                    (right, top),
-                    (right, bottom)
-                ])
-                door_rendering.set_color(*Colors.BROWN.value)
-                self.viewer.add_onetime(door_rendering)
-
+        tile_h = self.render_utils.tile_h
+        tile_w = self.render_utils.tile_w
         new_x = self.agent[1] * tile_w - self.start[1] * tile_w
         new_y = self.agent[0] * tile_h - self.start[0] * tile_h
-        self.agent_transition.set_translation(new_x, new_y)
+        self.render_utils.agent_transition.set_translation(new_x, new_y)
 
-        return self.viewer.render(return_rgb_array = mode == "rgb_array")
+        return self.render_utils.viewer.render(return_rgb_array = mode == "rgb_array")
 
     def translate_position(self, position: Tuple[int, int]) -> Tuple[int, int]:
         """
@@ -569,9 +465,9 @@ class Maze(gym.Env):
 
     def close(self) -> None:
         """Close the environment. Note: This does not reset the environment."""
-        if self.viewer:
-            self.viewer.close()
-            self.viewer = None
+        if self.render_utils is not None:
+            self.render_utils.viewer.close()
+            self.render_utils = None
 
     def save(self, path: str) -> None:
         """Save the current maze separated by ';'.
@@ -872,12 +768,15 @@ class Maze(gym.Env):
         Returns:
             List[int]: _description_
         """
-        possible_paths = self.solve(mode="all")
+        maze_o, visited_o = self._generate(initial=self.start, goal=self.end)
+        maze_e, visited_e = self._generate(initial=self.end, goal=self.start)
+        return (maze_o, visited_o), (maze_e, visited_e)
+        # possible_paths = self.solve(mode="all")
 
-        print("Quantity of solvable paths:", len(possible_paths))
-        print("Paths:")
-        print(possible_paths)
+        # print("Quantity of solvable paths:", len(possible_paths))
+        # print("Paths:")
+        # for path in possible_paths:
+        #     print(path)
 
         # if there is only one solution we should create a new one
         # if there are two solution we should figure it out where
-        raise NotImplementedError()

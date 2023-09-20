@@ -20,12 +20,14 @@ class ResetException(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class ActionException(Exception):
     """Action not in action space."""
 
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(self.message)
+
 
 def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> list:
     '''
