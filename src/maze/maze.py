@@ -109,11 +109,7 @@ class Maze(gym.Env):
         self.screen_height = screen_height
 
         self.start = start
-        self.end = (
-            self.shape[0] -
-            1,
-            self.shape[1] -
-            1) if end is None else end
+        self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
         self.agent = self.start
 
         self.max_episode_steps = max_episode_steps
@@ -626,7 +622,7 @@ class Maze(gym.Env):
         if mode not in ['shortest', 'all']:
             raise ValueError("mode should be 'shortest' or 'all'")
 
-        with RecursionLimit(100000):
+        with RecursionLimit(1000000):
             if self.key_and_door and self.key is not None and self.door is not None:
                 self.dfs.set_key_and_door(
                     self.get_global_position(self.key),
@@ -686,7 +682,7 @@ class Maze(gym.Env):
 
     def agent_random_position(self) -> None:
         """
-        Put the agent in a random position of the maze. This is mostly used if you want 
+        Put the agent in a random position of the maze. This is mostly used if you want
         to create a dataset with diverse positions for your agent.
         """
         self.reset()
@@ -698,7 +694,7 @@ class Maze(gym.Env):
     def set_key_and_door(
             self,
             min_distance: int = None
-        ) -> Tuple[List[int], List[int]]:
+    ) -> Tuple[List[int], List[int]]:
         """Set the key and door in the maze.
 
         Args:
@@ -768,10 +764,10 @@ class Maze(gym.Env):
         Returns:
             List[int]: _description_
         """
-        maze_o, visited_o = self._generate(initial=self.start, goal=self.end)
-        maze_e, visited_e = self._generate(initial=self.end, goal=self.start)
+        with RecursionLimit(1000000):
+            maze_o, visited_o = self._generate(initial=self.start, goal=self.end)
+            maze_e, visited_e = self._generate(initial=self.end, goal=self.start)
         return (maze_o, visited_o), (maze_e, visited_e)
-        # possible_paths = self.solve(mode="all")
 
         # print("Quantity of solvable paths:", len(possible_paths))
         # print("Paths:")

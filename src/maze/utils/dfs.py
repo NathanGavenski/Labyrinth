@@ -16,7 +16,7 @@ class DFS:
             shape: Tuple[int, int],
             start: int = None,
             end: int = None
-        ) -> None:
+    ) -> None:
         """Depth first search algorithm for the maze generation.
 
         Args:
@@ -76,7 +76,7 @@ class DFS:
             self,
             visited: List[Tuple[int, int]],
             start: int = None
-        ) -> List[Tuple[int, int]]:
+    ) -> List[Tuple[int, int]]:
         """Generates a maze-like with DFS.
 
         Args:
@@ -119,6 +119,10 @@ class DFS:
             for node in y_position:
                 nodes_dict[x_position].add_edge(nodes_dict[node])
 
+        for node in nodes_dict.values():
+            print(node)
+        exit()
+
         self.path = []
         if not self.key_and_door:
             self._find_paths(set(), nodes_dict, nodes_dict[self.start], [], self.end)
@@ -138,6 +142,7 @@ class DFS:
 
         return self.path
 
+    # FIXME This is clearly wrong need to remake
     def _find_paths(self, visited, graph, node, path, end) -> None:
         """Auxiliary recursion function for the find_paths()."""
         path = list(tuple(path))
