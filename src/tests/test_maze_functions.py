@@ -248,7 +248,7 @@ class TestCases(unittest.TestCase):
             for line in _file:
                 test_solve = line
 
-        assert solve == ast.literal_eval(test_solve)
+        assert solve[0] == ast.literal_eval(test_solve)
         env.close()
 
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
@@ -257,7 +257,7 @@ class TestCases(unittest.TestCase):
         with open("./src/tests/assets/solve_key_and_door.txt", 'r', encoding="utf-8") as _file:
             for line in _file:
                 test_solve = line
-        assert env.solve(mode="shortest") == ast.literal_eval(test_solve)
+        assert env.solve(mode="shortest")[0] == ast.literal_eval(test_solve)
 
     def test_solve_all(self):
         """Test the solve function with the all option."""
@@ -281,7 +281,7 @@ class TestCases(unittest.TestCase):
         door = env.get_global_position(env.door)
 
         env.key_and_door = False
-        path = env.solve("shortest")
+        path = env.solve("shortest")[0]
         env.key_and_door = True
 
         agent = None
@@ -302,7 +302,7 @@ class TestCases(unittest.TestCase):
         """Test the key and door setting with a key (the agent can open a door)."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
         env.reset()
-        path = env.solve("shortest")
+        path = env.solve("shortest")[0]
 
         for idx, tile in enumerate(path):
             if idx < len(path) - 1:

@@ -1,5 +1,6 @@
 """Depth first search algorithm for the maze generation."""
 from collections import defaultdict
+from copy import deepcopy
 from typing import List, Tuple, Dict
 
 import numpy as np
@@ -100,11 +101,15 @@ class DFS:
             node = self.nodes[node]
             if not node.is_visited():
                 node.visited_from(current)
+                node.visited = True
                 visited.append((current, node.identifier))
                 visited = self.generate_path(visited, node.identifier)
         return visited
 
-    def find_paths(self, edges: Dict[int, List[Tuple[int, int]]]) -> List[List[int]]:
+    def find_paths(
+        self,
+        edges: Dict[int, List[Tuple[int, int]]],
+    ) -> List[List[Node]]:
         """Discover all possible paths to the goal of the maze.
 
         Args:
@@ -113,47 +118,102 @@ class DFS:
         Returns:
             List[List[int]]: A list of list of all the nodes that take the agent to its goal.
         """
-        nodes_dict = {x: Node(x, []) for x in edges.keys()}
+        nodes_dict = {x: Node(x, []) for x in range(max(edges) + 1)}
 
         for x_position, y_position in edges.items():
             for node in y_position:
                 nodes_dict[x_position].add_edge(nodes_dict[node])
 
-        for node in nodes_dict.values():
-            print(node)
-        exit()
-
-        self.path = []
         if not self.key_and_door:
-            self._find_paths(set(), nodes_dict, nodes_dict[self.start], [], self.end)
-        else:
-            self._find_paths(set(), nodes_dict, nodes_dict[self.start], [], self.key)
-            key, self.path = self.path, []
-            self._find_paths(set(), nodes_dict, nodes_dict[self.key], [], self.door)
-            door, self.path = self.path, []
-            self._find_paths(set(), nodes_dict, nodes_dict[self.door], [], self.end)
-            end, self.path = self.path, []
+            path = self.find_path(nodes_dict, self.start, self.end, False)
+            self._find_all_paths(path[self.end])
+            if isinstance(path[self.end].d[0], list):
+                return path[self.end].d
+            else:
+                return [path[self.end].d]
+        start_key_nodes = self.find_path(nodes_dict, self.start, self.key, True)
+        key_door_nodes = self.find_path(nodes_dict, self.key, self.door, True)
+        door_end_nodes = self.find_path(nodes_dict, self.door, self.end, True)
+        start_key_path = start_key_nodes[self.key].d
+        key_door_path = key_door_nodes[self.door].d
+        door_end_path = door_end_nodes[self.end].d
+        path = start_key_path + key_door_path[1:] + door_end_path[1:]
+        return [path]
 
-            for path in key:
-                for _path in door:
-                    for __path in end:
-                        paths = np.append(path[:-1], _path[:-1])
-                        self.path.append(np.append(paths, __path).tolist())
+    def find_path(
+        self,
+        graph: Dict[int, Node],
+        start: int,
+        finish: int,
+        early_stop: bool
+    ) -> Dict[int, Node]:
+        """Function for finding viable path.
 
-        return self.path
+        Args:
+            graph (Dict[int, Node]): graph with edges.
+            start (int): starting node.
+            finish (int): finishing node,
+            early_stop (bool): whether it should keep on finding paths.
 
-    # FIXME This is clearly wrong need to remake
-    def _find_paths(self, visited, graph, node, path, end) -> None:
-        """Auxiliary recursion function for the find_paths()."""
-        path = list(tuple(path))
+        Returns:
+            path (List[Node]): list of path(s) from start to finish.
+        """
+        path = deepcopy(graph)
+        self._find_path(path[start].d, path[start], path[finish], early_stop)
+        return path
 
-        if node.identifier == end:
-            path.append(node.identifier)
-            self.path.append(path)
+    def _find_path(
+        self,
+        visited: list[Node],
+        node: Node,
+        end: Node,
+        early_stop: bool = False
+    ) -> None:
+        """Auxiliary function for finding path from start to goal. Default non-stop
+        DFS implementation. It doesn't stop once it find the end, so we can finding
+        all possible paths afterwards.
+
+        Args:
+            visited List[Node]: list of all visited nodes (starts empty).
+            node Node: current node.
+            end Node: end Node.
+        """
+        node.visited = True
+        node.d += visited
+        node.d.append(node)
+
+        if not node.identifier == end.identifier:
+            for edge in node.edges:
+                edge.visited_from(node)
+                if not edge.is_visited():
+                    self._find_path(node.d, edge, end)
+        elif early_stop:
             return
 
-        if node.identifier not in visited:
-            path.append(node.identifier)
-            visited.add(node.identifier)
-            for neighbor in node:
-                self._find_paths(visited, graph, neighbor, path, end)
+    def _find_all_paths(
+        self,
+        node: Node,
+    ) -> None:
+        """Function for finding all paths from start to goal. This function works
+        backwards from the graph. It searches for possible paths going from the
+        end node until it doesn't find any more forks on the graphs. From that,
+        it works forward updating all nodes until the end.
+
+        Args:
+            node Node: node to start looking for all possible paths. Should
+                start with the goal node.
+        """
+        not_part_of = []
+
+        for edge in node.visited_edges:
+            if not set(edge.d).issubset(set(node.d)):
+                not_part_of.append(edge)
+                self._find_all_paths(edge)
+        else:
+            for edge in not_part_of:
+                extra_paths = edge.d if isinstance(edge.d[0], list) else [edge.d]
+                [path.append(node) for path in extra_paths]
+                if isinstance(node.d[0], list):
+                    node.d = [*node.d, *extra_paths]
+                else:
+                    node.d = [node.d, *extra_paths]

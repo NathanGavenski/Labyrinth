@@ -1,4 +1,5 @@
 """Node class for DFS algorithm."""
+from copy import deepcopy
 import random
 from typing import List, Tuple
 
@@ -12,7 +13,8 @@ import numpy as np
 
 class Node:
     """Node class."""
-    def __init__(self, identifier:int, edges: List[Tuple[int, int]]) -> None:
+
+    def __init__(self, identifier: int, edges: List[Tuple[int, int]]) -> None:
         """Node class for DFS algorithm.
 
         Args:
@@ -22,8 +24,9 @@ class Node:
         self.visited = False
         self.identifier = identifier
         self.visited_edges = []
+        self.d = []
 
-        random.shuffle(edges) # So the iterator is random for the DFS
+        random.shuffle(edges)  # So the iterator is random for the DFS
         self.edges = edges
 
     def is_visited(self) -> bool:
@@ -36,7 +39,8 @@ class Node:
         Args:
             edge (Node): Node to be added as an edge.
         """
-        self.edges.append(edge)
+        if edge not in self.edges:
+            self.edges.append(edge)
 
     def visited_from(self, node: 'Node') -> None:
         """Mark the node as visited from another node.
@@ -44,13 +48,9 @@ class Node:
         Args:
             node (Node): Node that visited the current node.
         """
-        self.visited = True
-        if isinstance(node, int):
-            self.visited_edges.append(node)
-        else:
-            self.visited_edges.append(node.identifier)
+        self.visited_edges.append(node)
 
-    def set_neighbor(self, neighbor:list) -> Self:
+    def set_neighbor(self, neighbor: list) -> Self:
         """Set the node neighbors.
 
         Args:
@@ -78,7 +78,7 @@ class Node:
         """Get all the neighbors from the node.
 
         Returns:
-            List[Self]: List of neighbors. 
+            List[Self]: List of neighbors.
         """
         return self.edges
 
@@ -94,7 +94,7 @@ class Node:
                 current_available_edges.append(node)
         return len(current_available_edges)
 
-    def __getitem__(self, idx:int) -> Self:
+    def __getitem__(self, idx: int) -> Self:
         """Get the node from the edge.
 
         Args:
@@ -139,17 +139,17 @@ class Node:
         """Get the node representation.
 
         Returns:
-            str: Node representation as a string. 
+            str: Node representation as a string.
                 The node representation is a list of edges.
                 Ex: [edge_identifier, edge_identifier, ...]
         """
-        return f'{list(self.edges)}'
+        return f'{self.identifier}'
 
     def __str__(self) -> str:
         """Get the node string representation.
 
         Returns:
-            str: Node string representation. 
+            str: Node string representation.
                 The node string representation is a dictionary of edges.
                 Ex: {node_identifier: [edge_identifier, edge_identifier, ...]}
         """
