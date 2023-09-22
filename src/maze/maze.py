@@ -625,14 +625,13 @@ class Maze(gym.Env):
         if mode not in ['shortest', 'all']:
             raise ValueError("mode should be 'shortest' or 'all'")
 
-        with RecursionLimit(1000000):
+        with RecursionLimit(100000):
             if self.key_and_door and self.key is not None and self.door is not None:
                 self.dfs.set_key_and_door(
                     self.get_global_position(self.key),
                     self.get_global_position(self.door)
                 )
-
-            graph = self.pathways if self.key_and_door else self.undirected_pathways
+            graph = self.pathways if self.key is not None else self.undirected_pathways
             paths = self.dfs.find_paths(graph)
 
         if mode == "shortest":
@@ -720,9 +719,9 @@ class Maze(gym.Env):
             key (Tuple[Tuple[int, int]): (x, y) coordinates for the key.
         """
         avoid = [
-            self.get_global_position(
-                self.start), self.get_global_position(
-                self.end)]
+            self.get_global_position(self.start),
+            self.get_global_position(self.end)
+        ]
         if min_distance is None:
             min_distance = (self.shape[0] + self.shape[1]) // 2
 

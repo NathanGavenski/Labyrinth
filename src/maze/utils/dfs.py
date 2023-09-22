@@ -124,13 +124,23 @@ class DFS:
             for node in y_position:
                 nodes_dict[x_position].add_edge(nodes_dict[node])
 
+
         if not self.key_and_door:
             path = self.find_path(nodes_dict, self.start, self.end, False)
-            self._find_all_paths(path[self.end])
+
+            while True:
+                self.update = False
+
+                self._find_all_paths(path[self.end], path[self.start])
+
+                if not self.update:
+                    break
+
             if isinstance(path[self.end].d[0], list):
                 return path[self.end].d
             else:
                 return [path[self.end].d]
+
         start_key_nodes = self.find_path(nodes_dict, self.start, self.key, True)
         key_door_nodes = self.find_path(nodes_dict, self.key, self.door, True)
         door_end_nodes = self.find_path(nodes_dict, self.door, self.end, True)
@@ -193,6 +203,7 @@ class DFS:
     def _find_all_paths(
         self,
         node: Node,
+        start: Node
     ) -> None:
         """Function for finding all paths from start to goal. This function works
         backwards from the graph. It searches for possible paths going from the
@@ -205,15 +216,20 @@ class DFS:
         """
         not_part_of = []
 
+        if node.identifier == start.identifier:
+            return
+
         for edge in node.visited_edges:
-            if not set(edge.d).issubset(set(node.d)):
+            if not isinstance(edge.d[0], list):
+                edge.d = [edge.d]
+            if not isinstance(node.d[0], list):
+                node.d = [node.d]
+
+            if not set(tuple(x) for x in edge.d).issubset(tuple(x[:-1]) for x in node.d):
+                self.update = True
                 not_part_of.append(edge)
-                self._find_all_paths(edge)
-        else:
-            for edge in not_part_of:
-                extra_paths = edge.d if isinstance(edge.d[0], list) else [edge.d]
-                [path.append(node) for path in extra_paths]
-                if isinstance(node.d[0], list):
-                    node.d = [*node.d, *extra_paths]
-                else:
-                    node.d = [node.d, *extra_paths]
+            self._find_all_paths(edge, start)
+
+        for edge in not_part_of:
+            for d in edge.d:
+                node.add_d(d + [node])
