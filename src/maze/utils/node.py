@@ -42,6 +42,10 @@ class Node:
         if edge not in self.edges:
             self.edges.append(edge)
 
+    def add_d(self, d: List['Node']) -> None:
+        if d not in self.d:
+            self.d.append(d)
+
     def visited_from(self, node: 'Node') -> None:
         """Mark the node as visited from another node.
 
