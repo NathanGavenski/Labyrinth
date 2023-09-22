@@ -177,7 +177,7 @@ class Maze(gym.Env):
             self,
             position: Union[List[int], Tuple[int, int]],
             size: Tuple[int, int] = None
-            ) -> int:
+    ) -> int:
         """Get global position from a tile.
 
         Args:
@@ -229,6 +229,7 @@ class Maze(gym.Env):
         _pathways = defaultdict(list)
         for start, end in pathways:
             _pathways[start].append(end)
+        _pathways[self.get_global_position(self.end)] = []
 
         self.undirected_pathways = deepcopy(_pathways)
         pathways_dict = deepcopy(_pathways)
@@ -289,7 +290,7 @@ class Maze(gym.Env):
         new_y = self.agent[0] * tile_h - self.start[0] * tile_h
         self.render_utils.agent_transition.set_translation(new_x, new_y)
 
-        return self.render_utils.viewer.render(return_rgb_array = mode == "rgb_array")
+        return self.render_utils.viewer.render(return_rgb_array=mode == "rgb_array")
 
     def translate_position(self, position: Tuple[int, int]) -> Tuple[int, int]:
         """
@@ -427,7 +428,7 @@ class Maze(gym.Env):
         """
         self.reseted = True
         self.step_count = 0
-        self.viewer = None
+        self.render_utils = None
 
         if not agent or self.maze is None:
             with RecursionLimit(10000):
@@ -515,7 +516,8 @@ class Maze(gym.Env):
         self.pathways = self.define_pathways(self._pathways)
 
         if self.key_and_door and self.key is None and self.door is None:
-            self.door, self.key = self.set_key_and_door()
+            with RecursionLimit(1000000):
+                self.door, self.key = self.set_key_and_door()
 
         return self.reset(agent=True, render=False)
 
@@ -605,7 +607,8 @@ class Maze(gym.Env):
         return mask
 
     def solve(self, mode: str = 'shortest') -> List[Tuple[int, int]]:
-        """Solve the current maze
+        """Solve the current maze. For key and door the graph has to be directed, because
+        the agent has to come back, while the others it doesn't.
 
         Args:
             mode (str, optional): Mode to solve. Defaults to 'shortest'.
@@ -617,7 +620,7 @@ class Maze(gym.Env):
             ValueError: If mode is not 'shortest' or 'all'
 
         Returns:
-            List[Tuple[int, int]]: List of paths
+            List[List[Tuple[int, int]]]: List of paths
         """
         if mode not in ['shortest', 'all']:
             raise ValueError("mode should be 'shortest' or 'all'")
@@ -629,18 +632,25 @@ class Maze(gym.Env):
                     self.get_global_position(self.door)
                 )
 
-            paths = self.dfs.find_paths(self.pathways)
+            graph = self.pathways if self.key_and_door else self.undirected_pathways
+            paths = self.dfs.find_paths(graph)
 
-        return min(paths) if mode == 'shortest' else paths
+        if mode == "shortest":
+            return [[node.identifier for node in min(paths)]]
+        else:
+            numbered_paths = []
+            for path in paths:
+                numbered_paths.append([node.identifier for node in path])
+            return numbered_paths
 
     def change_start_and_goal(
-            self, min_distance: int = None
-        ) -> Tuple[Tuple[int], Tuple[int]]:
-        """Changes the start and goal of the maze to not be always at the bottom left and 
+        self, min_distance: int = None
+    ) -> Tuple[Tuple[int], Tuple[int]]:
+        """Changes the start and goal of the maze to not be always at the bottom left and
         upper right corners.
 
         Args:
-            min_distance (int, optional): how far the start and goal should be. 
+            min_distance (int, optional): how far the start and goal should be.
             If nothing is passed it uses (width + height) // 2. Defaults to None.
 
         Returns:
@@ -693,9 +703,13 @@ class Maze(gym.Env):
 
     def set_key_and_door(
             self,
-            min_distance: int = None
+            min_distance: int = None,
+            count: int = 0
     ) -> Tuple[List[int], List[int]]:
-        """Set the key and door in the maze.
+        """Set the key and door in the maze. Not all mazes have the right structure to have
+        key and door in the setting we want (key outside the path to the door), so sometimes
+        we restart the maze to find a new structure that might handle this setting. This is a
+        iffy solution at best, we should look into something that does not require a maze restart.
 
         Args:
             min_distance: int = min distance from start to door. If none is informed the 
@@ -709,23 +723,25 @@ class Maze(gym.Env):
             self.get_global_position(
                 self.start), self.get_global_position(
                 self.end)]
-        min_distance = (self.shape[0] + self.shape[1]
-                        ) // 2 if min_distance is None else min_distance
+        if min_distance is None:
+            min_distance = (self.shape[0] + self.shape[1]) // 2
+
         paths = self.solve(mode='all')
-        intersection = list(set(paths[0]).intersection(*paths[1:]))
+        if len(paths) > 1:
+            intersection = list(set(paths[0]).intersection(*map(set, paths[1:])))
+        else:
+            intersection = paths[0]
 
         door, distance = 0, 0
         while distance < min_distance:
             door = np.random.choice(intersection, 1)[0]
-            distance = np.abs(np.array([0, 0]) -
-                              self.get_local_position(door)).sum()
+            distance = np.abs(np.array([0, 0]) - self.get_local_position(door)).sum()
             distance = 0 if door in avoid else distance
 
         def find_all_childs(possible_tiles, node_list):
             initial_len = len(possible_tiles)
             for node in node_list:
-                edges = [
-                    edge for edge in self.dfs.nodes[node].edges if edge not in node_list]
+                edges = [edge for edge in self.dfs.nodes[node].edges if edge not in node_list]
                 if len(edges) > 0:
                     for edge in edges:
                         if edge < door:
@@ -737,10 +753,15 @@ class Maze(gym.Env):
 
         try:
             possible_positions = find_all_childs(
-                [], paths[0][:paths[0].index(door)])
+                [],
+                paths[0][:paths[0].index(door)]
+            )
             key = np.random.choice(possible_positions, 1)[0]
         except ValueError:
-            return self.set_key_and_door(min_distance)
+            if count > 100:
+                 self.maze = None
+                 self.reset()
+            return self.set_key_and_door(min_distance, count + 1)
         return self.get_local_position(door), self.get_local_position(key)
 
     def __hash__(self) -> int:
