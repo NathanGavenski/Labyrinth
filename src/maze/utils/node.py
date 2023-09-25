@@ -1,5 +1,6 @@
 """Node class for DFS algorithm."""
 from copy import deepcopy
+from functools import lru_cache
 import random
 from typing import List, Tuple
 
@@ -39,10 +40,17 @@ class Node:
         Args:
             edge (Node): Node to be added as an edge.
         """
-        if edge not in self.edges:
-            self.edges.append(edge)
+        if isinstance(edge, list):
+            self.edges = np.append(self.edges, edge).astype(int)
+        else:
+            if edge not in self.edges:
+                self.edges.append(edge)
 
     def add_d(self, d: List['Node']) -> None:
+        """Add a path to the node if it is not on the list.
+        Args:
+            d List[Node]: list of nodes.
+        """
         if d not in self.d:
             self.d.append(d)
 
@@ -54,7 +62,7 @@ class Node:
         """
         self.visited_edges.append(node)
 
-    def set_neighbor(self, neighbor: list) -> Self:
+    def set_neighbor(self, neighbor: list) -> None:
         """Set the node neighbors.
 
         Args:
@@ -64,8 +72,7 @@ class Node:
             Self: Node object.
         """
         random.shuffle(neighbor)
-        self.edges = np.array(neighbor)
-        return self
+        self.add_edge(neighbor)
 
     def get_random_neighbor(self) -> Self:
         """Get a random neighbor from the node.
@@ -85,6 +92,10 @@ class Node:
             List[Self]: List of neighbors.
         """
         return self.edges
+
+    @lru_cache(maxsize=156)
+    def get_d(self):
+        return self.d
 
     def __len__(self) -> int:
         """Get the number of available edges.
