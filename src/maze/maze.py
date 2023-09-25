@@ -165,7 +165,8 @@ class Maze(gym.Env):
                 edges += get_neighbors(pos, maze.shape, undirected=False)
 
             self.dfs = DFS(edges, maze.shape, start=start, end=end)
-            visited = self.dfs.generate_path([])
+            with RecursionLimit(100000):
+                visited = self.dfs.generate_path([])
             self.dfs.graph = visited
             self.dfs.reset()
         else:
@@ -431,8 +432,7 @@ class Maze(gym.Env):
         self.render_utils = None
 
         if not agent or self.maze is None:
-            with RecursionLimit(10000):
-                self.maze, self._pathways = self._generate()
+            self.maze, self._pathways = self._generate()
             self.pathways = self.define_pathways(self._pathways)
         self.agent = self.start
 
@@ -510,14 +510,13 @@ class Maze(gym.Env):
         pathways = ast.literal_eval(visited)
         self.start = ast.literal_eval(start)
         self.end = ast.literal_eval(end)
+
         self.maze, self._pathways = self._generate(visited=pathways)
+        self.pathways = self.define_pathways(self._pathways)
         self.agent = self.start
 
-        self.pathways = self.define_pathways(self._pathways)
-
         if self.key_and_door and self.key is None and self.door is None:
-            with RecursionLimit(1000000):
-                self.door, self.key = self.set_key_and_door()
+            self.door, self.key = self.set_key_and_door()
 
         return self.reset(agent=True, render=False)
 
@@ -631,8 +630,11 @@ class Maze(gym.Env):
                     self.get_global_position(self.key),
                     self.get_global_position(self.door)
                 )
+            if self.key is not None:
+                mode = "shortest"
+
             graph = self.pathways if self.key is not None else self.undirected_pathways
-            paths = self.dfs.find_paths(graph)
+            paths = self.dfs.find_paths(graph, mode == "shortest")
 
         if mode == "shortest":
             return [[node.identifier for node in min(paths)]]
@@ -786,7 +788,7 @@ class Maze(gym.Env):
         """
         with RecursionLimit(1000000):
             maze_o, visited_o = self._generate(initial=self.start, goal=self.end)
-            maze_e, visited_e = self._generate(initial=self.end, goal=self.start)
+            maze_e, visited_e = self._generate(initial=self.start, goal=self.end)
         return (maze_o, visited_o), (maze_e, visited_e)
 
         # print("Quantity of solvable paths:", len(possible_paths))

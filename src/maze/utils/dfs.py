@@ -3,8 +3,6 @@ from collections import defaultdict
 from copy import deepcopy
 from typing import List, Tuple, Dict
 
-import numpy as np
-
 from .node import Node
 
 
@@ -109,6 +107,7 @@ class DFS:
     def find_paths(
         self,
         edges: Dict[int, List[Tuple[int, int]]],
+        shortest: True,
     ) -> List[List[Node]]:
         """Discover all possible paths to the goal of the maze.
 
@@ -118,32 +117,30 @@ class DFS:
         Returns:
             List[List[int]]: A list of list of all the nodes that take the agent to its goal.
         """
-        nodes_dict = {x: Node(x, []) for x in range(max(edges) + 1)}
-
-        for x_position, y_position in edges.items():
-            for node in y_position:
-                nodes_dict[x_position].add_edge(nodes_dict[node])
-
-
         if not self.key_and_door:
-            path = self.find_path(nodes_dict, self.start, self.end, False)
-
-            while True:
-                self.update = False
-
-                self._find_all_paths(path[self.end], path[self.start])
-
-                if not self.update:
-                    break
-
-            if isinstance(path[self.end].d[0], list):
-                return path[self.end].d
+            if shortest:
+                path = self.find_path(edges, self.start, self.end, True)
+                if len(path[self.end].d) > 0 and isinstance(path[self.end].d[0], list):
+                    return path[self.end].d
+                else:
+                    return [path[self.end].d]
             else:
-                return [path[self.end].d]
+                path = self.find_path(edges, self.start, self.end, False)
+                while True:
+                    for node in path.values():
+                        node.visited = False
+                    self.update = False
+                    self._find_all_paths(path[self.end], path[self.start])
+                    if not self.update:
+                        break
+                if isinstance(path[self.end].d[0], list):
+                    return path[self.end].d
+                else:
+                    return [path[self.end].d]
 
-        start_key_nodes = self.find_path(nodes_dict, self.start, self.key, True)
-        key_door_nodes = self.find_path(nodes_dict, self.key, self.door, True)
-        door_end_nodes = self.find_path(nodes_dict, self.door, self.end, True)
+        start_key_nodes = self.find_path(edges, self.start, self.key, True)
+        key_door_nodes = self.find_path(edges, self.key, self.door, True)
+        door_end_nodes = self.find_path(edges, self.door, self.end, True)
         start_key_path = start_key_nodes[self.key].d
         key_door_path = key_door_nodes[self.door].d
         door_end_path = door_end_nodes[self.end].d
@@ -152,7 +149,7 @@ class DFS:
 
     def find_path(
         self,
-        graph: Dict[int, Node],
+        edges: Dict[int, List[Tuple[int, int]]],
         start: int,
         finish: int,
         early_stop: bool
@@ -168,7 +165,12 @@ class DFS:
         Returns:
             path (List[Node]): list of path(s) from start to finish.
         """
-        path = deepcopy(graph)
+        path = {x: Node(x, []) for x in range(max(edges) + 1)}
+
+        for x_position, y_position in edges.items():
+            for node in y_position:
+                path[x_position].add_edge(path[node])
+
         self._find_path(path[start].d, path[start], path[finish], early_stop)
         return path
 
@@ -214,6 +216,7 @@ class DFS:
             node Node: node to start looking for all possible paths. Should
                 start with the goal node.
         """
+        node.visited = True
         not_part_of = []
 
         if node.identifier == start.identifier:
@@ -228,8 +231,10 @@ class DFS:
             if not set(tuple(x) for x in edge.d).issubset(tuple(x[:-1]) for x in node.d):
                 self.update = True
                 not_part_of.append(edge)
-            self._find_all_paths(edge, start)
+
+            if not edge.visited:
+                self._find_all_paths(edge, start)
 
         for edge in not_part_of:
-            for d in edge.d:
+            for d in edge.get_d():
                 node.add_d(d + [node])
