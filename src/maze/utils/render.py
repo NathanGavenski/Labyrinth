@@ -246,3 +246,29 @@ class RenderUtils:
         door_rendering.set_color(*Colors.BROWN.value)
         self.viewer.add_onetime(door_rendering)
         return self
+
+    def draw_ice_floors(self, ice_floors: list[int]) -> Self:
+        """Render ice floors.
+
+        Args:
+            ice_floors (list(int)): ice floors (x, y) positions.
+
+        Returns:
+            self (self): return instance.
+        """
+        for ice_floor in ice_floors:
+            y, x = ice_floor
+            left = x * self.tile_w
+            right = (x + 1) * self.tile_w
+            bottom = y * self.tile_h
+            top = (y + 1) * self.tile_h
+
+            ice_rendering = rendering.FilledPolygon([
+                (left, bottom),
+                (left, top),
+                (right, top),
+                (right, bottom)
+            ])
+            ice_rendering.set_color(*Colors.ICE.value)
+            self.viewer.add_onetime(ice_rendering)
+        return self
