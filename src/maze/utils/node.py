@@ -1,6 +1,6 @@
 """Node class for DFS algorithm."""
-from copy import deepcopy
 from functools import lru_cache
+import logging
 import random
 from typing import List, Tuple
 
@@ -29,6 +29,10 @@ class Node:
 
         random.shuffle(edges)  # So the iterator is random for the DFS
         self.edges = edges
+        self.directed_edges = []
+        self.walls = []
+        self.keep = []
+        self.to_delete = []
 
     def is_visited(self) -> bool:
         """Check if the node was visited."""
@@ -45,13 +49,40 @@ class Node:
         else:
             if edge not in self.edges:
                 self.edges.append(edge)
+        random.shuffle(self.edges)
 
+    def remove_parent(self) -> None:
+        """Remove parent from nodes for directed edges."""
+        for edge in self.edges:
+            if edge not in self.visited_edges:
+                msg_log = f"remove_parent:Removing {self.identifier} from {edge.identifier}"
+                msg_log += ", previous node on path"
+                logging.debug(msg_log)
+                self.directed_edges.append(edge)
+
+        self.edges = self.directed_edges
+        self.visited_edges = []
+
+    def remove_edge_no_walls(self, edge: 'Node') -> bool:
+        """Remove an edge from the node."""
+        try:
+            self.edge.remove(edge)
+            return True
+        except ValueError:
+            return True
+
+    def remove_edge(self, edge: 'Node') -> None:
+        """Remove an edge from the node and add it as a wall."""
+        self.edges.remove(edge)
+        self.walls.append(edge)
+
+    # FIXME this is clealy worng, it should see if there is a cycle.
     def add_d(self, d: List['Node']) -> None:
         """Add a path to the node if it is not on the list.
         Args:
             d List[Node]: list of nodes.
         """
-        if d not in self.d:
+        if len(d) == len(set(d)) and d not in self.d:
             self.d.append(d)
 
     def visited_from(self, node: 'Node') -> None:

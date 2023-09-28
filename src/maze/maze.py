@@ -4,7 +4,7 @@ from collections import defaultdict
 from copy import deepcopy
 import os
 import random
-from typing import Any, List, Tuple, Optional, Union
+from typing import List, Tuple, Optional, Union
 
 import gym
 from gym import spaces
@@ -13,7 +13,7 @@ from gym.envs.classic_control import rendering
 import numpy as np
 from numpy import ndarray
 
-from .utils import transform_edges_into_walls, Colors
+from .utils import transform_edges_into_walls
 from .utils import get_neighbors, DFS, RecursionLimit
 from .utils import SettingsException, ResetException, ActionException
 from .utils.render import RenderUtils
@@ -109,7 +109,8 @@ class Maze(gym.Env):
         self.screen_height = screen_height
 
         self.start = start
-        self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
+        self.end = (self.shape[0] - 1, self.shape[1] -
+                    1) if end is None else end
         self.agent = self.start
 
         self.max_episode_steps = max_episode_steps
@@ -119,7 +120,8 @@ class Maze(gym.Env):
         self.seed()
 
         self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(0, 255, (screen_width, screen_height, 3), np.uint8)
+        self.observation_space = spaces.Box(
+            0, 255, (screen_width, screen_height, 3), np.uint8)
 
         self.key_and_door = key_and_door
         self.key, self.door = None, None
@@ -128,7 +130,8 @@ class Maze(gym.Env):
         self.ice_floors = None
 
         if self.key_and_door and self.occlusion:
-            raise SettingsException("Both modes cannot be active at the same time.")
+            raise SettingsException(
+                "Both modes cannot be active at the same time.")
 
     def seed(self, seed: int = None) -> List[int]:
         """
@@ -141,7 +144,8 @@ class Maze(gym.Env):
             self,
             visited: List[int] = None,
             initial: List[int] = None,
-            goal: List[int] = None
+            goal: List[int] = None,
+            min_paths: int = None,
     ) -> Tuple[List[Tuple[int]], List[Tuple[int]]]:
         """Create a maze using DFS algorithm.
 
@@ -160,17 +164,24 @@ class Maze(gym.Env):
         end = goal[0] * self.shape[0] + goal[1]
 
         if visited is None:
-            edges = []
+            edges = {}
             for pos in range(maze.shape[0] * maze.shape[1]):
-                edges += get_neighbors(pos, maze.shape, undirected=False)
+                edges[pos] = get_neighbors(pos, maze.shape, undirected=False)
 
             self.dfs = DFS(edges, maze.shape, start=start, end=end)
             with RecursionLimit(100000):
-                visited = self.dfs.generate_path([])
-            self.dfs.graph = visited
-            self.dfs.reset()
+                graph = self.dfs.generate_path(min_paths=min_paths)
+
+            visited = []
+            for node in graph.values():
+                for edge in node.directed_edges:
+                    visited.append((node.identifier, edge.identifier))
         else:
-            self.dfs = DFS(visited, maze.shape, start=start, end=end)
+            edges = defaultdict(list)
+            for (x, y) in visited:
+                edges[x].append((x, y))
+            self.dfs = DFS(edges, maze.shape, start=start, end=end)
+            self.dfs.convert_graph()
 
         return transform_edges_into_walls(visited, maze.shape), visited
 
@@ -388,7 +399,8 @@ class Maze(gym.Env):
             Tuple[List[List[int]], float, bool, dict[str, List[int]]]: Gym step return.
         """
         if action not in self.actions:
-            raise ActionException(f"Action should be in {self.actions.keys()} it was {action}")
+            raise ActionException(
+                f"Action should be in {self.actions.keys()} it was {action}")
 
         destiny = np.array(self.agent) + self.actions[action]
         agent_global_position = self.get_global_position(self.agent)
@@ -432,9 +444,13 @@ class Maze(gym.Env):
         self.render_utils = None
 
         if not agent or self.maze is None:
-            self.maze, self._pathways = self._generate()
+            if not self.icy_floor:
+                self.maze, self._pathways = self._generate()
+            else:
+                self.maze, self._pathways = self._generate(min_paths=2)
+
             self.pathways = self.define_pathways(self._pathways)
-        self.agent = self.start
+            self.agent = self.start
 
         if self.key_and_door and self.door is None and self.key is None:
             self.door, self.key = self.set_key_and_door()
@@ -448,8 +464,7 @@ class Maze(gym.Env):
         """Generate a maze and save it to a file.
 
         Args:
-            path (str): Path to save the maze.
-            amount (int, optional): Amount of mazes to generate. Defaults to 1.
+            path (str): Path to save the maze (int, optional): Amount of mazes to generate. Defaults to 1.
         """
         for _ in range(amount):
             self.reset(agent=False)
@@ -485,7 +500,8 @@ class Maze(gym.Env):
 
         with open(f'{path}/{file}', 'w', encoding="utf-8") as _file:
             if self.key_and_door:
-                _file.write(f'{self._pathways};{self.start};{self.end};{self.key};{self.door}')
+                _file.write(
+                    f'{self._pathways};{self.start};{self.end};{self.key};{self.door}')
             else:
                 _file.write(f'{self._pathways};{self.start};{self.end}')
 
@@ -616,11 +632,15 @@ class Maze(gym.Env):
             all         returns all paths
 
         Raises:
-            ValueError: If mode is not 'shortest' or 'all'
+            ValueError: If mode is not 'shortest' or 'all'.
+            ResetException: If environment was not reseted.
 
         Returns:
             List[List[Tuple[int, int]]]: List of paths
         """
+        if not self.reseted:
+            raise ResetException("Please reset the environment first.")
+
         if mode not in ['shortest', 'all']:
             raise ValueError("mode should be 'shortest' or 'all'")
 
@@ -729,20 +749,23 @@ class Maze(gym.Env):
 
         paths = self.solve(mode='all')
         if len(paths) > 1:
-            intersection = list(set(paths[0]).intersection(*map(set, paths[1:])))
+            intersection = list(
+                set(paths[0]).intersection(*map(set, paths[1:])))
         else:
             intersection = paths[0]
 
         door, distance = 0, 0
         while distance < min_distance:
             door = np.random.choice(intersection, 1)[0]
-            distance = np.abs(np.array([0, 0]) - self.get_local_position(door)).sum()
+            distance = np.abs(np.array([0, 0]) -
+                              self.get_local_position(door)).sum()
             distance = 0 if door in avoid else distance
 
         def find_all_childs(possible_tiles, node_list):
             initial_len = len(possible_tiles)
             for node in node_list:
-                edges = [edge for edge in self.dfs.nodes[node].edges if edge not in node_list]
+                edges = [
+                    edge for edge in self.dfs.nodes[node].edges if edge not in node_list]
                 if len(edges) > 0:
                     for edge in edges:
                         if edge < door:
@@ -760,8 +783,8 @@ class Maze(gym.Env):
             key = np.random.choice(possible_positions, 1)[0]
         except ValueError:
             if count > 100:
-                 self.maze = None
-                 self.reset()
+                self.maze = None
+                self.reset()
             return self.set_key_and_door(min_distance, count + 1)
         return self.get_local_position(door), self.get_local_position(key)
 
@@ -786,15 +809,10 @@ class Maze(gym.Env):
         Returns:
             List[int]: _description_
         """
-        with RecursionLimit(1000000):
-            maze_o, visited_o = self._generate(initial=self.start, goal=self.end)
-            maze_e, visited_e = self._generate(initial=self.start, goal=self.end)
-        return (maze_o, visited_o), (maze_e, visited_e)
+        paths = self.dfs.graph[self.dfs.end].d
+        print(f"{len(paths)} found")
+        for path in paths:
+            print(len(path), path)
+        print(set(paths[0]).difference(set(paths[1])))
 
-        # print("Quantity of solvable paths:", len(possible_paths))
-        # print("Paths:")
-        # for path in possible_paths:
-        #     print(path)
-
-        # if there is only one solution we should create a new one
-        # if there are two solution we should figure it out where
+        print(self.dfs.graph[self.dfs.end].directed_edges)

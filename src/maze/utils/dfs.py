@@ -1,7 +1,8 @@
 """Depth first search algorithm for the maze generation."""
 from collections import defaultdict
-from copy import deepcopy
+import logging
 from typing import List, Tuple, Dict
+import random
 
 from .node import Node
 
@@ -14,7 +15,7 @@ class DFS:
             graph: List[Tuple[int, int]],
             shape: Tuple[int, int],
             start: int = None,
-            end: int = None
+            end: int = None,
     ) -> None:
         """Depth first search algorithm for the maze generation.
 
@@ -43,7 +44,7 @@ class DFS:
         del self.nodes
 
         edges_dict = defaultdict(list)
-        for key, neighbor in self.graph:
+        for key, neighbor in self.graph.items():
             edges_dict[key].append(neighbor)
 
         self.nodes = []
@@ -71,38 +72,129 @@ class DFS:
         self.door = door
         self.key_and_door = True
 
+    def convert_graph(self) -> None:
+        path = {x: Node(x, []) for x in range(self.end + 1)}
+
+        for edges in self.graph.values():
+            for (x, edge) in edges:
+                path[x].add_edge(path[edge])
+
+        if logging.getLogger().level == logging.DEBUG:
+            for node in path.values():
+                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges}")
+        self.graph = path
+
+
     def generate_path(
             self,
-            visited: List[Tuple[int, int]],
-            start: int = None
-    ) -> List[Tuple[int, int]]:
+            min_paths: int = None,
+    ) -> List[Node]:
         """Generates a maze-like with DFS.
 
         Args:
-            visited (List[Tuple[int, int]]): list of visited nodes. If first iteration use an 
-                empty list (default: empty)
-            start (int, optional): where to start the maze. Defaults to None.
+            min_paths (int, optional): whether the maze has to have more than one path.
+                Defaults to None (no paths required).
 
         Returns:
-            List[int]: List of tuples with all edges that form the paths. To form a maze remove 
-                these edges from the env.
+            graph (List[Node]): List of nodes. These nodes have a list for edges and walls.
         """
-        current = self.start if start is None else start
+        path = {x: Node(x, []) for x in range(max(self.graph.keys()) + 1)}
 
-        if start is None:
-            self.nodes[current].visited = True
+        for edges in self.graph.values():
+            for (x, edge) in edges:
+                path[x].add_edge(path[edge])
 
-        if current == self.end:
-            self.nodes[current].visited = False
+        if logging.getLogger().level == logging.DEBUG:
+            for node in path.values():
+                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges}")
 
-        for node in self.nodes[current]:
-            node = self.nodes[node]
-            if not node.is_visited():
-                node.visited_from(current)
-                node.visited = True
-                visited.append((current, node.identifier))
-                visited = self.generate_path(visited, node.identifier)
-        return visited
+        self._generate_path(path[self.start], path[self.start], path[self.end])
+
+        if logging.getLogger().level == logging.DEBUG:
+            for node in path.values():
+                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges} and visitors {node.visited_edges}")
+
+        for node in path.values():
+            node.remove_parent()
+        path[self.end].edges = []
+
+        if logging.getLogger().level == logging.DEBUG:
+            for node in path.values():
+                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges}")
+
+        if min_paths is not None:
+            path = self.find_path(path, self.start, self.end, False)
+
+            while True:
+                for node in path.values():
+                    node.visited = False
+
+                self.update = False
+                self._find_all_paths(path[self.end], path[self.start])
+                if not self.update or min_paths <= len(path[self.end].d):
+                    break
+
+                if len(path[self.end].d) > min_paths:
+                    break
+
+            logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
+
+            if min_paths > len(path[self.end].d):
+                self.graph = self.generate_path(min_paths)
+                return self.graph
+
+        self.graph = path
+
+        if logging.getLogger().level == logging.DEBUG:
+            for node in self.graph.values():
+                log_msg = "generate_path:"
+                log_msg += f"Node {node.identifier} with "
+                log_msg += f"edges {node.directed_edges} and "
+                log_msg += f"walls {node.walls}"
+                logging.debug(log_msg)
+
+        return path
+
+    def _generate_path(
+        self,
+        node: Node,
+        start: Node,
+        end: Node,
+    ) -> None:
+        """Recursive function to create maze. It performs a DFS algorithm where it visits each 
+        node once. If the node was already visited, the edge has a random chance to not be removed.
+        It does not delete edges that were already visited to not cause no solutions in the maze.
+
+        Args:
+            node (Node): current node.
+            start (Node): starting node.
+            end (Node): ending node.
+        """
+        logging.debug(f"Visiting node {node.identifier}")
+
+        if node.visited:
+            return
+
+        node.visited = True
+        if node == end:
+            return
+
+        for edge in node.edges:
+            logging.debug(f"_generate_path:Node {node.identifier} with edge {edge.identifier}")
+            if not edge.visited:
+                node.keep.append(edge)
+                edge.visited_from(node)
+                self._generate_path(edge, start, end)
+            elif node in edge.to_delete:
+                logging.debug(f"_generate_path:Node {node.identifier} already in {edge.identifier} to_delete")
+                node.to_delete.append(edge)
+            elif node not in edge.keep and random.randint(0, 100) > 25:
+                logging.debug(f"_generate_path:Node {node.identifier} removing edge {edge.identifier}")
+                node.to_delete.append(edge)
+
+        for edge in node.to_delete:
+            node.remove_edge(edge)
+            edge.remove_edge(node)
 
     def find_paths(
         self,
@@ -125,7 +217,13 @@ class DFS:
                 else:
                     return [path[self.end].d]
             else:
-                path = self.find_path(edges, self.start, self.end, False)
+                path = self.find_path(self.graph, self.start, self.end, False)
+                logging.debug(f"find_paths:First path found: {path[self.end].d}")
+                if logging.getLogger().level == logging.DEBUG:
+                    for node in path.values():
+                        logging.debug(f"find_paths:Node {node.identifier} with edges {node.edges}")
+
+                count = 0
                 while True:
                     for node in path.values():
                         node.visited = False
@@ -133,6 +231,13 @@ class DFS:
                     self._find_all_paths(path[self.end], path[self.start])
                     if not self.update:
                         break
+
+                    count += 1
+                    if count == 100:
+                        logging.error("quitting")
+                        exit()
+
+                logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
                 if isinstance(path[self.end].d[0], list):
                     return path[self.end].d
                 else:
@@ -165,11 +270,21 @@ class DFS:
         Returns:
             path (List[Node]): list of path(s) from start to finish.
         """
-        path = {x: Node(x, []) for x in range(max(edges) + 1)}
+        if isinstance(list(edges.values())[0], Node):
+            path = {node.identifier: Node(node.identifier, []) for node in edges.values()}
+            for node in edges.values():
+                for edge in node.edges:
+                    path[node.identifier].add_edge(path[edge.identifier])
+                for edge in node.directed_edges:
+                    path[node.identifier].directed_edges.append(path[edge.identifier])
+                for edge in node.walls:
+                    path[node.identifier].walls.append(path[edge.identifier])
+        else:
+            path = {x: Node(x, []) for x in range(max(edges) + 1)}
 
-        for x_position, y_position in edges.items():
-            for node in y_position:
-                path[x_position].add_edge(path[node])
+            for x_position, y_position in edges.items():
+                for node in y_position:
+                    path[x_position].add_edge(path[node])
 
         self._find_path(path[start].d, path[start], path[finish], early_stop)
         return path
@@ -202,6 +317,24 @@ class DFS:
         elif early_stop:
             return
 
+    def are_all_subsets(
+        self, sublist: List[Node], 
+        superlists: List[List[Node]],
+        node: Node
+    ) -> bool:
+        is_subset = []
+        for superlist in superlists:
+            is_subset.append(set(sublist) == set(superlist[:-1]) or node in sublist)
+        return any(is_subset)
+
+    def are_all_lists_subsets(
+        self,
+        sublists: List[List[Node]],
+        superlists: List[List[Node]],
+        node: Node
+    ) -> bool:
+        return all(self.are_all_subsets(sublist, superlists, node) for sublist in sublists)
+
     def _find_all_paths(
         self,
         node: Node,
@@ -216,9 +349,13 @@ class DFS:
             node Node: node to start looking for all possible paths. Should
                 start with the goal node.
         """
-        node.visited = True
+        logging.debug(f"_find_all_paths: Visiting node {node.identifier}")
         not_part_of = []
 
+        if node.visited:
+            return
+
+        node.visited = True
         if node.identifier == start.identifier:
             return
 
@@ -228,13 +365,31 @@ class DFS:
             if not isinstance(node.d[0], list):
                 node.d = [node.d]
 
-            if not set(tuple(x) for x in edge.d).issubset(tuple(x[:-1]) for x in node.d):
+            is_part = self.are_all_lists_subsets(edge.d, node.d, node)
+            log_msg = f"_find_all_paths:Comparing {edge.identifier} {edge.d} "
+            log_msg += f"with {node.identifier} {node.d} "
+            log_msg += f"({is_part})"
+            logging.debug(log_msg)
+            if not is_part:
                 self.update = True
                 not_part_of.append(edge)
+
+                for d in edge.get_d():
+                    logging.debug(f"Adding {d} to {node.identifier}")
+                    if logging.getLogger().level == logging.DEBUG:
+                        for path in node.get_d():
+                            logging.debug(f"{node.identifier}: {path} ({path == d})")
+
+                    node.add_d(d + [node])
 
             if not edge.visited:
                 self._find_all_paths(edge, start)
 
-        for edge in not_part_of:
-            for d in edge.get_d():
-                node.add_d(d + [node])
+        # for edge in not_part_of:
+        #     for d in edge.get_d():
+        #         logging.debug(f"Adding {d} to {node.identifier}")
+        #         if logging.getLogger().level == logging.DEBUG:
+        #             for path in node.get_d():
+        #                 logging.debug(f"{node.identifier}: {path} ({path == d})")
+
+        #         node.add_d(d + [node])

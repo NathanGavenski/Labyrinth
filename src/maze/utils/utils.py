@@ -108,8 +108,7 @@ def transform_edges_into_walls(edges: list, shape: tuple) -> list:
     Where there is an edge, it removes the wall to create a passage.
 
     Args:
-        edges : list = list of edges (walls) that need 
-        to be removed from the maze.
+        edges : list = list of edges (walls) that need to be removed from the maze.
         shape : tuple = maze shape (width, height).
     """
     width, height = shape
