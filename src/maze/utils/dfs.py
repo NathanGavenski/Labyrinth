@@ -384,12 +384,3 @@ class DFS:
 
             if not edge.visited:
                 self._find_all_paths(edge, start)
-
-        # for edge in not_part_of:
-        #     for d in edge.get_d():
-        #         logging.debug(f"Adding {d} to {node.identifier}")
-        #         if logging.getLogger().level == logging.DEBUG:
-        #             for path in node.get_d():
-        #                 logging.debug(f"{node.identifier}: {path} ({path == d})")
-
-        #         node.add_d(d + [node])

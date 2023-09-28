@@ -296,6 +296,17 @@ class Maze(gym.Env):
                 .draw_key(self.key) \
                 .draw_door(self.door)
 
+        if self.icy_floor:
+            if self.ice_floors is None:
+                raise SettingsException("Ice floors not set.")
+
+            if self.render_utils is None:
+                raise SettingsException("Viewer not set.")
+
+            ice_floors = [self.get_local_position(position) for position in self.ice_floors]
+            self.render_utils \
+                .draw_ice_floors(ice_floors)
+
         tile_h = self.render_utils.tile_h
         tile_w = self.render_utils.tile_w
         new_x = self.agent[1] * tile_w - self.start[1] * tile_w
@@ -320,6 +331,7 @@ class Maze(gym.Env):
         height = int(position[0] / (yoriginal / ymaze))
         return (height, width)
 
+    # FIXME it has to change for ice floors
     def get_state(self) -> List[int] | ndarray:
         """
         Get the current state as a vector.
@@ -377,6 +389,7 @@ class Maze(gym.Env):
 
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] *
     # self.shape[1]) * len(shortest_path) )
+    # FIXME if the agent is on the ice floor it should die
     def step(
         self,
         action: int
@@ -481,6 +494,7 @@ class Maze(gym.Env):
             self.render_utils.viewer.close()
             self.render_utils = None
 
+    # FIXME it has to save the ice floors
     def save(self, path: str) -> None:
         """Save the current maze separated by ';'.
 
@@ -505,6 +519,7 @@ class Maze(gym.Env):
             else:
                 _file.write(f'{self._pathways};{self.start};{self.end}')
 
+    # FIXME it has to load the ice floors
     def load(self, path: str) -> None:
         """
         Load the maze from a file.
@@ -800,6 +815,8 @@ class Maze(gym.Env):
         pathways = tuple(set(map(tuple, pathways)))
         return hash(pathways)
 
+    # TODO I think we should only use those that have difference between both paths
+    # it lets we test when changing from training to validation.
     def set_ice_floors(self) -> List[int]:
         """_summary_
 
@@ -810,9 +827,8 @@ class Maze(gym.Env):
             List[int]: _description_
         """
         paths = self.dfs.graph[self.dfs.end].d
-        print(f"{len(paths)} found")
-        for path in paths:
-            print(len(path), path)
-        print(set(paths[0]).difference(set(paths[1])))
-
-        print(self.dfs.graph[self.dfs.end].directed_edges)
+        ice_floors_option1 = list(set(paths[0]).difference(set(paths[1])))
+        ice_floors_option1 = [node.identifier for node in ice_floors_option1]
+        ice_floors_option2 = list(set(paths[1]).difference(set(paths[0])))
+        ice_floors_option2 = [node.identifier for node in ice_floors_option2]
+        return ice_floors_option1 if len(ice_floors_option1) != 0 else ice_floors_option2
