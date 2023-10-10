@@ -1,8 +1,9 @@
 """Node class for DFS algorithm."""
+from copy import copy
 from functools import lru_cache
 import logging
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 try:
     from typing_extensions import Self
@@ -53,14 +54,17 @@ class Node:
 
     def remove_parent(self) -> None:
         """Remove parent from nodes for directed edges."""
+        edges = []
         for edge in self.edges:
-            if edge not in self.visited_edges:
+            if edge in self.visited_edges:
                 msg_log = f"remove_parent:Removing {self.identifier} from {edge.identifier}"
                 msg_log += ", previous node on path"
                 logging.debug(msg_log)
-                self.directed_edges.append(edge)
+                edges.append(edge)
 
-        self.edges = self.directed_edges
+        for edge in edges:
+            self.edges.remove(edge)
+        self.directed_edges = self.edges
         self.visited_edges = []
 
     def remove_edge_no_walls(self, edge: 'Node') -> bool:
@@ -151,7 +155,7 @@ class Node:
         """
         return self.edges[idx]
 
-    def __eq__(self, other: 'Node') -> bool:
+    def __eq__(self, other: Union['Node', int]) -> bool:
         """Check if the node is equal to another node.
 
         Args:
@@ -160,9 +164,11 @@ class Node:
         Returns:
             bool: True if the nodes are equal, False otherwise.
         """
+        if isinstance(other, (int, np.int32, np.int64)):
+            return self.identifier == other
         return self.identifier == other.identifier
 
-    def __lt__(self, other: 'Node') -> bool:
+    def __lt__(self, other: Union['Node', int]) -> bool:
         """Check if the node is less than another node.
 
         Args:
@@ -171,6 +177,8 @@ class Node:
         Returns:
             bool: True if the node is less than the other node, False otherwise.
         """
+        if isinstance(other, (int, np.int32, np.int64)):
+            return self.identifier < other
         return self.identifier < other.identifier
 
     def __hash__(self) -> int:

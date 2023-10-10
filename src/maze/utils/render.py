@@ -270,5 +270,5 @@ class RenderUtils:
                 (right, bottom)
             ])
             ice_rendering.set_color(*Colors.ICE.value)
-            self.viewer.add_onetime(ice_rendering)
+            self.viewer.add_geom(ice_rendering)
         return self
