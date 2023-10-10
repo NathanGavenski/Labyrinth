@@ -274,7 +274,7 @@ class TestCases(unittest.TestCase):
         second_solutions = env.solve("all")
 
         for _x, _y in zip(first_solutions, second_solutions):
-            assert len(_x) > len(_y)
+            assert len(_x) == len(_y)
             assert (set(_y) - set(_x)) == set()
 
     def test_door(self):
