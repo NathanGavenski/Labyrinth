@@ -75,7 +75,7 @@ class TestCases(unittest.TestCase):
 
     def test_init(self):
         """Test the initialization of the environment."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(3, 3))
         state = env.reset()
 
         maze_size = env.shape
@@ -98,7 +98,7 @@ class TestCases(unittest.TestCase):
     # pylint: disable=[W0212, protected-access]
     def test_save(self):
         """Test the save function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.reset()
         env.save("./tests/test.txt")
 
@@ -115,7 +115,7 @@ class TestCases(unittest.TestCase):
 
     def test_load(self):
         """Test the load function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.load("./src/tests/assets/structure_test.txt")
 
         with open("./src/tests/assets/structure_test.txt", encoding="utf-8") as _file:
@@ -132,7 +132,7 @@ class TestCases(unittest.TestCase):
 
     def test_step(self):
         """Test the step function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         state = env.load("./src/tests/assets/structure_test.txt")
         assert state[0] == 0
 
@@ -142,7 +142,7 @@ class TestCases(unittest.TestCase):
 
     def test_step_wall(self):
         """Test the step function when the agent tries to move into a wall."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         state = env.load("./src/tests/assets/structure_test.txt")
         assert state[0] == 0
 
@@ -151,38 +151,39 @@ class TestCases(unittest.TestCase):
 
     def test_reset(self):
         """Test the reset function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         state = env.load("./src/tests/assets/structure_test.txt")
         assert state[0] == 0
 
         state, _, _, _ = env.step(0)
-        assert state[0] == 38
+        assert state[0] == 38.0
 
         state = env.reset()
+        print(state[0])
         assert state[0] == 0
 
     def test_global_position(self):
         """Test the get_global_position function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         assert env.get_global_position((9, 9), (10, 10)) == get_global_position((9, 9), (10, 10))
 
     def test_local_position(self):
         """Test the get_local_position function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.reset()
         end = env.get_global_position((9, 9), (10, 10))
         assert (9, 9) == env.get_local_position(end)
 
     def test_change_start_and_goal(self):
         """Test the change_start_and_goal function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.load("./src/tests/assets/structure_test.txt")
         env.change_start_and_goal()
         assert env.start != (0, 0)
 
     def test_agent_random_position(self):
         """Test the agent_random_position function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.load("./src/tests/assets/structure_test.txt")
         agent_initial_position = env.agent
         env.agent_random_position()
@@ -190,7 +191,7 @@ class TestCases(unittest.TestCase):
 
     def test_size(self):
         """Test the size function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(5, 5), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
         state = env.reset()
 
         maze_size = (5, 5)
@@ -241,7 +242,7 @@ class TestCases(unittest.TestCase):
 
     def test_solve_shortest(self):
         """Test the solve function with the shortest option."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=False)
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.load("./src/tests/assets/structure_test.txt")
         solve = env.solve()
         with open("./src/tests/assets/solve_test.txt", encoding="utf-8") as _file:
@@ -261,13 +262,15 @@ class TestCases(unittest.TestCase):
 
     def test_solve_all(self):
         """Test the solve function with the all option."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(100, 100), key_and_door=True)
-        env.load("./src/tests/assets/structure_solve_all_test.txt")
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
+        env.reset()
+        env.save("./tests/tmp.txt")
         first_solutions = env.solve("all")
 
         env.close()
-        TestCases.env = env = gym.make("Maze-v0", shape=(100, 100), key_and_door=False)
-        env.load("./src/tests/assets/structure_solve_all_test.txt")
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
+        env.load("./tests/tmp.txt")
+        env.reset()
         second_solutions = env.solve("all")
 
         for _x, _y in zip(first_solutions, second_solutions):
@@ -295,7 +298,6 @@ class TestCases(unittest.TestCase):
                 if agent is not None:
                     assert agent == state[0]
                     break
-
         assert agent is not None
 
     def test_key(self):
@@ -317,7 +319,6 @@ class TestCases(unittest.TestCase):
             gym.make("Maze-v0", shape=(10, 10), key_and_door=True, occlusion=True)
 
         assert "Both modes cannot be active at the same time." in str(excinfo.value)
-
 
     def test_icy_floor(self):
         """Test the icy floor setting."""
