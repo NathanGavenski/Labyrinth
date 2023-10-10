@@ -146,6 +146,8 @@ class Maze(gym.Env):
             initial: List[int] = None,
             goal: List[int] = None,
             min_paths: int = None,
+            max_paths: int = None,
+            random_amount: int = 0,
     ) -> Tuple[List[Tuple[int]], List[Tuple[int]]]:
         """Create a maze using DFS algorithm.
 
@@ -168,9 +170,18 @@ class Maze(gym.Env):
             for pos in range(maze.shape[0] * maze.shape[1]):
                 edges[pos] = get_neighbors(pos, maze.shape, undirected=False)
 
-            self.dfs = DFS(edges, maze.shape, start=start, end=end)
+            self.dfs = DFS(
+                edges,
+                maze.shape,
+                start=start,
+                end=end,
+                random_amount=random_amount
+            )
             with RecursionLimit(100000):
-                graph = self.dfs.generate_path(min_paths=min_paths)
+                graph = self.dfs.generate_path(
+                    min_paths=min_paths,
+                    max_paths=max_paths,
+                )
 
             visited = []
             for node in graph.values():
@@ -273,7 +284,19 @@ class Maze(gym.Env):
 
         if self.render_utils is None:
             viewer = rendering.Viewer(self.screen_width, self.screen_height)
-            self.render_utils = RenderUtils(self.shape, viewer) \
+            self.render_utils = RenderUtils(self.shape, viewer)
+
+            if self.icy_floor:
+                if self.ice_floors is None:
+                    raise SettingsException("Ice floors not set.")
+
+                if self.render_utils is None:
+                    raise SettingsException("Viewer not set.")
+
+                self.render_utils \
+                    .draw_ice_floors(self.ice_floors)
+
+            self.render_utils \
                 .draw_start(self.start) \
                 .draw_end(self.end) \
                 .draw_agent(self.agent) \
@@ -295,17 +318,6 @@ class Maze(gym.Env):
             self.render_utils \
                 .draw_key(self.key) \
                 .draw_door(self.door)
-
-        if self.icy_floor:
-            if self.ice_floors is None:
-                raise SettingsException("Ice floors not set.")
-
-            if self.render_utils is None:
-                raise SettingsException("Viewer not set.")
-
-            ice_floors = [self.get_local_position(position) for position in self.ice_floors]
-            self.render_utils \
-                .draw_ice_floors(ice_floors)
 
         tile_h = self.render_utils.tile_h
         tile_w = self.render_utils.tile_w
@@ -389,7 +401,6 @@ class Maze(gym.Env):
 
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] *
     # self.shape[1]) * len(shortest_path) )
-    # FIXME if the agent is on the ice floor it should die
     def step(
         self,
         action: int
@@ -419,8 +430,7 @@ class Maze(gym.Env):
         agent_global_position = self.get_global_position(self.agent)
         destiny_global_position = self.get_global_position(destiny)
         if destiny_global_position in self.pathways[agent_global_position]:
-            if self.key_and_door and (
-                    np.array(tuple(destiny)) == self.door).all():
+            if self.key_and_door and (np.array(tuple(destiny)) == self.door).all():
                 if self.key is not None:
                     destiny = self.agent
                 else:
@@ -431,12 +441,17 @@ class Maze(gym.Env):
                 self.key = None
 
             self.agent = tuple(destiny)
-
         self.step_count += 1
-        done = (np.array(self.agent) == self.end).all(
-        ) or self.step_count >= self.max_episode_steps
-        reward = -.1 / (self.shape[0] * self.shape[1]
-                        ) if not (np.array(self.agent) == self.end).all() else 1
+        done = (np.array(self.agent) == self.end).all()
+        done |= self.step_count >= self.max_episode_steps
+        if self.icy_floor and np.array((tuple(destiny))) in self.ice_floors:
+            reward = -100
+            done = True
+        else:
+            if not (np.array(self.agent) == self.end).all():
+                reward = -.1 / (self.shape[0] * self.shape[1])
+            else:
+                reward = 1
 
         return self.get_state(), reward, done, {}
 
@@ -457,16 +472,22 @@ class Maze(gym.Env):
         self.render_utils = None
 
         if not agent or self.maze is None:
-            if not self.icy_floor:
-                self.maze, self._pathways = self._generate()
+            if self.icy_floor:
+                self.maze, self._pathways = self._generate(min_paths=2, random_amount=25)
+            elif self.key_and_door:
+                self.maze, self._pathways = self._generate(max_paths=1)
             else:
-                self.maze, self._pathways = self._generate(min_paths=2)
+                self.maze, self._pathways = self._generate()
 
             self.pathways = self.define_pathways(self._pathways)
             self.agent = self.start
 
         if self.key_and_door and self.door is None and self.key is None:
-            self.door, self.key = self.set_key_and_door()
+            try:
+                self.door, self.key = self.set_key_and_door()
+            except SettingsException:
+                self.maze = None
+                return self.reset()
 
         if self.icy_floor and self.ice_floors is None:
             self.ice_floors = self.set_ice_floors()
@@ -494,7 +515,6 @@ class Maze(gym.Env):
             self.render_utils.viewer.close()
             self.render_utils = None
 
-    # FIXME it has to save the ice floors
     def save(self, path: str) -> None:
         """Save the current maze separated by ';'.
 
@@ -506,20 +526,33 @@ class Maze(gym.Env):
             0           Maze paths
             1           Start position
             2           Goal position
+            3           Key | Ice floors position
+            4           Door position
         """
-        file = path.split('/')[-1]
-        path = '/'.join(path.split('/')[:-1])
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if "/" in path:
+            file = path.split('/')[-1]
+            path = '/'.join(path.split('/')[:-1])
+            if not os.path.exists(path):
+                os.makedirs(path)
+        else:
+            file = path
+            path = "."
+
+        pathways = self._pathways
+        if isinstance(pathways, dict):
+            pathways = []
+            for tile, edges in self._pathways.items():
+                for edge in edges:
+                    pathways.append((tile, edge))
 
         with open(f'{path}/{file}', 'w', encoding="utf-8") as _file:
+            save_string = f"{pathways};{self.start};{self.end}"
             if self.key_and_door:
-                _file.write(
-                    f'{self._pathways};{self.start};{self.end};{self.key};{self.door}')
-            else:
-                _file.write(f'{self._pathways};{self.start};{self.end}')
+                save_string += f";{self.key};{self.door}"
+            if self.icy_floor:
+                save_string += f";{self.ice_floors}"
+            _file.write(save_string)
 
-    # FIXME it has to load the ice floors
     def load(self, path: str) -> None:
         """
         Load the maze from a file.
@@ -531,12 +564,14 @@ class Maze(gym.Env):
             for line in _file:
                 info = line
 
-        try:
-            visited, start, end, key, door = info.split(';')
+        visited, start, end, *misc = info.split(";")
+        if self.key_and_door:
+            key, door = misc[0], misc[1]
             self.key = ast.literal_eval(key)
             self.door = ast.literal_eval(door)
-        except ValueError:
-            visited, start, end = info.split(';')
+        if self.icy_floor:
+            ice_floors = misc[0]
+            self.ice_floors = ast.literal_eval(ice_floors)
 
         pathways = ast.literal_eval(visited)
         self.start = ast.literal_eval(start)
@@ -738,9 +773,9 @@ class Maze(gym.Env):
         )
 
     def set_key_and_door(
-            self,
-            min_distance: int = None,
-            count: int = 0
+        self,
+        min_distance: int = None,
+        count: int = 0
     ) -> Tuple[List[int], List[int]]:
         """Set the key and door in the maze. Not all mazes have the right structure to have
         key and door in the setting we want (key outside the path to the door), so sometimes
@@ -764,44 +799,30 @@ class Maze(gym.Env):
 
         paths = self.solve(mode='all')
         if len(paths) > 1:
-            intersection = list(
-                set(paths[0]).intersection(*map(set, paths[1:])))
+            intersection = list(set(paths[0]).intersection(*map(set, paths[1:])))
         else:
             intersection = paths[0]
 
-        door, distance = 0, 0
-        while distance < min_distance:
-            door = np.random.choice(intersection, 1)[0]
-            distance = np.abs(np.array([0, 0]) -
-                              self.get_local_position(door)).sum()
-            distance = 0 if door in avoid else distance
+        key_tiles = []
+        door_tiles = []
+        for node in self.dfs.graph.values():
+            if node not in intersection:
+                key_tiles.append(node)
+            if node in intersection and len(node.edges) > 1:
+                for edge in node.edges:
+                    if edge != self.dfs.end:
+                        if edge in intersection and len(node.visited_edges) == 1:
+                            door_tiles.append(edge)
+        if len(door_tiles) == 0:
+            raise SettingsException("No possible candidate for door or key")
 
-        def find_all_childs(possible_tiles, node_list):
-            initial_len = len(possible_tiles)
-            for node in node_list:
-                edges = [
-                    edge for edge in self.dfs.nodes[node].edges if edge not in node_list]
-                if len(edges) > 0:
-                    for edge in edges:
-                        if edge < door:
-                            possible_tiles.append(edge)
+        door = door_tiles[-1]
+        key_tiles = [node for node in key_tiles if door not in node.d]
+        if len(key_tiles) == 0:
+            raise SettingsException("No possible candidate for door or key")
+        key = random.choice(key_tiles)
 
-            if initial_len < len(possible_tiles):
-                return find_all_childs(possible_tiles, possible_tiles)
-            return possible_tiles
-
-        try:
-            possible_positions = find_all_childs(
-                [],
-                paths[0][:paths[0].index(door)]
-            )
-            key = np.random.choice(possible_positions, 1)[0]
-        except ValueError:
-            if count > 100:
-                self.maze = None
-                self.reset()
-            return self.set_key_and_door(min_distance, count + 1)
-        return self.get_local_position(door), self.get_local_position(key)
+        return self.get_local_position(door.identifier), self.get_local_position(key.identifier)
 
     def __hash__(self) -> int:
         """
@@ -815,8 +836,7 @@ class Maze(gym.Env):
         pathways = tuple(set(map(tuple, pathways)))
         return hash(pathways)
 
-    # TODO I think we should only use those that have difference between both paths
-    # it lets we test when changing from training to validation.
+    # FIXME sometimes it selects floors from non optimal solutions
     def set_ice_floors(self) -> List[int]:
         """_summary_
 
@@ -831,4 +851,5 @@ class Maze(gym.Env):
         ice_floors_option1 = [node.identifier for node in ice_floors_option1]
         ice_floors_option2 = list(set(paths[1]).difference(set(paths[0])))
         ice_floors_option2 = [node.identifier for node in ice_floors_option2]
-        return ice_floors_option1 if len(ice_floors_option1) != 0 else ice_floors_option2
+        ice_floors = ice_floors_option1 if len(ice_floors_option1) != 0 else ice_floors_option2
+        return [self.get_local_position(position) for position in ice_floors]

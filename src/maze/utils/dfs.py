@@ -16,6 +16,7 @@ class DFS:
             shape: Tuple[int, int],
             start: int = None,
             end: int = None,
+            random_amount: int = 0
     ) -> None:
         """Depth first search algorithm for the maze generation.
 
@@ -25,6 +26,8 @@ class DFS:
             shape (Tuple[int, int]): Size of the map (width, height)
             start (int, optional): Where the maze starts. Defaults to None.
             end (int, optional): Where the maze ends. Defaults to None.
+            random_amount (int, optional): How likely it should allow a edge to stay.
+                Defaults to 0 (it does not happen).
         """
 
         self.start = 0 if start is None else start
@@ -35,8 +38,10 @@ class DFS:
         self.shape = shape
         self.graph = graph
         self.nodes = []
+        self.update = None
         self.paths = []
         self.path = []
+        self.random_amount = random_amount
         self.reset()
 
     def reset(self) -> None:
@@ -88,6 +93,7 @@ class DFS:
     def generate_path(
             self,
             min_paths: int = None,
+            max_paths: int = None,
     ) -> List[Node]:
         """Generates a maze-like with DFS.
 
@@ -104,25 +110,33 @@ class DFS:
             for (x, edge) in edges:
                 path[x].add_edge(path[edge])
 
-        if logging.getLogger().level == logging.DEBUG:
-            for node in path.values():
-                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges}")
+        logging.debug([
+            f"generate_path:Node {node.identifier} with edges {node.edges}" \
+            for node in path.values()
+        ])
 
         self._generate_path(path[self.start], path[self.start], path[self.end])
 
-        if logging.getLogger().level == logging.DEBUG:
-            for node in path.values():
-                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges} and visitors {node.visited_edges}")
+        logging.debug([
+            f"generate_path:Node {node.identifier} with edges {node.edges}" + \
+            f"and visitors {node.visited_edges}" \
+            for node in path.values()
+        ])
+
 
         for node in path.values():
             node.remove_parent()
         path[self.end].edges = []
 
-        if logging.getLogger().level == logging.DEBUG:
-            for node in path.values():
-                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges}")
+        logging.debug([
+            f"generate_path:Node {node.identifier} with edges {node.edges}\n" \
+            for node in path.values()
+        ])
 
-        if min_paths is not None:
+        if self.find_loop(path):
+            logging.error("Found a loop")
+
+        if min_paths is not None or max_paths is not None:
             path = self.find_path(path, self.start, self.end, False)
 
             while True:
@@ -131,16 +145,26 @@ class DFS:
 
                 self.update = False
                 self._find_all_paths(path[self.end], path[self.start])
-                if not self.update or min_paths <= len(path[self.end].d):
+                if not self.update:
                     break
 
-                if len(path[self.end].d) > min_paths:
+                if min_paths is not None and len(path[self.end].d) > min_paths:
+                    break
+
+                if max_paths is not None and len(path[self.end].d) > max_paths:
+                    logging.debug(
+                        "generate_path:Generated more paths than allowed: %i",
+                        len(path[self.end].d)
+                    )
+                    self.graph = self.generate_path(min_paths, max_paths)
+                    return self.graph
+                elif max_paths is not None and len(path[self.end].d) <= max_paths:
                     break
 
             logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
 
-            if min_paths > len(path[self.end].d):
-                self.graph = self.generate_path(min_paths)
+            if min_paths is not None and min_paths > len(path[self.end].d):
+                self.graph = self.generate_path(min_paths, max_paths)
                 return self.graph
 
         self.graph = path
@@ -186,16 +210,24 @@ class DFS:
                 edge.visited_from(node)
                 self._generate_path(edge, start, end)
             elif node in edge.to_delete:
-                logging.debug(f"_generate_path:Node {node.identifier} already in {edge.identifier} to_delete")
-                node.to_delete.append(edge)
-            elif node not in edge.keep and random.randint(0, 100) > 25:
-                logging.debug(f"_generate_path:Node {node.identifier} removing edge {edge.identifier}")
+                logging.debug(
+                    "_generate_path:Node %i already in %i to_delete",
+                    node.identifier,
+                    edge.identifier
+                )
+            elif node not in edge.keep and random.randint(0, 100) > self.random_amount:
+                logging.debug(
+                    "_generate_path:Node %i, removing edge %i",
+                    node.identifier,
+                    edge.identifier
+                )
                 node.to_delete.append(edge)
 
         for edge in node.to_delete:
             node.remove_edge(edge)
             edge.remove_edge(node)
 
+    # FIXME somehow there are still loops when it comes to find_paths
     def find_paths(
         self,
         edges: Dict[int, List[Tuple[int, int]]],
@@ -235,6 +267,15 @@ class DFS:
                     count += 1
                     if count == 100:
                         logging.error("quitting")
+                        logging.error([
+                            (
+                                "Node",
+                                identifier,
+                                "with edges:",
+                                edge,
+                            ) for identifier, edge in edges.items()
+                        ])
+                        logging.error(("Loop:", self.find_loop(path)))
                         exit()
 
                 logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
@@ -251,6 +292,18 @@ class DFS:
         door_end_path = door_end_nodes[self.end].d
         path = start_key_path + key_door_path[1:] + door_end_path[1:]
         return [path]
+
+    def find_loop(self, graph: Dict[int, List[Node]]) -> bool:
+        for node in graph.values():
+            for edge in node.edges:
+                if node in graph[edge.identifier].edges:
+                    logging.debug(
+                        "Node %i found in %i",
+                        edge.identifier,
+                        node.identifier
+                    )
+                    return True
+        return False
 
     def find_path(
         self,
