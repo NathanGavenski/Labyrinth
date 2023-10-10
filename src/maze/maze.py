@@ -480,7 +480,7 @@ class Maze(gym.Env):
                 self.maze, self._pathways = self._generate()
 
             self.pathways = self.define_pathways(self._pathways)
-            self.agent = self.start
+        self.agent = self.start
 
         if self.key_and_door and self.door is None and self.key is None:
             try:
@@ -498,7 +498,8 @@ class Maze(gym.Env):
         """Generate a maze and save it to a file.
 
         Args:
-            path (str): Path to save the maze (int, optional): Amount of mazes to generate. Defaults to 1.
+            path (str): Path to save the maze (int, optional): Amount of mazes to generate.
+            Defaults to 1.
         """
         for _ in range(amount):
             self.reset(agent=False)
@@ -772,31 +773,21 @@ class Maze(gym.Env):
             random.randint(0, self.shape[1] - 1)
         )
 
-    def set_key_and_door(
-        self,
-        min_distance: int = None,
-        count: int = 0
-    ) -> Tuple[List[int], List[int]]:
+    def set_key_and_door(self) -> Tuple[List[int], List[int]]:
         """Set the key and door in the maze. Not all mazes have the right structure to have
         key and door in the setting we want (key outside the path to the door), so sometimes
         we restart the maze to find a new structure that might handle this setting. This is a
         iffy solution at best, we should look into something that does not require a maze restart.
 
-        Args:
-            min_distance: int = min distance from start to door. If none is informed the 
-            environment uses (Height + Width) // 2.
-
         Returns:
             door (Tuple[int, int]): (y, x) coordinates for the door.
             key (Tuple[Tuple[int, int]): (x, y) coordinates for the key.
-        """
-        avoid = [
-            self.get_global_position(self.start),
-            self.get_global_position(self.end)
-        ]
-        if min_distance is None:
-            min_distance = (self.shape[0] + self.shape[1]) // 2
 
+        Raises:
+            SettingsException: if there are no possible candidates for key and door, it raises
+            and exception to reset the maze to look for another possible structure that suffices
+            key and door setting.
+        """
         paths = self.solve(mode='all')
         if len(paths) > 1:
             intersection = list(set(paths[0]).intersection(*map(set, paths[1:])))
@@ -810,7 +801,7 @@ class Maze(gym.Env):
                 key_tiles.append(node)
             if node in intersection and len(node.edges) > 1:
                 for edge in node.edges:
-                    if edge != self.dfs.end:
+                    if edge not in [self.dfs.start, self.dfs.end]:
                         if edge in intersection and len(node.visited_edges) == 1:
                             door_tiles.append(edge)
         if len(door_tiles) == 0:
@@ -836,7 +827,6 @@ class Maze(gym.Env):
         pathways = tuple(set(map(tuple, pathways)))
         return hash(pathways)
 
-    # FIXME sometimes it selects floors from non optimal solutions
     def set_ice_floors(self) -> List[int]:
         """_summary_
 
