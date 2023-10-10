@@ -3,6 +3,7 @@ try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
+from typing import List
 
 from gym.envs.classic_control import rendering
 
@@ -23,9 +24,9 @@ class RenderUtils:
 
     def __init__(
         self,
-        shape: list[int],
+        shape: List[int],
         viewer: rendering.Viewer = None,
-        screen_info: list[int] = None,
+        screen_info: List[int] = None,
     ) -> None:
         if viewer is None and screen_info is None:
             raise ValueError("screen_info and viewer can not be None at the same time.")
@@ -53,7 +54,7 @@ class RenderUtils:
 
     def draw_walls(
         self,
-        maze: list[int],
+        maze: List[int],
     ) -> Self:
         """Renders walls for the maze.
 
@@ -89,7 +90,7 @@ class RenderUtils:
                             self.viewer.add_geom(line)
         return self
 
-    def draw_agent(self, agent: list[int]) -> Self:
+    def draw_agent(self, agent: List[int]) -> Self:
         """Renders agent for the maze. Sets agent_transition.
 
         Args:
@@ -114,7 +115,7 @@ class RenderUtils:
         self.viewer.add_geom(agent)
         return self
 
-    def draw_end(self, end: list[int]) -> Self:
+    def draw_end(self, end: List[int]) -> Self:
         """Renders end tile. Sets end position.
 
         Args:
@@ -139,7 +140,7 @@ class RenderUtils:
         self.viewer.add_geom(end)
         return self
 
-    def draw_start(self, start: list[int]) -> Self:
+    def draw_start(self, start: List[int]) -> Self:
         """Renders start tile. Sets start position.
 
         Args:
@@ -164,7 +165,7 @@ class RenderUtils:
         self.viewer.add_geom(start)
         return self
 
-    def draw_mask(self, mask: list[list[int]]) -> Self:
+    def draw_mask(self, mask: List[List[int]]) -> Self:
         """Renders mask.
 
         Args:
@@ -200,7 +201,7 @@ class RenderUtils:
                         self.viewer.add_onetime(mask)
         return self
 
-    def draw_key(self, key: list[int]) -> Self:
+    def draw_key(self, key: List[int]) -> Self:
         """Renders key.
 
         Args:
@@ -225,7 +226,7 @@ class RenderUtils:
         self.viewer.add_onetime(key_rendering)
         return self
 
-    def draw_door(self, door: list[int]) -> Self:
+    def draw_door(self, door: List[int]) -> Self:
         """Renders door.
 
         Args:
@@ -250,7 +251,7 @@ class RenderUtils:
         self.viewer.add_onetime(door_rendering)
         return self
 
-    def draw_ice_floors(self, ice_floors: list[int]) -> Self:
+    def draw_ice_floors(self, ice_floors: List[int]) -> Self:
         """Render ice floors.
 
         Args:

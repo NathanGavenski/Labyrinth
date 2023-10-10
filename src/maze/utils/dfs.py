@@ -336,7 +336,7 @@ class DFS:
 
     def _find_path(
         self,
-        visited: list[Node],
+        visited: List[Node],
         node: Node,
         end: Node,
         early_stop: bool = False
