@@ -1,3 +1,4 @@
+"""Module for rendering the environment."""
 try:
     from typing import Self
 except ImportError:
@@ -27,24 +28,24 @@ class RenderUtils:
         screen_info: list[int] = None,
     ) -> None:
         if viewer is None and screen_info is None:
-            raise Exception("screen_info and viewer can not be None at the same time.")
+            raise ValueError("screen_info and viewer can not be None at the same time.")
 
         self.shape = shape
 
         if screen_info is None:
-            self.screen_h = viewer.height
-            self.screen_w = viewer.width
+            screen_h = viewer.height
+            screen_w = viewer.width
         else:
-            self.screen_w, self.screen_h = screen_info
+            screen_w, screen_h = screen_info
 
         if viewer is not None:
             self.viewer = viewer
         else:
-            self.viewer = rendering.Viewer(self.screen_w, self.screen_h)
+            self.viewer = rendering.Viewer(screen_w, screen_h)
 
-        w, h = shape
-        self.tile_h = self.screen_h / h
-        self.tile_w = self.screen_w / w
+        width, height = shape
+        self.tile_h = screen_h / height
+        self.tile_w = screen_w / width
 
         self.start = None
         self.end = None
@@ -66,7 +67,8 @@ class RenderUtils:
             if self.shape[0] * 2 > x > 0:
                 for y, tile in enumerate(tiles):
                     if tile == 1 and self.shape[0] * 2 > y > 0:
-                        if x % 2 == 0 and (y % 2 != 0 or y == 1):  # horizontal wall
+                        if x % 2 == 0 and (y % 2 != 0 or y == 1):
+                            # horizontal wall
                             _y = x // 2
                             _x = y // 2 + 1
                             line = rendering.Line(
@@ -75,7 +77,8 @@ class RenderUtils:
                             )
                             line.set_color(*Colors.BLACK.value)
                             self.viewer.add_geom(line)
-                        elif x % 2 > 0:  # vertical wall
+                        elif x % 2 > 0:
+                            # vertical wall
                             _y = x // 2 + 1
                             _x = y // 2
                             line = rendering.Line(

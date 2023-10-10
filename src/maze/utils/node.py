@@ -1,5 +1,4 @@
 """Node class for DFS algorithm."""
-from copy import copy
 from functools import lru_cache
 import logging
 import random
@@ -70,7 +69,7 @@ class Node:
     def remove_edge_no_walls(self, edge: 'Node') -> bool:
         """Remove an edge from the node."""
         try:
-            self.edge.remove(edge)
+            self.edges.remove(edge)
             return True
         except ValueError:
             return True
@@ -80,7 +79,6 @@ class Node:
         self.edges.remove(edge)
         self.walls.append(edge)
 
-    # FIXME this is clealy worng, it should see if there is a cycle.
     def add_d(self, d: List['Node']) -> None:
         """Add a path to the node if it is not on the list.
         Args:
@@ -129,7 +127,12 @@ class Node:
         return self.edges
 
     @lru_cache(maxsize=156)
-    def get_d(self):
+    def get_d(self) -> List[List['Node']]:
+        """Gets attribute "d" (uses lru cache).
+
+        Returns:
+            d (list[list[Node]]): list or list of lists of paths to the node.
+        """
         return self.d
 
     def __len__(self) -> int:
@@ -180,6 +183,20 @@ class Node:
         if isinstance(other, (int, np.int32, np.int64)):
             return self.identifier < other
         return self.identifier < other.identifier
+
+    def __gt__(self, other: Union['Node', int]) -> bool:
+        """Check if the node is greater than another node.
+
+        Args:
+            other (Node): Node to be compared.
+
+        Returns:
+            bool: True if the node is greater than the other node, False otherwise.
+        """
+        if isinstance(other, (int, np.int32, np.int64)):
+            return self.identifier > other
+        return self.identifier > other.identifier
+
 
     def __hash__(self) -> int:
         """Get the node hash.

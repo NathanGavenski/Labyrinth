@@ -104,6 +104,7 @@ class Maze(gym.Env):
         self.agent_transition = None
         self.pathways = None
         self._pathways = None
+        self.done = False
 
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -343,7 +344,6 @@ class Maze(gym.Env):
         height = int(position[0] / (yoriginal / ymaze))
         return (height, width)
 
-    # FIXME it has to change for ice floors
     def get_state(self) -> List[int] | ndarray:
         """
         Get the current state as a vector.
@@ -358,23 +358,23 @@ class Maze(gym.Env):
         maze = self.maze if not self.occlusion else self.create_mask()
         maze = maze[1:-1, 1:-1]
 
-        agent = self.get_global_position(
-            self.translate_position(
-                self.agent), maze.shape)
-        start = self.get_global_position(
-            self.translate_position(
-                self.start), maze.shape)
-        goal = self.get_global_position(
-            self.translate_position(
-                self.end), maze.shape)
+        agent = self.get_global_position(self.translate_position(self.agent), maze.shape)
+        start = self.get_global_position(self.translate_position(self.start), maze.shape)
+        goal = self.get_global_position(self.translate_position(self.end), maze.shape)
 
         if self.key_and_door:
             key = self.get_global_position(
-                self.translate_position(
-                    self.key), maze.shape) if self.key else -1
+                self.translate_position(self.key),
+                maze.shape
+            ) if self.key else -1
             door = self.get_global_position(
-                self.translate_position(
-                    self.door), maze.shape) if self.door else -1
+                self.translate_position(self.door),
+                maze.shape
+            ) if self.door else -1
+
+        if self.icy_floor:
+            ice_floors = [self.translate_position(ice) for ice in self.ice_floors]
+            ice_floors = [self.get_global_position(ice, maze.shape) for ice in ice_floors]
 
         if self.occlusion:
             tiles = [x for x in range(goal + 1) if x % 2 != 0]
@@ -395,6 +395,8 @@ class Maze(gym.Env):
         state = np.array([agent, start, goal])
         if self.key_and_door:
             state = np.hstack((state, [key, door]))
+        if self.icy_floor:
+            state = np.hstack((state, ice_floors))
 
         state = np.hstack((state, maze))
         return state
@@ -423,8 +425,10 @@ class Maze(gym.Env):
             Tuple[List[List[int]], float, bool, dict[str, List[int]]]: Gym step return.
         """
         if action not in self.actions:
-            raise ActionException(
-                f"Action should be in {self.actions.keys()} it was {action}")
+            raise ActionException(f"Action should be in {self.actions.keys()} it was {action}")
+
+        if self.done:
+            raise ActionException("Episode is already done.")
 
         destiny = np.array(self.agent) + self.actions[action]
         agent_global_position = self.get_global_position(self.agent)
@@ -444,7 +448,7 @@ class Maze(gym.Env):
         self.step_count += 1
         done = (np.array(self.agent) == self.end).all()
         done |= self.step_count >= self.max_episode_steps
-        if self.icy_floor and np.array((tuple(destiny))) in self.ice_floors:
+        if self.icy_floor and tuple(destiny) in self.ice_floors:
             reward = -100
             done = True
         else:
@@ -453,6 +457,7 @@ class Maze(gym.Env):
             else:
                 reward = 1
 
+        self.done = done
         return self.get_state(), reward, done, {}
 
     def reset(self, agent: bool = True, render: bool = False) -> Union[List[int], ndarray]:
@@ -709,11 +714,10 @@ class Maze(gym.Env):
 
         if mode == "shortest":
             return [[node.identifier for node in min(paths)]]
-        else:
-            numbered_paths = []
-            for path in paths:
-                numbered_paths.append([node.identifier for node in path])
-            return numbered_paths
+        numbered_paths = []
+        for path in paths:
+            numbered_paths.append([node.identifier for node in path])
+        return numbered_paths
 
     def change_start_and_goal(
         self, min_distance: int = None
