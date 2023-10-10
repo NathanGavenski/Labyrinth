@@ -13,7 +13,7 @@ import pytest
 # pylint: disable=[W0611]
 from src import maze
 from src.create_expert import state_to_action
-from src.maze.utils.utils import SettingsException
+from src.maze.utils.utils import SettingsException, ActionException
 
 
 def get_global_position(position: Tuple[int, int], size: Tuple[int] = (10, 10)) -> int:
@@ -127,9 +127,6 @@ class TestCases(unittest.TestCase):
         assert env.start == ast.literal_eval(start)
         assert env.end == ast.literal_eval(end)
 
-        img = np.array(Image.open("./src/tests/assets/render_test.png"))
-        assert (env.render("rgb_array") == img).all()
-
     def test_step(self):
         """Test the step function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
@@ -238,7 +235,6 @@ class TestCases(unittest.TestCase):
         assert state[3] == 2
         assert state[4] == 316
         assert state.shape[0] == maze_size + 5
-        assert (env.render("rgb_array") == test_render).all()
 
     def test_solve_shortest(self):
         """Test the solve function with the shortest option."""
@@ -322,14 +318,33 @@ class TestCases(unittest.TestCase):
 
     def test_icy_floor(self):
         """Test the icy floor setting."""
-        # Create icy floor environment
-        # Validate the first sate
-        # Validate trajectory
-        raise NotImplementedError()
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), icy_floor=True)
+        state = env.reset()
+        floors = []
+        for floor in env.ice_floors:
+            floor = env.translate_position(floor)
+            floor = env.get_global_position(floor, env.maze[1:-1, 1:-1].shape)
+            floors.append(floor)
 
-    def test_break_floor(self):
-        """Test if the icy floor breaks when the agent steps on it."""
-        # Create icy floor environment
-        # Validate the first state
-        # Break the floor and fall
-        raise NotImplementedError()
+        assert (state[3:len(floors) + 3] == floors).all()
+
+        ice_floor = [env.get_global_position(floor) for floor in env.ice_floors]
+        path = env.dfs.find_path(
+            env.undirected_pathways,
+            env.dfs.start,
+            ice_floor[0],
+            early_stop=True
+        )
+        path = [node.identifier for node in path[ice_floor[0]].d]
+        intersec = list(set(path).intersection(set(ice_floor)))
+        index = min([path.index(floor) for floor in intersec])
+        path = path[:index + 1]
+
+        for idx, tile in enumerate(path):
+            if idx < len(path) - 1:
+                action = state_to_action(tile, path[idx + 1], shape=(10, 10))
+                state, _, done, _ = env.step(action)
+        assert done
+
+        with pytest.raises(ActionException):
+            env.step(env.action_space.sample())

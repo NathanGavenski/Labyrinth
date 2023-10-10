@@ -78,6 +78,7 @@ class DFS:
         self.key_and_door = True
 
     def convert_graph(self) -> None:
+        """Convert a start and end into a graph."""
         path = {x: Node(x, []) for x in range(self.end + 1)}
 
         for edges in self.graph.values():
@@ -158,7 +159,8 @@ class DFS:
                     )
                     self.graph = self.generate_path(min_paths, max_paths)
                     return self.graph
-                elif max_paths is not None and len(path[self.end].d) <= max_paths:
+
+                if max_paths is not None and len(path[self.end].d) <= max_paths:
                     break
 
             logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
@@ -169,13 +171,13 @@ class DFS:
 
         self.graph = path
 
-        if logging.getLogger().level == logging.DEBUG:
-            for node in self.graph.values():
-                log_msg = "generate_path:"
-                log_msg += f"Node {node.identifier} with "
-                log_msg += f"edges {node.directed_edges} and "
-                log_msg += f"walls {node.walls}"
-                logging.debug(log_msg)
+        logging.debug([
+            "generate_path:" +
+            f"Node {node.identifier} with " +
+            f"edges {node.directed_edges} and " +
+            f"walls {node.walls}"
+            for node in self.graph.values()
+        ])
 
         return path
 
@@ -227,7 +229,6 @@ class DFS:
             node.remove_edge(edge)
             edge.remove_edge(node)
 
-    # FIXME somehow there are still loops when it comes to find_paths
     def find_paths(
         self,
         edges: Dict[int, List[Tuple[int, int]]],
@@ -246,43 +247,26 @@ class DFS:
                 path = self.find_path(edges, self.start, self.end, True)
                 if len(path[self.end].d) > 0 and isinstance(path[self.end].d[0], list):
                     return path[self.end].d
-                else:
-                    return [path[self.end].d]
-            else:
-                path = self.find_path(self.graph, self.start, self.end, False)
-                logging.debug(f"find_paths:First path found: {path[self.end].d}")
-                if logging.getLogger().level == logging.DEBUG:
-                    for node in path.values():
-                        logging.debug(f"find_paths:Node {node.identifier} with edges {node.edges}")
+                return [path[self.end].d]
+            path = self.find_path(self.graph, self.start, self.end, False)
+            logging.debug(f"find_paths:First path found: {path[self.end].d}")
+            logging.debug([
+                f"find_paths:Node {node.identifier} with edges {node.edges}"
+                for node in path.values()
+            ])
 
-                count = 0
-                while True:
-                    for node in path.values():
-                        node.visited = False
-                    self.update = False
-                    self._find_all_paths(path[self.end], path[self.start])
-                    if not self.update:
-                        break
+            while True:
+                for node in path.values():
+                    node.visited = False
+                self.update = False
+                self._find_all_paths(path[self.end], path[self.start])
+                if not self.update:
+                    break
 
-                    count += 1
-                    if count == 100:
-                        logging.error("quitting")
-                        logging.error([
-                            (
-                                "Node",
-                                identifier,
-                                "with edges:",
-                                edge,
-                            ) for identifier, edge in edges.items()
-                        ])
-                        logging.error(("Loop:", self.find_loop(path)))
-                        exit()
-
-                logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
-                if isinstance(path[self.end].d[0], list):
-                    return path[self.end].d
-                else:
-                    return [path[self.end].d]
+            logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
+            if isinstance(path[self.end].d[0], list):
+                return path[self.end].d
+            return [path[self.end].d]
 
         start_key_nodes = self.find_path(edges, self.start, self.key, True)
         key_door_nodes = self.find_path(edges, self.key, self.door, True)
@@ -294,6 +278,14 @@ class DFS:
         return [path]
 
     def find_loop(self, graph: Dict[int, List[Node]]) -> bool:
+        """Detect whether a loop exists in a graph.
+
+        Args:
+            graph (dict[int, list[Node]]): graph nodes.
+
+        Returns:
+            loop_exists (bool): True if there is a loop.
+        """
         for node in graph.values():
             for edge in node.edges:
                 if node in graph[edge.identifier].edges:
@@ -371,10 +363,21 @@ class DFS:
             return
 
     def are_all_subsets(
-        self, sublist: List[Node], 
+        self,
+        sublist: List[Node],
         superlists: List[List[Node]],
         node: Node
     ) -> bool:
+        """Tests if all elemets from a sublist is part of a superlist.
+
+        Args:
+            sublist (list[Node]): sublist elements.
+            superlists (list[list[Node]]): all superlists.
+            node (Node): node to check if it is in the sublist.
+
+        Returns:
+            is_part (bool): if it is a sublist from the superlists.
+        """
         is_subset = []
         for superlist in superlists:
             is_subset.append(set(sublist) == set(superlist[:-1]) or node in sublist)
@@ -386,6 +389,16 @@ class DFS:
         superlists: List[List[Node]],
         node: Node
     ) -> bool:
+        """Check if all sublists are part of a superlist.
+
+        Args:
+            sublists (list[list[Node]]): list of lists of elements.
+            superlists (list[list[Node]]): list of lists of elements.
+            node (Node): node element.
+
+        Returns:
+            is_part (bool) if all sublists are part of the superlists.
+        """
         return all(self.are_all_subsets(sublist, superlists, node) for sublist in sublists)
 
     def _find_all_paths(
@@ -429,10 +442,10 @@ class DFS:
 
                 for d in edge.get_d():
                     logging.debug(f"Adding {d} to {node.identifier}")
-                    if logging.getLogger().level == logging.DEBUG:
-                        for path in node.get_d():
-                            logging.debug(f"{node.identifier}: {path} ({path == d})")
-
+                    logging.debug([
+                        f"{node.identifier}: {path} ({path == d})"
+                        for path in node.get_d()
+                    ])
                     node.add_d(d + [node])
 
             if not edge.visited:
