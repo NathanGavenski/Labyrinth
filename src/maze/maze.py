@@ -4,7 +4,7 @@ from collections import defaultdict
 from copy import deepcopy
 import os
 import random
-from typing import List, Tuple, Optional, Union
+from typing import List, Tuple, Optional, Union, Dict
 
 import gym
 from gym import spaces
@@ -264,7 +264,7 @@ class Maze(gym.Env):
 
     # TODO change to pygame dependency
     # TODO change key and door to have a transition function
-    def render(self, mode: str = "human") -> list[float] | None:
+    def render(self, mode: str = "human") -> Union[List[float], None]:
         """Render the environment current state.
 
         Args:
@@ -344,7 +344,7 @@ class Maze(gym.Env):
         height = int(position[0] / (yoriginal / ymaze))
         return (height, width)
 
-    def get_state(self) -> List[int] | ndarray:
+    def get_state(self) -> Union[List[int], ndarray]:
         """
         Get the current state as a vector.
 
@@ -406,7 +406,7 @@ class Maze(gym.Env):
     def step(
         self,
         action: int
-    ) -> Tuple[List[List[int]], float, bool, dict[str, List[int]]]:
+    ) -> Tuple[List[List[int]], float, bool, Dict[str, List[int]]]:
         """Take a step in the environment.
 
         Args:
