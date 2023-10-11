@@ -13,6 +13,7 @@ from gym.envs.classic_control import rendering
 import numpy as np
 from numpy import ndarray
 
+from .utils import create_mask
 from .utils import transform_edges_into_walls
 from .utils import get_neighbors, DFS, RecursionLimit
 from .utils import SettingsException, ResetException, ActionException
@@ -39,7 +40,7 @@ class Maze(gym.Env):
         a current tile, the observation will be (shape * 2).
 
     Actions:
-        Type: Discrete(2)
+        Type: Discrete(4)
         Num   Action
         0     UP
         1     RIGHT
@@ -307,7 +308,8 @@ class Maze(gym.Env):
             if self.render_utils is None:
                 raise SettingsException("Viewer is not set")
 
-            self.render_utils.draw_mask(self.create_mask())
+            mask = create_mask(self.shape, self.maze, self.agent)
+            self.render_utils.draw_mask(mask)
 
         if self.key_and_door:
             if self.key is None or self.door is None:
@@ -355,7 +357,9 @@ class Maze(gym.Env):
                 2: goal global position
                 3+ maze structure in a vector
         """
-        maze = self.maze if not self.occlusion else self.create_mask()
+        maze = self.maze
+        if self.occlusion:
+            maze = create_mask(self.shape, self.maze, self.agent)
         maze = maze[1:-1, 1:-1]
 
         agent = self.get_global_position(self.translate_position(self.agent), maze.shape)
@@ -591,91 +595,6 @@ class Maze(gym.Env):
             self.door, self.key = self.set_key_and_door()
 
         return self.reset(agent=True, render=False)
-
-    def create_mask(self) -> List[List[int]]:
-        """Create mask for occlusion based on the agent current position and maze structure.
-
-        Returns:
-            List[List[int]]: mask of the given maze for occlusion
-        """
-        tiles = []
-        for height in range(self.shape[0]):
-            for width in range(self.shape[1]):
-                tiles.append(np.array((height, width)))
-
-        maze = self.maze
-        mask = deepcopy(maze)
-
-        for tile in tiles:
-            if (tile == self.agent).all():
-                continue
-            if (tile == self.agent).any():
-                if tile[1] == self.agent[1]:  # Vertical mask
-                    agent_row = self.agent[0] * 2 + 1
-                    target_row = tile[0] * 2 + 1
-                    column = tile[1] * 2 + 1
-                    lower_bound = agent_row if agent_row < target_row else target_row
-                    upper_bound = agent_row if agent_row > target_row else target_row
-                    if (maze[lower_bound:upper_bound + 1, column] == 1).any():
-                        mask[target_row, column] = 1
-                else:  # Horizontal mask
-                    agent_column = self.agent[1] * 2 + 1
-                    target_column = tile[1] * 2 + 1
-                    row = tile[0] * 2 + 1
-                    lower_bound = agent_column if agent_column < target_column else target_column
-                    upper_bound = agent_column if agent_column > target_column else target_column
-                    if (maze[row, lower_bound:upper_bound + 1] == 1).any():
-                        mask[row, target_column] = 1
-            else:  # Diagonal mask
-                target_row, target_column = tile * 2 + 1
-                agent_row, agent_column = np.array(self.agent) * 2 + 1
-
-                column_lower_bound = agent_column
-                column_upper_bound = target_column
-                column = False
-                if not agent_column < target_column:
-                    column_lower_bound = target_column
-                    column_upper_bound = agent_column
-                    column = True
-
-                row_lower_bound = agent_row
-                row_upper_bound = target_row
-                row = False
-                if not agent_row < target_row:
-                    row_lower_bound = target_row
-                    row_upper_bound = agent_row
-                    row = True
-
-                matrix = maze[
-                    row_lower_bound:row_upper_bound + 1,
-                    column_lower_bound:column_upper_bound + 1
-                ]
-
-                if matrix.shape[0] == matrix.shape[1]:
-                    identity = []
-                    if row and column:
-                        x_range = range(matrix.shape[0] - 1)
-                        identity = [[x, x + 1] for x in x_range]
-                    if not (row and column):
-                        identity = [[x + 1, x]
-                                    for x in range(matrix.shape[0])][:-1]
-                    if not column and row:
-                        x_range = range(matrix.shape[0] - 1, 0, -1)
-                        y_range = range(1, matrix.shape[0])
-                        identity = [[x, y] for x, y in zip(x_range, y_range)]
-                    if column and not row:
-                        x_range = range(matrix.shape[0] - 1)
-                        y_range = range(matrix.shape[0] - 2, -1, -1)
-                        identity = [[x, y] for x, y in zip(x_range, y_range)]
-
-                    for idx in identity:
-                        if matrix[idx[1], idx[0]] == 1:
-                            mask[target_row, target_column] = 1
-                            continue
-                else:
-                    mask[target_row, target_column] = 1
-
-        return mask
 
     def solve(self, mode: str = 'shortest') -> List[Tuple[int, int]]:
         """Solve the current maze. For key and door the graph has to be directed, because

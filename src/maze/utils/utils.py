@@ -1,4 +1,6 @@
 """Utils package for the maze module."""
+from copy import deepcopy
+from typing import List, Tuple
 import resource
 import sys
 
@@ -163,3 +165,98 @@ class RecursionLimit:
             resource.RLIMIT_STACK,
             self.old_memory_limit
         )
+
+
+def create_mask(
+    shape: Tuple[int, int],
+    maze: List[List[int]],
+    agent: Tuple[int]
+) -> List[List[int]]:
+    """Create mask for occlusion based on the agent current position and maze structure.
+
+    Args:
+        shape (Tuple[int, int]): width and height of the maze
+        maze (List[List[int]]): maze structure
+        agent (Tuple[int]): (x, y) coordinates for the agent
+
+    Returns:
+        List[List[int]]: mask of the given maze for occlusion
+    """
+    tiles = []
+    for height in range(shape[0]):
+        for width in range(shape[1]):
+            tiles.append(np.array((height, width)))
+
+    maze = maze
+    mask = deepcopy(maze)
+
+    for tile in tiles:
+        if (tile == agent).all():
+            continue
+        if (tile == agent).any():
+            if tile[1] == agent[1]:  # Vertical mask
+                agent_row = agent[0] * 2 + 1
+                target_row = tile[0] * 2 + 1
+                column = tile[1] * 2 + 1
+                lower_bound = agent_row if agent_row < target_row else target_row
+                upper_bound = agent_row if agent_row > target_row else target_row
+                if (maze[lower_bound:upper_bound + 1, column] == 1).any():
+                    mask[target_row, column] = 1
+            else:  # Horizontal mask
+                agent_column = agent[1] * 2 + 1
+                target_column = tile[1] * 2 + 1
+                row = tile[0] * 2 + 1
+                lower_bound = agent_column if agent_column < target_column else target_column
+                upper_bound = agent_column if agent_column > target_column else target_column
+                if (maze[row, lower_bound:upper_bound + 1] == 1).any():
+                    mask[row, target_column] = 1
+        else:  # Diagonal mask
+            target_row, target_column = tile * 2 + 1
+            agent_row, agent_column = np.array(agent) * 2 + 1
+
+            column_lower_bound = agent_column
+            column_upper_bound = target_column
+            column = False
+            if not agent_column < target_column:
+                column_lower_bound = target_column
+                column_upper_bound = agent_column
+                column = True
+
+            row_lower_bound = agent_row
+            row_upper_bound = target_row
+            row = False
+            if not agent_row < target_row:
+                row_lower_bound = target_row
+                row_upper_bound = agent_row
+                row = True
+
+            matrix = maze[
+                row_lower_bound:row_upper_bound + 1,
+                column_lower_bound:column_upper_bound + 1
+            ]
+
+            if matrix.shape[0] == matrix.shape[1]:
+                identity = []
+                if row and column:
+                    x_range = range(matrix.shape[0] - 1)
+                    identity = [[x, x + 1] for x in x_range]
+                if not (row and column):
+                    identity = [[x + 1, x]
+                                for x in range(matrix.shape[0])][:-1]
+                if not column and row:
+                    x_range = range(matrix.shape[0] - 1, 0, -1)
+                    y_range = range(1, matrix.shape[0])
+                    identity = [[x, y] for x, y in zip(x_range, y_range)]
+                if column and not row:
+                    x_range = range(matrix.shape[0] - 1)
+                    y_range = range(matrix.shape[0] - 2, -1, -1)
+                    identity = [[x, y] for x, y in zip(x_range, y_range)]
+
+                for idx in identity:
+                    if matrix[idx[1], idx[0]] == 1:
+                        mask[target_row, target_column] = 1
+                        continue
+            else:
+                mask[target_row, target_column] = 1
+
+    return mask
