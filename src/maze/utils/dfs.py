@@ -37,27 +37,10 @@ class DFS:
         self.key_and_door = False
         self.shape = shape
         self.graph = graph
-        self.nodes = []
         self.update = None
         self.paths = []
         self.path = []
         self.random_amount = random_amount
-        self.reset()
-
-    def reset(self) -> None:
-        """Reset the Node graph."""
-        del self.nodes
-
-        edges_dict = defaultdict(list)
-        for key, neighbor in self.graph.items():
-            edges_dict[key].append(neighbor)
-
-        self.nodes = []
-        for node in range(self.shape[0] * self.shape[1]):
-            self.nodes.append(Node(node, []))
-
-        for key, value in edges_dict.items():
-            self.nodes[key].set_neighbor(value)
 
     def set_key_and_door(self, key: int, door: int) -> None:
         """
@@ -85,11 +68,11 @@ class DFS:
             for (x, edge) in edges:
                 path[x].add_edge(path[edge])
 
-        if logging.getLogger().level == logging.DEBUG:
-            for node in path.values():
-                logging.debug(f"generate_path:Node {node.identifier} with edges {node.edges}")
+        logging.debug([
+            f"generate_path:Node {node.identifier} with edges {node.edges}"
+            for node in path.values()
+        ])
         self.graph = path
-
 
     def generate_path(
             self,
@@ -290,9 +273,8 @@ class DFS:
             for edge in node.edges:
                 if node in graph[edge.identifier].edges:
                     logging.debug(
-                        "Node %i found in %i",
-                        edge.identifier,
-                        node.identifier
+                        "Node %i found in %i" %
+                        (edge.identifier, node.identifier)
                     )
                     return True
         return False
@@ -372,7 +354,7 @@ class DFS:
 
         Args:
             sublist (list[Node]): sublist elements.
-            superlists (list[list[Node]]): all superlists.
+            superlists (list[list[Node]]): all superlists (contains own node).
             node (Node): node to check if it is in the sublist.
 
         Returns:
