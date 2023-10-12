@@ -1,0 +1,168 @@
+"""Module for creating a maze based on a python file"""
+import importlib
+from typing import Any, List, Tuple
+
+import numpy as np
+from .maze.utils import get_neighbors
+
+
+def split(list_a: List[Any], chunk_size: int) -> List[List[Any]]:
+    for i in range(0, len(list_a), chunk_size):
+        yield list_a[i:i + chunk_size]
+
+
+def convert(item: int, other: int, width: int) -> int:
+    mod = -1 if item > other else +1
+    dif = int(width) if abs(item - other) > 1 else 1
+    return int(other + (mod * dif))
+
+
+def get_local_position(position: int, size: int) -> List[int]:
+    column = position // size
+    row = position - (column * size)
+    return [column, row]
+
+
+def get_nodes(maze_shape: Tuple[int, int]) -> List[int]:
+    number_of_nodes = maze_shape[0] * maze_shape[1]
+    nodes = [n for n in range(number_of_nodes)]
+    nodes = list(split(nodes, maze_shape[0]))[::2]
+    nodes = [item for sublist in nodes for item in sublist if item % 2 == 0]
+    return nodes
+
+
+def find_edges_start_and_end(
+    nodes: List[int],
+    vector_maze: List[str],
+    maze: List[List[str]],
+    maze_original_shape: Tuple[int, int],
+    maze_shape: Tuple[int, int]
+) -> Tuple[List[Tuple[int, int]], Tuple[int, int], Tuple[int, int]]:
+    edges = []
+    end = None
+    start = None
+    for node in nodes:
+        if vector_maze[node] == 'S':
+            start = nodes.index(node)
+            start = get_local_position(start, maze_shape[0])
+        if vector_maze[node] == 'E':
+            end = nodes.index(node)
+            end = get_local_position(end, maze_original_shape[0])
+        for neighbor in get_neighbors(node, maze.shape, True):
+            if vector_maze[neighbor[1]] not in ["-", "|"]:
+                edges.append(neighbor)
+    return edges, start, end
+
+
+def find_ice_floors(
+    nodes: List[int],
+    vector_maze: List[str],
+    maze_original_shape: Tuple[int, int]
+) -> List[Tuple[int, int]]:
+    ice_floors = []
+    for node in nodes:
+        if vector_maze[node] == 'I':
+            floor = nodes.index(node)
+            floor = get_local_position(floor, maze_original_shape[0])
+            ice_floors.append(tuple(floor))
+    return ice_floors
+
+
+def find_key_and_lock(
+    nodes: List[int],
+    vector_maze: List[str],
+    maze_original_shape: Tuple[int, int]
+) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+    key = None
+    lock = None
+    for node in nodes:
+        if vector_maze[node] == 'D':
+            lock = nodes.index(node)
+            lock = get_local_position(lock, maze_original_shape[0])
+        if vector_maze[node] == "K":
+            key = nodes.index(node)
+            key = get_local_position(key, maze_original_shape[0])
+    return key, lock
+
+
+def convert_from_file(structure_file: str, path: str) -> None:
+    module = importlib.import_module(structure_file)
+    maze = module.maze
+    key_and_lock = module.key_and_lock
+    icy_floor = module.icy_floor
+
+    maze = np.array(maze[::-1])  # maze structure for indexing
+    maze_shape = maze.shape
+    maze_original_shape = (maze_shape[0] + 1) // 2
+    maze_original_shape = (maze_original_shape, maze_original_shape)
+
+    # Get all nodes from the map to find edges.
+    vector_maze = maze.reshape((-1))
+    nodes = get_nodes(maze_shape)
+
+    # find all edges
+    edges, start, end = find_edges_start_and_end(
+        nodes,
+        vector_maze,
+        maze,
+        maze_original_shape,
+        maze_shape
+    )
+
+    # Convert all edges into normal graph values
+    converted_edges = []
+    for x, y in edges:
+        y = convert(x, y, maze_shape[0])
+        x = nodes.index(x)
+        y = nodes.index(y)
+        converted_edges.append((x, y))
+    converted_edges.sort()
+
+    # Find ice floors
+    if icy_floor:
+        ice_floors = find_ice_floors(nodes, vector_maze, maze_original_shape)
+
+    # Find key and lock
+    if key_and_lock:
+        key, lock = find_key_and_lock(nodes, vector_maze, maze_original_shape)
+
+    with open(path, "w", encoding="utf-8") as _file:
+        save_string = f"{edges};{start};{end}"
+        if key_and_lock:
+            save_string += f";{key};{lock}"
+        if icy_floor:
+            save_string += f";{ice_floors}"
+        _file.write(save_string)
+
+
+def create_default_maze(size: Tuple[int, int], path: str) -> None:
+    w, h = size
+    maze = []
+    for y in range(h):
+        # Vertical walls
+        row = [[" ", "|"] for x in range(w)]
+        row = np.array(row).reshape(-1)[:-1]
+        row = list(row)
+        maze.append(row)
+
+        # Horizontal walls
+        row = [["-", "+"] for x in range(w)]
+        row = np.array(row).reshape(-1)[:-1]
+        row = list(row)
+        maze.append(row)
+
+    maze = maze[:-1]
+    maze[0][w * 2 - 2] = "E"
+    maze[h * 2 - 2][0] = "S"
+
+    if ".py" not in path:
+        path += ".py"
+    with open(path, "w", encoding="utf-8") as _file:
+        _file.write('"""This file was created automatically. ')
+        _file.write('For more instructions read the README.md"""\n')
+        _file.write("key_and_lock = False\n")
+        _file.write("icy_floor = False\n\n")
+        _file.write("maze = [\n")
+        for row in maze:
+            _file.write("\t" + str(row) + "\n")
+        _file.write("]")
