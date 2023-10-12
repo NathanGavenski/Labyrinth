@@ -73,6 +73,57 @@ env = gym.make("Maze-v0", icy_floor=True)
 
 ![](./assets/icy_floor.png)
 
+---
+## Creating a maze from a file
+Since the save file from a maze contains only a list of nodes (edges, start, finish, etc.), I've created a way of drawing a map for the cases that we don't want to use the random creation.
+To use it you can create your own file using the designed pattern, or call the function
+```python
+create_default_maze(size: Tuple[int, int], path: str)
+```
+
+The function will create a file like this:
+
+```python
+"""This file was created automatically. For more instructions read the README.md"""
+key_and_lock = False
+icy_floor = False
+
+maze = [
+	[' ', '|', ' ', '|', ' ', '|', ' ', '|', 'E']
+	['-', '+', '-', '+', '-', '+', '-', '+', '-']
+	[' ', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
+	['-', '+', '-', '+', '-', '+', '-', '+', '-']
+	[' ', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
+	['-', '+', '-', '+', '-', '+', '-', '+', '-']
+	[' ', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
+	['-', '+', '-', '+', '-', '+', '-', '+', '-']
+	['S', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
+]
+```
+
+where `|` are vertical walls, `-` are horizontal walls and `S` is the starting , `E` is the end, `I` is ice floor, `K` is the key `D` and door positions. 
+If you want to remove a wall, just need to leave it blank.
+For example:
+
+```python
+maze = [
+	[' ', '|', ' ', ' ', 'E']
+	['-', '+', ' ', '+', '-']
+	[' ', ' ', ' ', '|', ' ']
+	[' ', '+', '-', '+', '-']
+	['S', '|', ' ', '|', ' ']
+]
+```
+
+which creates the path `0 -> 3 -> 4 -> 7 -> 8`.
+By default there is no ice or key and door on the generated maze, but you can change it to have by adding `I` (for ice floors) or `K` and `D` (for key and door).
+After creating the maze you should use:
+
+```python
+convert_from_file(structure_file: str, path: str)
+```
+
+which creates a file that the environment can load into it to use as a level.
 
 ## Installing
 
