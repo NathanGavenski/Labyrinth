@@ -62,10 +62,17 @@ env = gym.make("Maze-v0", key_and_door=True)
 ![](./assets/key_and_door.gif)
 
 ### Icy floor
+In this setting the agent has to find a path to the goal without walking over ice. The ice will break if the agent steps into it.
+If the agent steps into ice the episode will terminate and the agent receives -100 reward points. There will always be a path without ice.
+In order to use the `Icy Floor` task in the environment just use:
+```python
+env = gym.make("Maze-v0", icy_floor=True)
+```
 
-Under development
+#### Icy floor example
 
----
+![](./assets/icy_floor.png)
+
 
 ## Installing
 
