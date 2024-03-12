@@ -312,9 +312,6 @@ class Maze(gym.Env):
             self.render_utils.draw_mask(mask)
 
         if self.key_and_door:
-            if self.key is None or self.door is None:
-                raise SettingsException("Door or key not set.")
-
             if self.render_utils is None:
                 raise SettingsException("Viewer is not set")
 
@@ -361,35 +358,36 @@ class Maze(gym.Env):
         if self.occlusion:
             maze = create_mask(self.shape, self.maze, self.agent)
         maze = maze[1:-1, 1:-1]
+        maze_shape = (maze.shape[0] + 1) // 2
+        maze_shape = [maze_shape, maze_shape]
 
-        agent = self.get_global_position(self.translate_position(self.agent), maze.shape)
-        start = self.get_global_position(self.translate_position(self.start), maze.shape)
-        goal = self.get_global_position(self.translate_position(self.end), maze.shape)
+        agent = self.get_global_position(self.agent, maze_shape)
+        start = self.get_global_position(self.start, maze_shape)
+        goal = self.get_global_position(self.end, maze_shape)
 
         if self.key_and_door:
             key = self.get_global_position(
-                self.translate_position(self.key),
-                maze.shape
+                self.key,
+                maze_shape
             ) if self.key else -1
             door = self.get_global_position(
-                self.translate_position(self.door),
-                maze.shape
+                self.door,
+                maze_shape
             ) if self.door else -1
 
         if self.icy_floor:
-            ice_floors = [self.translate_position(ice) for ice in self.ice_floors]
-            ice_floors = [self.get_global_position(ice, maze.shape) for ice in ice_floors]
+            ice_floors = [self.get_global_position(ice, maze_shape) for ice in self.ice_floors]
 
         if self.occlusion:
             tiles = [x for x in range(goal + 1) if x % 2 != 0]
             for tile in tiles:
                 _neighbors = get_neighbors(tile, shape=maze.shape)
                 _neighbors = [
-                    self.get_local_position(neighbor, maze.shape) for _, neighbor in _neighbors
+                    self.get_local_position(neighbor, maze_shape) for _, neighbor in _neighbors
                 ]
                 values = np.array([maze[y, x] for y, x in _neighbors])
                 if (values == 1).all():
-                    height, width = self.get_local_position(tile, maze.shape)
+                    height, width = self.get_local_position(tile, maze_shape)
                     maze[height, width] = 1
 
         maze = maze.flatten()
@@ -479,6 +477,7 @@ class Maze(gym.Env):
         self.reseted = True
         self.step_count = 0
         self.render_utils = None
+        self.done = False
 
         if not agent or self.maze is None:
             if self.icy_floor:
@@ -628,8 +627,8 @@ class Maze(gym.Env):
             if self.key is not None:
                 mode = "shortest"
 
-            graph = self.pathways if self.key is not None else self.undirected_pathways
-            paths = self.dfs.find_paths(graph, mode == "shortest")
+            # graph = self.pathways if self.key is not None else self.undirected_pathways
+            paths = self.dfs.find_paths(self.pathways, mode == "shortest")
 
         if mode == "shortest":
             return [[node.identifier for node in min(paths)]]

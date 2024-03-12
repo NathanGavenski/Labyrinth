@@ -10,8 +10,7 @@ import gym
 import numpy as np
 from tqdm import tqdm
 
-# pylint: disable=[W0611]
-from . import maze
+import maze
 
 
 def get_args() -> argparse.Namespace:
@@ -97,7 +96,7 @@ def create(args: argparse.Namespace) -> List[Any]:
 
     Args:
         args (argparse.Namespace): Arguments from command line
-    
+
     Returns:
         List[Any]: Expert dataset for Imitation Learning.
         TODO explain what is in the dataset.
@@ -118,7 +117,12 @@ def create(args: argparse.Namespace) -> List[Any]:
     image_idx = 0
     dataset = np.ndarray(shape=[0, 9])
     for maze_idx, _maze in enumerate(tqdm(mazes)):
-        env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
+        env = gym.make(
+            'MazeScripts-v0',
+            shape=(args.width, args.height),
+            screen_width=600,
+            screen_height=600
+        )
         env.load(_maze)
 
         if args.unbiased and (maze_idx % args.times != 0):
@@ -142,10 +146,14 @@ def create(args: argparse.Namespace) -> List[Any]:
                         solution[idx + 1],
                         shape=(args.width, args.height)
                     )
-                    _, reward, done, _ = env.step(action)
+                    try:
+                        _, reward, done, _ = env.step(action)
+                    except Exception as e:
+                        print(e)
+                        print(_maze)
+                        exit()
                     total_reward += reward
 
-                if not done:
                     entry = [
                         maze_idx,  # maze version
                         solution_idx,  # solution number
@@ -158,7 +166,10 @@ def create(args: argparse.Namespace) -> List[Any]:
                         False,  # episode_ends
                     ]
                     dataset = np.append(dataset, np.array(entry)[None], axis=0)
-                elif done:
+                if done:
+                    image = env.render('rgb_array')
+                    np.save(f'{args.save_path}/{image_idx}', image)
+                    image_idx += 1
                     dataset[-1, 5] = total_reward
                     dataset[-1, -1] = True
 

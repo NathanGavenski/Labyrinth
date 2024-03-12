@@ -127,7 +127,7 @@ def convert_from_file(structure_file: str, path: str) -> None:
         key, lock = find_key_and_lock(nodes, vector_maze, maze_original_shape)
 
     with open(path, "w", encoding="utf-8") as _file:
-        save_string = f"{edges};{start};{end}"
+        save_string = f"{converted_edges};{start};{end}"
         if key_and_lock:
             save_string += f";{key};{lock}"
         if icy_floor:
@@ -164,5 +164,5 @@ def create_default_maze(size: Tuple[int, int], path: str) -> None:
         _file.write("icy_floor = False\n\n")
         _file.write("maze = [\n")
         for row in maze:
-            _file.write("\t" + str(row) + "\n")
+            _file.write("\t" + str(row) + ",\n")
         _file.write("]")

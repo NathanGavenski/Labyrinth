@@ -10,8 +10,7 @@ import gym
 import numpy as np
 from tqdm import tqdm
 
-# pylint: disable=[W0611]
-from . import maze
+import maze
 
 
 def get_args() -> argparse.Namespace:

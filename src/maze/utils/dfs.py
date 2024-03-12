@@ -95,25 +95,25 @@ class DFS:
                 path[x].add_edge(path[edge])
 
         logging.debug([
-            f"generate_path:Node {node.identifier} with edges {node.edges}" \
+            "generate_path:Node %i with edges %s" %
+            (node.identifier, node.edges)
             for node in path.values()
         ])
 
         self._generate_path(path[self.start], path[self.start], path[self.end])
 
         logging.debug([
-            f"generate_path:Node {node.identifier} with edges {node.edges}" + \
-            f"and visitors {node.visited_edges}" \
+            "generate_path:Node %i with edges %s and visitors %s" %
+            (node.identifier, node.edges, node.visited_edges)
             for node in path.values()
         ])
 
-
-        for node in path.values():
-            node.remove_parent()
+        [node.remove_parent() for node in path.values()]
         path[self.end].edges = []
 
         logging.debug([
-            f"generate_path:Node {node.identifier} with edges {node.edges}\n" \
+            "generate_path:Node %i width edges %s\n" %
+            (node.identifier, node.edges)
             for node in path.values()
         ])
 
@@ -137,7 +137,7 @@ class DFS:
 
                 if max_paths is not None and len(path[self.end].d) > max_paths:
                     logging.debug(
-                        "generate_path:Generated more paths than allowed: %i",
+                        "generate_path:Generated more paths than allowed: %i" %
                         len(path[self.end].d)
                     )
                     self.graph = self.generate_path(min_paths, max_paths)
@@ -146,7 +146,7 @@ class DFS:
                 if max_paths is not None and len(path[self.end].d) <= max_paths:
                     break
 
-            logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
+            logging.debug(f"generate_path: {path[self.end].d} solutions found for maze")
 
             if min_paths is not None and min_paths > len(path[self.end].d):
                 self.graph = self.generate_path(min_paths, max_paths)
@@ -155,10 +155,8 @@ class DFS:
         self.graph = path
 
         logging.debug([
-            "generate_path:" +
-            f"Node {node.identifier} with " +
-            f"edges {node.directed_edges} and " +
-            f"walls {node.walls}"
+            "generate_path:Node %i with edges %s and walls %s" %
+            (node.identifier, node.directed_edges, node.walls)
             for node in self.graph.values()
         ])
 
@@ -231,7 +229,7 @@ class DFS:
                 if len(path[self.end].d) > 0 and isinstance(path[self.end].d[0], list):
                     return path[self.end].d
                 return [path[self.end].d]
-            path = self.find_path(self.graph, self.start, self.end, False)
+            path = self.find_path(edges, self.start, self.end, False)
             logging.debug(f"find_paths:First path found: {path[self.end].d}")
             logging.debug([
                 f"find_paths:Node {node.identifier} with edges {node.edges}"
