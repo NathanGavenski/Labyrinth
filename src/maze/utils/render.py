@@ -7,7 +7,7 @@ from typing import List
 
 from gym.envs.classic_control import rendering
 
-from src.maze.utils import Colors
+from .colors import Colors
 
 
 class RenderUtils:
@@ -76,8 +76,6 @@ class RenderUtils:
                                 ((_x - 1) * self.tile_w, _y * self.tile_h),
                                 (_x * self.tile_w, _y * self.tile_h)
                             )
-                            line.set_color(*Colors.BLACK.value)
-                            self.viewer.add_geom(line)
                         elif x % 2 > 0:
                             # vertical wall
                             _y = x // 2 + 1
@@ -86,8 +84,9 @@ class RenderUtils:
                                 (_x * self.tile_w, (_y - 1) * self.tile_h),
                                 (_x * self.tile_w, _y * self.tile_h)
                             )
-                            line.set_color(*Colors.BLACK.value)
-                            self.viewer.add_geom(line)
+                        line.set_color(*Colors.BLACK.value)
+                        line.linewidth.stroke = 2
+                        self.viewer.add_geom(line)
         return self
 
     def draw_agent(self, agent: List[int]) -> Self:
@@ -210,6 +209,8 @@ class RenderUtils:
         Returns:
             self (self): return instance.
         """
+        if key is None:
+            return self
         key_y, key_x = key
         left = key_x * self.tile_w + self.tile_w * 0.25
         right = (key_x + 1) * self.tile_w - self.tile_w * 0.25
@@ -235,6 +236,8 @@ class RenderUtils:
         Returns:
             self (self): return instance.
         """
+        if door is None:
+            return self
         door_y, door_x = door
         left = door_x * self.tile_w
         right = (door_x + 1) * self.tile_w

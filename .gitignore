@@ -6,6 +6,7 @@ dataset/
 plots/
 
 tmp/*
+src/environment/* 
 !tmp/experiments/bias_measure.txt
 
 # Byte-compiled / optimized / DLL files
