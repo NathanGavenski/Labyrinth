@@ -361,36 +361,36 @@ class Maze(gym.Env):
         if self.occlusion:
             maze = create_mask(self.shape, self.maze, self.agent)
         maze = maze[1:-1, 1:-1]
-        maze_shape = (maze.shape[0] + 1) // 2
-        maze_shape = [maze_shape, maze_shape]
 
-        agent = self.get_global_position(self.agent, maze_shape)
-        start = self.get_global_position(self.start, maze_shape)
-        goal = self.get_global_position(self.end, maze_shape)
+        agent = self.get_global_position(self.translate_position(self.agent), maze.shape)
+        start = self.get_global_position(self.translate_position(self.start), maze.shape)
+        goal = self.get_global_position(self.translate_position(self.end), maze.shape)
 
         if self.key_and_door:
             key = self.get_global_position(
-                self.key,
-                maze_shape
+                self.translate_position(self.key),
+                maze.shape
             ) if self.key else -1
             door = self.get_global_position(
-                self.door,
-                maze_shape
+                self.translate_position(self.door),
+                maze.shape
             ) if self.door else -1
 
         if self.icy_floor:
-            ice_floors = [self.get_global_position(ice, maze_shape) for ice in self.ice_floors]
+            ice_floors = [self.translate_position(ice) for ice in self.ice_floors]
+            ice_floors = [self.get_global_position(ice, maze.shape) for ice in ice_floors]
 
         if self.occlusion:
+            goal = self.get_global_position(self.translate_position(self.end), maze.shape)
             tiles = [x for x in range(goal + 1) if x % 2 != 0]
             for tile in tiles:
                 _neighbors = get_neighbors(tile, shape=maze.shape)
                 _neighbors = [
-                    self.get_local_position(neighbor, maze_shape) for _, neighbor in _neighbors
+                    self.get_local_position(neighbor, maze.shape) for _, neighbor in _neighbors
                 ]
                 values = np.array([maze[y, x] for y, x in _neighbors])
                 if (values == 1).all():
-                    height, width = self.get_local_position(tile, maze_shape)
+                    height, width = self.get_local_position(tile, maze.shape)
                     maze[height, width] = 1
 
         maze = maze.flatten()

@@ -10,7 +10,7 @@ import gym
 from tqdm import tqdm
 
 # pylint: disable=[W0611]
-import maze
+from . import maze
 
 import logging
 logging.basicConfig(level=logging.ERROR)
