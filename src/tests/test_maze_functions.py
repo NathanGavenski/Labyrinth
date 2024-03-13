@@ -16,6 +16,10 @@ from src.create_expert import state_to_action
 from src.maze.utils.utils import SettingsException, ActionException
 
 
+github = os.getenv("SERVER")
+github = bool(int(github)) if github is not None else False
+
+
 def get_global_position(position: Tuple[int, int], size: Tuple[int] = (10, 10)) -> int:
     """Get the global position of a tile in the maze.
 
@@ -195,16 +199,17 @@ class TestCases(unittest.TestCase):
         maze_size = ((maze_size[0] * 2) - 1) ** 2
         assert maze_size + 3 == state.shape[0]
 
-    def test_occlusion(self):
+    @pytest.mark.skipif(github, reason="render looks different on github")
+    def test_occlusion_render(self):
         """Test the occlusion function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=True)
         env.load("./src/tests/assets/structure_test.txt")
         state = env.render("rgb_array")
         test_state = np.array(Image.open("./src/tests/assets/occlusion_test.png"))
         assert (state == test_state).all()
-
         env.close()
 
+    def test_occlusion_vector(self):
         TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=True)
         state = env.load("./src/tests/assets/occlusion_vector_test.txt")
         with open("./src/tests/assets/vector_occlusion_test.txt", encoding="utf-8") as _file:
