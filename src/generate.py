@@ -12,6 +12,8 @@ from tqdm import tqdm
 # pylint: disable=[W0611]
 import maze
 
+import logging
+logging.basicConfig(level=logging.ERROR)
 
 def get_args() -> argparse.Namespace:
     """Get arguments from command line.
@@ -102,5 +104,6 @@ if __name__ == '__main__':
     generate(
         train_amount=args.train,
         eval_amount=args.eval,
-        shape=(args.width, args.height)
+        shape=(args.width, args.height),
+        verbose=args.verbose
     )

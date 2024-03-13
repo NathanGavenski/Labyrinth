@@ -76,6 +76,9 @@ class RenderUtils:
                                 ((_x - 1) * self.tile_w, _y * self.tile_h),
                                 (_x * self.tile_w, _y * self.tile_h)
                             )
+                            line.set_color(*Colors.BLACK.value)
+                            line.linewidth.stroke = 2
+                            self.viewer.add_geom(line)
                         elif x % 2 > 0:
                             # vertical wall
                             _y = x // 2 + 1
@@ -84,9 +87,9 @@ class RenderUtils:
                                 (_x * self.tile_w, (_y - 1) * self.tile_h),
                                 (_x * self.tile_w, _y * self.tile_h)
                             )
-                        line.set_color(*Colors.BLACK.value)
-                        line.linewidth.stroke = 2
-                        self.viewer.add_geom(line)
+                            line.set_color(*Colors.BLACK.value)
+                            line.linewidth.stroke = 2
+                            self.viewer.add_geom(line)
         return self
 
     def draw_agent(self, agent: List[int]) -> Self:

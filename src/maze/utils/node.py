@@ -79,13 +79,15 @@ class Node:
         self.edges.remove(edge)
         self.walls.append(edge)
 
-    def add_d(self, d: List['Node']) -> None:
+    def add_d(self, d: List['Node']) -> bool:
         """Add a path to the node if it is not on the list.
         Args:
             d List[Node]: list of nodes.
         """
         if len(d) == len(set(d)) and d not in self.d:
             self.d.append(d)
+            return True
+        return False
 
     def visited_from(self, node: 'Node') -> None:
         """Mark the node as visited from another node.
@@ -126,7 +128,6 @@ class Node:
         """
         return self.edges
 
-    @lru_cache(maxsize=156)
     def get_d(self) -> List[List['Node']]:
         """Gets attribute "d" (uses lru cache).
 
