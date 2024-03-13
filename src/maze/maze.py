@@ -261,6 +261,9 @@ class Maze(gym.Env):
         for key, values in _pathways.items():
             for value in values:
                 pathways_dict[value].append(key)
+
+        for key, values in pathways_dict.items():
+            pathways_dict[key] = list(set(values))
         return pathways_dict
 
     # TODO change to pygame dependency
@@ -485,7 +488,7 @@ class Maze(gym.Env):
             elif self.key_and_door:
                 self.maze, self._pathways = self._generate(max_paths=1)
             else:
-                self.maze, self._pathways = self._generate()
+                self.maze, self._pathways = self._generate(random_amount=25)
 
             self.pathways = self.define_pathways(self._pathways)
         self.agent = self.start
@@ -627,11 +630,12 @@ class Maze(gym.Env):
             if self.key is not None:
                 mode = "shortest"
 
-            # graph = self.pathways if self.key is not None else self.undirected_pathways
+            #graph = self.pathways if self.key is not None else self.undirected_pathways
             paths = self.dfs.find_paths(self.pathways, mode == "shortest")
 
         if mode == "shortest":
             return [[node.identifier for node in min(paths)]]
+
         numbered_paths = []
         for path in paths:
             numbered_paths.append([node.identifier for node in path])

@@ -417,16 +417,15 @@ class DFS:
             log_msg += f"({is_part})"
             logging.debug(log_msg)
             if not is_part:
-                self.update = True
                 not_part_of.append(edge)
 
                 for d in edge.get_d():
                     logging.debug(f"Adding {d} to {node.identifier}")
                     logging.debug([
-                        f"{node.identifier}: {path} ({path == d})"
-                        for path in node.get_d()
-                    ])
-                    node.add_d(d + [node])
+                        f"{node.identifier}: {_path} ({_path == d})"
+                        for _path in node.get_d()
+                    ])                    
+                    self.update |= node.add_d(d + [node])
 
             if not edge.visited:
                 self._find_all_paths(edge, start)
