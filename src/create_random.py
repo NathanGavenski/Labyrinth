@@ -10,7 +10,7 @@ import gym
 import numpy as np
 from tqdm import tqdm
 
-import maze
+from . import maze
 
 
 def get_args() -> argparse.Namespace:

@@ -13,7 +13,7 @@ import seaborn as sns
 sns.set_theme()
 
 # pylint: disable=[W0611, C0413]
-import maze
+from . import maze
 
 
 def get_args() -> argparse.Namespace:

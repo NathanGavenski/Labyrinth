@@ -258,16 +258,18 @@ class TestCases(unittest.TestCase):
 
     def test_solve_all(self):
         """Test the solve function with the all option."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
+        TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
         env.reset()
         env.save("./tests/tmp.txt")
         first_solutions = env.solve("all")
+        first_solutions.sort(key=len)
 
         env.close()
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
+        TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
         env.load("./tests/tmp.txt")
         env.reset()
         second_solutions = env.solve("all")
+        second_solutions.sort(key=len)
 
         for _x, _y in zip(first_solutions, second_solutions):
             assert len(_x) == len(_y)

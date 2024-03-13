@@ -10,7 +10,9 @@ import gym
 import numpy as np
 from tqdm import tqdm
 
-import maze
+from . import maze
+import logging
+logging.basicConfig(level=logging.ERROR)
 
 
 def get_args() -> argparse.Namespace:
@@ -129,7 +131,6 @@ def create(args: argparse.Namespace) -> List[Any]:
             env.change_start_and_goal()
 
         solutions = env.solve(mode='all')
-
         for solution_idx, solution in enumerate(solutions):
             env.reset(agent=True)
             done = False
@@ -174,6 +175,7 @@ def create(args: argparse.Namespace) -> List[Any]:
                     dataset[-1, -1] = True
 
             env.close()
+        del env
     return dataset
 
 
