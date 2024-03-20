@@ -6,7 +6,10 @@ dataset/
 plots/
 
 tmp/*
-src/environment/* 
+*.jsonl
+*.tar.gz
+*.npz
+benchmark_results/*
 !tmp/experiments/bias_measure.txt
 
 # Byte-compiled / optimized / DLL files
