@@ -76,6 +76,7 @@ class Maze(gym.Env):
             occlusion: Optional[bool] = False,
             key_and_door: Optional[bool] = False,
             icy_floor: Optional[bool] = False,
+            visual: bool = False,
     ) -> None:
         """Maze environment.
 
@@ -106,6 +107,7 @@ class Maze(gym.Env):
         self.pathways = None
         self._pathways = None
         self.done = False
+        self.visual = visual
 
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -357,6 +359,13 @@ class Maze(gym.Env):
                 2: goal global position
                 3+ maze structure in a vector
         """
+        if self.visual:
+            import pyglet
+            try:
+                pyglet.options["headless"] = True
+                return self.render("rgb_array").copy()
+            finally:
+                pyglet.options["headless"] = False
         maze = self.maze
         if self.occlusion:
             maze = create_mask(self.shape, self.maze, self.agent)
@@ -429,6 +438,9 @@ class Maze(gym.Env):
         Returns:
             Tuple[List[List[int]], float, bool, dict[str, List[int]]]: Gym step return.
         """
+        if isinstance(action, np.ndarray) and len(action.shape) == 0:
+            action = action.item()
+
         if action not in self.actions:
             raise ActionException(f"Action should be in {self.actions.keys()} it was {action}")
 
@@ -477,6 +489,9 @@ class Maze(gym.Env):
         Returns:
             Union[List[int], ndarray]: State of the environment.
         """
+        if self.render_utils is not None:
+            self.close()
+
         self.reseted = True
         self.step_count = 0
         self.render_utils = None
