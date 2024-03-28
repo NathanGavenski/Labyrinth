@@ -1,5 +1,4 @@
 """Depth first search algorithm for the maze generation."""
-from collections import defaultdict
 import logging
 from typing import List, Tuple, Dict
 import random
@@ -108,7 +107,8 @@ class DFS:
             for node in path.values()
         ])
 
-        [node.remove_parent() for node in path.values()]
+        for node in path.values():
+            node.remove_parent()
         path[self.end].edges = []
 
         logging.debug([
@@ -424,7 +424,7 @@ class DFS:
                     logging.debug([
                         f"{node.identifier}: {_path} ({_path == d})"
                         for _path in node.get_d()
-                    ])                    
+                    ])
                     self.update |= node.add_d(d + [node])
 
             if not edge.visited:

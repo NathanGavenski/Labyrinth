@@ -6,26 +6,62 @@ import numpy as np
 from .maze.utils import get_neighbors
 
 
-def split(list_a: List[Any], chunk_size: int) -> List[List[Any]]:
+def split(list_a: List[Any], chunk_size: int):
+    """Split a list into chunks.
+
+    Args:
+        list_a (List[Any]): list to be split
+        chunk_size (int): size of the chunks
+
+    Yields:
+        Iterator[List[List[Any]]]: chunks of the list
+    """
     for i in range(0, len(list_a), chunk_size):
         yield list_a[i:i + chunk_size]
 
 
 def convert(item: int, other: int, width: int) -> int:
+    """Convert the position of the nodes into the correct position.
+    
+    Args:
+        item (int): current position
+        other (int): other position
+        width (int): width of the maze
+
+    Returns:
+        int: new position
+    """
     mod = -1 if item > other else +1
     dif = int(width) if abs(item - other) > 1 else 1
     return int(other + (mod * dif))
 
 
 def get_local_position(position: int, size: int) -> List[int]:
+    """Get the local position of a node in the maze.
+
+    Args:
+        position (int): global position of the node
+        size (int): size of the maze
+
+    Returns:
+        List[int]: local position of the node
+    """
     column = position // size
     row = position - (column * size)
     return [column, row]
 
 
 def get_nodes(maze_shape: Tuple[int, int]) -> List[int]:
+    """Get all nodes in the maze.
+
+    Args:
+        maze_shape (Tuple[int, int]): shape of the maze
+
+    Returns:
+        List[int]: list of nodes in the maze
+    """
     number_of_nodes = maze_shape[0] * maze_shape[1]
-    nodes = [n for n in range(number_of_nodes)]
+    nodes = list(range(number_of_nodes))
     nodes = list(split(nodes, maze_shape[0]))[::2]
     nodes = [item for sublist in nodes for item in sublist if item % 2 == 0]
     return nodes
@@ -38,6 +74,18 @@ def find_edges_start_and_end(
     maze_original_shape: Tuple[int, int],
     maze_shape: Tuple[int, int]
 ) -> Tuple[List[Tuple[int, int]], Tuple[int, int], Tuple[int, int]]:
+    """Find all edges in the maze.
+    
+    Args:
+        nodes (List[int]): list of nodes in the maze
+        vector_maze (List[str]): vector representation of the maze
+        maze (List[List[str]]): maze structure
+        maze_original_shape (Tuple[int, int]): original shape of the maze
+        maze_shape (Tuple[int, int]): shape of the maze
+    
+    Returns:
+        Tuple[List[Tuple[int, int]], Tuple[int, int], Tuple[int, int]]: edges, start, end positions
+    """
     edges = []
     end = None
     start = None
@@ -59,6 +107,16 @@ def find_ice_floors(
     vector_maze: List[str],
     maze_original_shape: Tuple[int, int]
 ) -> List[Tuple[int, int]]:
+    """Find the ice floors in the maze.
+
+    Args:
+        nodes (List[int]): list of nodes in the maze.
+        vector_maze (List[str]): vector representation of the maze.
+        maze_original_shape (Tuple[int, int]): original shape of the maze (e.g., 5x5).
+    
+    Returns:
+        List[Tuple[int, int]]: ice floors in the maze.
+    """
     ice_floors = []
     for node in nodes:
         if vector_maze[node] == 'I':
@@ -73,6 +131,16 @@ def find_key_and_lock(
     vector_maze: List[str],
     maze_original_shape: Tuple[int, int]
 ) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+    """Find the key and lock in the maze.
+
+    Args:
+        nodes (List[int]): list of nodes in the maze.
+        vector_maze (List[str]): vector representation of the maze.
+        maze_original_shape (Tuple[int, int]): original shape of the maze (e.g., 5x5).
+
+    Returns:
+        Tuple[Tuple[int, int], Tuple[int, int]]: key and lock positions.
+    """
     key = None
     lock = None
     for node in nodes:
@@ -86,6 +154,12 @@ def find_key_and_lock(
 
 
 def convert_from_file(structure_file: str, path: str) -> None:
+    """Convert a maze from a python file to a file that can be used by the environment.
+
+    Args:
+        structure_file (str): file with the maze structure.
+        path (str): path to save the converted maze.
+    """
     module = importlib.import_module(structure_file)
     maze = module.maze
     key_and_lock = module.key_and_lock
@@ -136,17 +210,23 @@ def convert_from_file(structure_file: str, path: str) -> None:
 
 
 def create_default_maze(size: Tuple[int, int], path: str) -> None:
+    """Create a default maze based on the size.
+
+    Args:
+        size (Tuple[int, int]): size of the maze
+        path (str): path to save the maze
+    """
     w, h = size
     maze = []
-    for y in range(h):
+    for _ in range(h):
         # Vertical walls
-        row = [[" ", "|"] for x in range(w)]
+        row = [[" ", "|"] for _ in range(w)]
         row = np.array(row).reshape(-1)[:-1]
         row = list(row)
         maze.append(row)
 
         # Horizontal walls
-        row = [["-", "+"] for x in range(w)]
+        row = [["-", "+"] for _ in range(w)]
         row = np.array(row).reshape(-1)[:-1]
         row = list(row)
         maze.append(row)

@@ -180,10 +180,15 @@ function-naming-style=snake_case
 
 # Good variable names which should always be accepted, separated by a comma.
 good-names=i,
+           x,
+           y,
+           h,
+           w,
            j,
            k,
            ex,
            Run,
+           d,
            _
 
 # Good variable names regexes, separated by a comma. If names match any regex,
@@ -421,7 +426,10 @@ disable=raw-checker-failed,
         suppressed-message,
         useless-suppression,
         deprecated-pragma,
-        use-symbolic-message-instead
+        use-symbolic-message-instead,
+        consider-using-f-string,
+        logging-fstring-interpolation,
+        logging-not-lazy
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
