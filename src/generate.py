@@ -9,8 +9,10 @@ from typing import Optional, Tuple
 import gym
 from tqdm import tqdm
 
-# pylint: disable=[W0611]
-import maze
+try:
+    from . import maze
+except ImportError:
+    import maze
 
 import logging
 logging.basicConfig(level=logging.ERROR)
