@@ -1,8 +1,14 @@
+import ast
 from PIL import Image
 import gym
 from src import maze
 from src.maze.utils.render import RenderUtils
 import numpy as np
+
+import logging
+from src.create_maze_from_file import convert_from_file
+
+logging.basicConfig(level=logging.ERROR)
 
 
 # FIXME There is a bug where if you call step without rendering the environment
@@ -33,75 +39,68 @@ def sort_visited(visited):
 
 
 if __name__ == "__main__":
-    shape = (5, 5)
-    env = gym.make(
-        "Maze-v0",
-        shape=shape,
-        occlusion=False,
-        key_and_door=False,
-        icy_floor=False
-    )
-    (maze_o, visited_o), (maze_e, visited_e) = env.set_ice_floors()
+    env = gym.make("Maze-v0", shape=(10, 10))
     env.reset()
+    env.save("./tests/tmp.txt")
+    first_solutions = env.solve("all")
+    first_solutions.sort(key=len)
+    env.close()
 
-    # What I need to do is to solve each maze and ensure that both paths are:
-    # 1. Different from each other at some point
-    #   1.1 Maybe have a min length of difference
-    # 2. Are present in the new maze ✔️
-    # This seems to be the best option so far
+    env = gym.make("Maze-v0", shape=(10, 10))
+    env.load("./tests/tmp.txt")
+    env.reset()
+    second_solutions = env.solve("all")
+    second_solutions.sort(key=len)
 
-    visited_e = sort_visited(visited_e)
-    visited_e.sort()
+    for _x, _y in zip(first_solutions, second_solutions):
+        assert len(_x) == len(_y)
+        assert (set(_y) - set(_x)) == set()
 
-    env.maze = maze_o
-    env._pathways = visited_o
-    env.pathways = env.define_pathways(visited_o)
-    solution_1 = env.solve("shortest")
 
-    env.maze = maze_e
-    env._pathways = visited_e
-    env.pathways = env.define_pathways(visited_e)
-    solution_2 = env.solve("shortest")
+    # env = gym.make("Maze-v0", shape=(5, 5))
+    # env.load("test.txt")
 
-    solution_pairs = list(zip(solution_2, solution_2[1:] + solution_2[:1]))[:-1]
-    solution_pairs = sort_visited(solution_pairs)
-    solution_pairs.sort()
+    # solutions = env.solve(mode="all")
+    # print(len(solutions))
+    # env.render("rgb_array")
+    # print()
+    # state = env.reset()
+    # floors = []
+    # for floor in env.ice_floors:
+    #     floor = env.translate_position(floor)
+    #     floor = env.get_global_position(floor, env.maze[1:-1, 1:-1].shape)
+    #     floors.append(floor)
+    # Image.fromarray(env.render("rgb_array")).save("test.png")
+    # exit()
 
-    print(visited_e)
-    print(solution_pairs)
-    assert set(solution_pairs).issubset(set(visited_e))
+    # assert (state[3:len(floors) + 3] == floors).all()
 
-    new_visited = list(set(visited_o + solution_pairs))
-    new_visited.sort()
+    # # Validate trajectory
+    # ice_floor = [env.get_global_position(floor) for floor in env.ice_floors]
+    # print(ice_floor, env.dfs.start)
 
-    new_maze, new_visited = env._generate(new_visited)
-
-    # Although it works, it creates a maze with too many solutions and I'm left with
-    # finding the pathways in the new maze (inverse engineering it -- I did it lol)
-    image_o = draw_maze(shape, maze_o).viewer.render(return_rgb_array=True)
-    image_e = draw_maze(shape, maze_e).viewer.render(return_rgb_array=True)
-    # new_maze_2 = np.logical_and(maze_o, maze_e).astype(float)
-
-    # This is the reverse engineering process rofl
-    # visited_o = sort_visited(visited_o)
-    # visited_o.sort()
-    # visited_e = sort_visited(visited_e)
-    # visited_e.sort()
-
-    # new_visited = list(set(visited_o + visited_e))
-    # new_visited.sort()
-    # new_maze, _ = env._generate(new_visited)
-    # assert (new_maze == new_maze_2).all()
-
-    image_new = draw_maze(shape, new_maze).viewer.render(return_rgb_array=True)
-    save_images(image_o, image_e, image_new)
-
-    env.maze = new_maze
-    env._pathways = new_visited
-    env.pathways = env.define_pathways(new_visited)
-    solutions = env.solve("all")
-    print(len(solutions))
-    for solution in solutions:
-        print(len(solution))
-        print(solution)
-    print(list(map(len, env.solve("all"))))
+    # path = env.dfs.find_path(
+    #     env.undirected_pathways,
+    #     env.dfs.start,
+    #     ice_floor[0],
+    #     early_stop=True
+    # )
+    # path = [node.identifier for node in path[ice_floor[0]].d]
+    # intersec = list(set(path).intersection(set(ice_floor)))
+    # indexes = [np.where(path == floor) for floor in intersec]
+    # for i in [5, 10, 25, 50, 100, 250]:
+    #     shape = (i, i)
+    #     env = gym.make(
+    #         "Maze-v0",
+    #         shape=shape,
+    #         occlusion=False,
+    #         key_and_door=True,
+    #         icy_floor=False
+    #     )
+    #     print(f"Created maze: ({i}, {i})")
+    #     env.reset()
+    #     Image.fromarray(env.render("rgb_array")).save("test.png")
+    #     env.save("test.txt")
+    #     env.close()
+    #     del env
+    #     exit()

@@ -3,6 +3,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 import tarfile
+import shutil
 
 from imitation_datasets.dataset.huggingface import baseline_to_huggingface
 import numpy as np
@@ -34,7 +35,8 @@ def create_npz(df, name):
 
 if __name__ == "__main__":
     maze_name = "5"
-    mypath = f'./src/environment/mazes/mazes{maze_name}/train/'
+    folder = 'train'
+    mypath = f'./src/environment/mazes/mazes{maze_name}/{folder}/'
 
     # Collect information about the maze
     mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -46,7 +48,7 @@ if __name__ == "__main__":
                 maze_info.append(line)
 
     # Create dataset
-    x = np.load(f"./tmp/expert/maze{maze_name}/dataset.npy")
+    x = np.load(f"./tmp/expert/maze{maze_name}/{folder}/dataset.npy")
     dataframe = pd.DataFrame(
         x,
         columns=[
@@ -100,13 +102,32 @@ if __name__ == "__main__":
         tar.add("single_route.jsonl")
         tar.add("shortest_route.jsonl")
 
+    os.remove("all_routes.jsonl")
+    os.remove("single_route.jsonl")
+    os.remove("shortest_route.jsonl")
+    os.remove("all_routes.npz")
+    os.remove("single_route.npz")
+    os.remove("shortest_route.npz")
+
     # Create images
+    if os.path.exists("./tmp/images/"):
+        shutil.rmtree("./tmp/images/")
+
     if not os.path.exists("./tmp/images/"):
         os.makedirs("./tmp/images/")
 
     for f in all_routes["obs"]:
-        path = f"./tmp/expert/maze{maze_name}/{f}"
+        path = f"./tmp/expert/maze{maze_name}/{folder}/{f}"
         Image.fromarray(np.load(path)).save(f"./tmp/images/{f.split('.')[0]}.jpg")
 
     with tarfile.open("images.tar.gz", "w:gz") as tar:
         tar.add("./tmp/images", "images")
+
+    if os.path.exists("./tmp/huggingface/"):
+        shutil.rmtree("./tmp/huggingface/")
+
+    if not os.path.exists("./tmp/huggingface/"):
+        os.makedirs("./tmp/huggingface/")
+
+    shutil.move("./dataset.tar.gz", "./tmp/huggingface/dataset.tar.gz")
+    shutil.move("./images.tar.gz", "./tmp/huggingface/images.tar.gz")

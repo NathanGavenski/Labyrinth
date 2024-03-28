@@ -1,0 +1,21 @@
+Default:
+  lr: 5e-4
+  idm_lr: 5e-4
+  idm: 'ResnetPolicy'
+  policy: 'ResnetPolicy'
+  random_episodes: 10000
+
+Maze:
+  lr: 5e-4
+  idm_lr: 5e-4
+  idm: 'ResnetPolicy'
+  policy: 'ResnetPolicy'
+  random_episodes: 10000
+
+Maze-v0:
+  lr: 5e-4
+  idm_lr: 5e-4
+  idm: 'ResnetPolicy'
+  policy: 'ResnetPolicy'
+  random_episodes: 10000
+
