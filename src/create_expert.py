@@ -10,7 +10,10 @@ import gym
 import numpy as np
 from tqdm import tqdm
 
-import maze
+try:
+    from . import maze
+except ImportError:
+    import maze
 import logging
 logging.basicConfig(level=logging.ERROR)
 

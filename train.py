@@ -83,16 +83,27 @@ if __name__ == "__main__":
         "visual": True,
     }
 
-    dataset = BaselineDataset(
-        "NathanGavenski/imagetest",
+    train_dataset = BaselineDataset(
+        "NathanGavenski/imagetrain",
         source="hf",
         hf_split="shortest_route",
         transform=transforms.Resize(64)
     )
-    dataset.states = dataset.states.repeat(10).reshape(-1, 1)
-    dataset.next_states = dataset.next_states.repeat(10).reshape(-1, 1)
-    dataset.actions = torch.from_numpy(dataset.actions.numpy().repeat(10)).view((-1, 1))
-    dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
+    train_dataset.states = train_dataset.states.repeat(10).reshape(-1, 1)
+    train_dataset.next_states = train_dataset.next_states.repeat(10).reshape(-1, 1)
+    train_dataset.actions = torch.from_numpy(train_dataset.actions.numpy().repeat(10)).view((-1, 1))
+    train_dataloader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+
+    eval_dataset = BaselineDataset(
+        "NathanGavenski/imageeval",
+        source="hf",
+        hf_split="shortest_route",
+        transform=transforms.Resize(64)
+    )
+    eval_dataset.states = eval_dataset.states.repeat(10).reshape(-1, 1)
+    eval_dataset.next_states = eval_dataset.next_states.repeat(10).reshape(-1, 1)
+    eval_dataset.actions = torch.from_numpy(eval_dataset.actions.numpy().repeat(10)).view((-1, 1))
+    eval_dataloader = DataLoader(eval_dataset, batch_size=4, shuffle=True)
 
     enjoy = partial(
         enjoy,
@@ -106,4 +117,9 @@ if __name__ == "__main__":
     print(method.hyperparameters)
 
     method._enjoy = types.MethodType(enjoy, method)
-    method.train(101, train_dataset=dataloader, always_save=True)
+    method.train(
+        101,
+        train_dataset=train_dataloader,
+        eval_dataset=eval_dataloader,
+        always_save=True
+    )
