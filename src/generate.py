@@ -5,6 +5,7 @@ from os import listdir
 from os.path import isfile, join
 import pathlib
 from typing import Optional, Tuple
+import logging
 
 import gym
 from tqdm import tqdm
@@ -14,7 +15,6 @@ try:
 except ImportError:
     import maze
 
-import logging
 logging.basicConfig(level=logging.ERROR)
 
 

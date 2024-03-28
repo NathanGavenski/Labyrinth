@@ -5,6 +5,7 @@ from os import listdir
 from os.path import isfile, join
 import shutil
 from typing import Any, List, Tuple
+import logging
 
 import gym
 import numpy as np
@@ -14,7 +15,6 @@ try:
     from . import maze
 except ImportError:
     import maze
-import logging
 logging.basicConfig(level=logging.ERROR)
 
 
@@ -156,12 +156,7 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
                         solution[idx + 1],
                         shape=(args.width, args.height)
                     )
-                    try:
-                        _, reward, done, _ = env.step(action)
-                    except Exception as e:
-                        print(e)
-                        print(_maze)
-                        exit()
+                    _, reward, done, _ = env.step(action)
                     total_reward += reward
 
                     entry = [
@@ -191,6 +186,6 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
 if __name__ == '__main__':
     arguments = get_args()
     folders = arguments.folder.split(',')
-    for folder in folders:
-        expert_dataset = create(arguments, folder)
-        np.save(f'{arguments.save_path}{folder}/dataset', expert_dataset)
+    for _folder in folders:
+        expert_dataset = create(arguments, _folder)
+        np.save(f'{arguments.save_path}{_folder}/dataset', expert_dataset)
