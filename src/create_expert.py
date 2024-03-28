@@ -10,7 +10,7 @@ import gym
 import numpy as np
 from tqdm import tqdm
 
-from . import maze
+import maze
 import logging
 logging.basicConfig(level=logging.ERROR)
 
@@ -50,6 +50,11 @@ def get_args() -> argparse.Namespace:
         type=int,
         default=10,
         help='How many times should repeat each maze when unbiased is turned on'
+    )
+    parser.add_argument(
+        '--folder',
+        type=str,
+        default='train'
     )
 
     # Maze specific
@@ -93,7 +98,7 @@ def state_to_action(source: int, target: int, shape: Tuple[int, int]) -> int:
     return 2
 
 
-def create(args: argparse.Namespace) -> List[Any]:
+def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
     """Create expert dataset for imitation learning.
 
     Args:
@@ -103,18 +108,19 @@ def create(args: argparse.Namespace) -> List[Any]:
         List[Any]: Expert dataset for Imitation Learning.
         TODO explain what is in the dataset.
     """
-    mypath = f'{args.path}/train/'
+    mypath = f'{args.path}/{folder}/'
     mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
     if args.unbiased:
         mazes = np.repeat(mazes, args.times, axis=0)
 
-    if os.path.exists(args.save_path):
-        shutil.rmtree(args.save_path)
-        os.makedirs(args.save_path)
+    save_path = f'{args.save_path}{folder}/'
+    if os.path.exists(save_path):
+        shutil.rmtree(save_path)
+        os.makedirs(save_path)
 
-    if not os.path.exists(args.save_path):
-        os.makedirs(args.save_path)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
 
     image_idx = 0
     dataset = np.ndarray(shape=[0, 9])
@@ -138,7 +144,7 @@ def create(args: argparse.Namespace) -> List[Any]:
             total_reward = 0
             for idx, tile in enumerate(solution):
                 image = env.render('rgb_array')
-                np.save(f'{args.save_path}/{image_idx}', image)
+                np.save(f'{save_path}/{image_idx}', image)
                 image_idx += 1
 
                 if idx < len(solution) - 1:
@@ -169,7 +175,7 @@ def create(args: argparse.Namespace) -> List[Any]:
                     dataset = np.append(dataset, np.array(entry)[None], axis=0)
                 if done:
                     image = env.render('rgb_array')
-                    np.save(f'{args.save_path}/{image_idx}', image)
+                    np.save(f'{save_path}/{image_idx}', image)
                     image_idx += 1
                     dataset[-1, 5] = total_reward
                     dataset[-1, -1] = True
@@ -181,5 +187,7 @@ def create(args: argparse.Namespace) -> List[Any]:
 
 if __name__ == '__main__':
     arguments = get_args()
-    expert_dataset = create(arguments)
-    np.save(f'{arguments.save_path}/dataset', expert_dataset)
+    folders = arguments.folder.split(',')
+    for folder in folders:
+        expert_dataset = create(arguments, folder)
+        np.save(f'{arguments.save_path}{folder}/dataset', expert_dataset)

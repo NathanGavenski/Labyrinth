@@ -10,10 +10,11 @@ import gym
 from tqdm import tqdm
 
 # pylint: disable=[W0611]
-from . import maze
+import maze
 
 import logging
 logging.basicConfig(level=logging.ERROR)
+
 
 def get_args() -> argparse.Namespace:
     """Get arguments from command line.
@@ -41,6 +42,12 @@ def get_args() -> argparse.Namespace:
         default=100,
         help="How many mazes for the evaluation set"
     )
+    parser.add_argument(
+        '--test',
+        type=int,
+        default=100,
+        help="How many mazes for the test set"
+    )
 
     # Maze specific
     parser.add_argument(
@@ -60,30 +67,38 @@ def get_args() -> argparse.Namespace:
 
 
 def generate(
-        train_amount: int,
-        eval_amount: int,
-        shape: Tuple[int, int],
-        verbose: Optional[bool] = False
-    ) -> None:
-    """_summary_
+    train_amount: int,
+    eval_amount: int,
+    test_amount: int,
+    shape: Tuple[int, int],
+    verbose: Optional[bool] = False
+) -> None:
+    """Generate mazes for the maze environment.
 
     Args:
         train (int): Amount of mazes for the train set
         eval (int): Amount of mazes for the evaluation set
         shape (Tuple[int, int]): Width and height of the generated mazes
-        verbose (Optional[bool]): Whether it should show the progress bar when creating mazes. 
-            Defaults to False.
+        verbose (Optional[bool]): Whether it should show the progress bar when
+            creating mazes. Defaults to False.
     """
     env = gym.make('MazeScripts-v0', shape=shape)
 
     global_path = pathlib.Path(__file__).parent.resolve()
     mypath = f'{global_path}/environment/mazes/mazes{shape[0]}/'
-    env.generate(mypath, amount=train_amount + eval_amount)
+    env.generate(mypath, amount=train_amount + eval_amount + test_amount)
     files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
+    eval_amount += train_amount
+
     train_data = files[:train_amount]
-    evaluation_data = files[train_amount:]
-    print(f'Train: {len(train_data)}, Eval: {len(evaluation_data)}')
+    evaluation_data = files[train_amount:eval_amount]
+    test_data = files[eval_amount:]
+    print(
+        f'Train: {len(train_data)},',
+        f'Eval: {len(evaluation_data)},',
+        f'Test: {len(test_data)}'
+    )
 
     os.makedirs(f'{mypath}train/')
     train_data = train_data if not verbose else tqdm(train_data)
@@ -97,6 +112,11 @@ def generate(
     for _file in evaluation_data:
         os.rename(f'{mypath}{_file}', f'{mypath}eval/{_file}')
 
+    os.makedirs(f'{mypath}test/')
+    test_data = test_data if not verbose else tqdm(test_data)
+    for _file in test_data:
+        os.rename(f'{mypath}{_file}', f'{mypath}test/{_file}')
+
 
 if __name__ == '__main__':
     args = get_args()
@@ -104,6 +124,7 @@ if __name__ == '__main__':
     generate(
         train_amount=args.train,
         eval_amount=args.eval,
+        test_amount=args.test,
         shape=(args.width, args.height),
         verbose=args.verbose
     )
