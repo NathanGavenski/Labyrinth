@@ -89,9 +89,9 @@ if __name__ == "__main__":
         hf_split="shortest_route",
         transform=transforms.Resize(64)
     )
-    train_dataset.states = train_dataset.states.repeat(10).reshape(-1, 1)
-    train_dataset.next_states = train_dataset.next_states.repeat(10).reshape(-1, 1)
-    train_dataset.actions = torch.from_numpy(train_dataset.actions.numpy().repeat(10)).view((-1, 1))
+    #train_dataset.states = train_dataset.states.repeat(10).reshape(-1, 1)
+    #train_dataset.next_states = train_dataset.next_states.repeat(10).reshape(-1, 1)
+    #train_dataset.actions = torch.from_numpy(train_dataset.actions.numpy().repeat(10)).view((-1, 1))
     train_dataloader = DataLoader(train_dataset, batch_size=4, shuffle=True)
 
     eval_dataset = BaselineDataset(
@@ -100,9 +100,9 @@ if __name__ == "__main__":
         hf_split="shortest_route",
         transform=transforms.Resize(64)
     )
-    eval_dataset.states = eval_dataset.states.repeat(10).reshape(-1, 1)
-    eval_dataset.next_states = eval_dataset.next_states.repeat(10).reshape(-1, 1)
-    eval_dataset.actions = torch.from_numpy(eval_dataset.actions.numpy().repeat(10)).view((-1, 1))
+    #eval_dataset.states = eval_dataset.states.repeat(10).reshape(-1, 1)
+    #eval_dataset.next_states = eval_dataset.next_states.repeat(10).reshape(-1, 1)
+    #eval_dataset.actions = torch.from_numpy(eval_dataset.actions.numpy().repeat(10)).view((-1, 1))
     eval_dataloader = DataLoader(eval_dataset, batch_size=4, shuffle=True)
 
     enjoy = partial(
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     method._enjoy = types.MethodType(enjoy, method)
     method.train(
-        101,
+        100 * 10 + 1,
         train_dataset=train_dataloader,
         eval_dataset=eval_dataloader,
         always_save=True
