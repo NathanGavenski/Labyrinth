@@ -236,9 +236,9 @@ class Graph:
         image = Image.new("RGB", (self.width, self.height), "white")
         draw = ImageDraw.Draw(image)
 
+        node_positions = {}
         levels = node_level + edge_level
         level_height = self.height / (levels + 1)
-        node_positions = {}
 
         # Node
         for level in range(levels+1):
