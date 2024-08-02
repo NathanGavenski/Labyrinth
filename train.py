@@ -21,6 +21,7 @@ def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--file", type=str, required=True)
+    parser.add_argument("--batch_size", type=int, default=64)
 
     return parser.parse_args()
 
@@ -89,10 +90,7 @@ if __name__ == "__main__":
         hf_split="shortest_route",
         transform=transforms.Resize(64)
     )
-    #train_dataset.states = train_dataset.states.repeat(10).reshape(-1, 1)
-    #train_dataset.next_states = train_dataset.next_states.repeat(10).reshape(-1, 1)
-    #train_dataset.actions = torch.from_numpy(train_dataset.actions.numpy().repeat(10)).view((-1, 1))
-    train_dataloader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
 
     eval_dataset = BaselineDataset(
         "NathanGavenski/imageeval",
@@ -100,10 +98,7 @@ if __name__ == "__main__":
         hf_split="shortest_route",
         transform=transforms.Resize(64)
     )
-    #eval_dataset.states = eval_dataset.states.repeat(10).reshape(-1, 1)
-    #eval_dataset.next_states = eval_dataset.next_states.repeat(10).reshape(-1, 1)
-    #eval_dataset.actions = torch.from_numpy(eval_dataset.actions.numpy().repeat(10)).view((-1, 1))
-    eval_dataloader = DataLoader(eval_dataset, batch_size=4, shuffle=True)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=True)
 
     enjoy = partial(
         enjoy,
