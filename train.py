@@ -73,15 +73,15 @@ def enjoy(self, maze_paths, maze_settings, transforms):
 
     if self.best_model < metrics["aer"]:
         self.best_model = metrics["aer"]
-        self.early_stop = 0
+        self.early_stop_count = 0
     else:
-        self.early_stop += 1
+        self.early_stop_count += 1
 
     return metrics
 
 
 def early_stop(self, metric, n_early_stop) -> bool:
-    if self.early_stop == n_early_stop:
+    if self.early_stop_count == n_early_stop:
         return True
     return False
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
         # Things for overwriting default IL-Datasets
         method.best_model = -np.inf
-        method.early_stop = 0
+        method.early_stop_count = 0
         method.save_path = f"./tmp/bc/{method.environment_name}/{model}"
 
         method._enjoy = types.MethodType(enjoy, method)
