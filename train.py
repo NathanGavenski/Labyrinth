@@ -22,7 +22,7 @@ def get_args():
 
     parser.add_argument("--file", type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--n_models", type=int, default=1)
+    parser.add_argument("--n_models", type=int, default=10)
     parser.add_argument("--n_early_stop", type=int, default=5)
 
     return parser.parse_args()
@@ -82,6 +82,7 @@ def enjoy(self, maze_paths, maze_settings, transforms):
 
 def early_stop(self, metric, n_early_stop) -> bool:
     if self.early_stop_count == n_early_stop:
+        print("Early stop triggered")
         return True
     return False
 
@@ -148,3 +149,4 @@ if __name__ == "__main__":
             eval_dataset=eval_dataloader,
             always_save=True
         )
+        print(f"{model + 1} out of {args.n_models} finished training")
