@@ -131,6 +131,7 @@ if __name__ == "__main__":
 
     env = gym.make("Maze-v0", **params)
 
+
     for model in range(args.n_models):
         method = BC(env, enjoy_criteria=10, verbose=True, config_file=args.file)
 
@@ -141,12 +142,14 @@ if __name__ == "__main__":
 
         method._enjoy = types.MethodType(enjoy, method)
         method.early_stop = types.MethodType(early_stop, method)
+        folder = f"./benchmark_results/bc/{method.environment_name}_{model}"
 
         # Start IL-Datasets training
         method.train(
             100 * 10 + 1,
             train_dataset=train_dataloader,
             eval_dataset=eval_dataloader,
-            always_save=True
+            always_save=True,
+            folder=folder
         )
         print(f"{model + 1} out of {args.n_models} finished training")
