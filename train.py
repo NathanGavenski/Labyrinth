@@ -22,7 +22,7 @@ def get_args():
 
     parser.add_argument("--file", type=str, required=True)
     parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--n_models", type=int, default=1)
+    parser.add_argument("--n_models", type=int, default=10)
     parser.add_argument("--n_early_stop", type=int, default=5)
 
     return parser.parse_args()
@@ -73,15 +73,16 @@ def enjoy(self, maze_paths, maze_settings, transforms):
 
     if self.best_model < metrics["aer"]:
         self.best_model = metrics["aer"]
-        self.early_stop = 0
+        self.early_stop_count = 0
     else:
-        self.early_stop += 1
+        self.early_stop_count += 1
 
     return metrics
 
 
 def early_stop(self, metric, n_early_stop) -> bool:
-    if self.early_stop == n_early_stop:
+    if self.early_stop_count == n_early_stop:
+        print("Early stop triggered")
         return True
     return False
 
@@ -130,21 +131,25 @@ if __name__ == "__main__":
 
     env = gym.make("Maze-v0", **params)
 
+
     for model in range(args.n_models):
         method = BC(env, enjoy_criteria=10, verbose=True, config_file=args.file)
 
         # Things for overwriting default IL-Datasets
         method.best_model = -np.inf
-        method.early_stop = 0
+        method.early_stop_count = 0
         method.save_path = f"./tmp/bc/{method.environment_name}/{model}"
 
         method._enjoy = types.MethodType(enjoy, method)
         method.early_stop = types.MethodType(early_stop, method)
+        folder = f"./benchmark_results/bc/{method.environment_name}_{model}"
 
         # Start IL-Datasets training
         method.train(
             100 * 10 + 1,
             train_dataset=train_dataloader,
             eval_dataset=eval_dataloader,
-            always_save=True
+            always_save=True,
+            folder=folder
         )
+        print(f"{model + 1} out of {args.n_models} finished training")
