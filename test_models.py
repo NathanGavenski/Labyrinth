@@ -24,6 +24,7 @@ def get_args():
 
     parser.add_argument("--discover", action="store_true")
     parser.add_argument("--collect", action="store_true")
+    parser.add_argument("--features", action="store_true")
 
     return parser.parse_args()
 
@@ -148,14 +149,22 @@ if __name__ == "__main__":
                 pickle.dump(stats, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     if args.features:
-        for _type in ["train", "eval", "test"]:
-            dataset = BaselineDataset(
-                f"NathanGavenski/image{_type}",
-                source="hf",
-                hf_split="shortest_route",
-                transform=transforms.Resize(64)
-            )
+        weight_folders = [f for f in listdir(path)]
+        for folder in tqdm(weight_folders, desc="Folders"):
+            full_path = f"{path}{folder}/"
 
-            weight_folders = [f for f in listdir(path)]
-            for folder in tqdm(weight_folders, desc="Folders"):
-                pass
+            with open(f"{full_path}stats.pckl", "rb") as handle:
+                stats = pickle.load(handle)
+
+            features = {}
+            for _type in tqdm(["train", "eval", "test"], desc="type"):
+                bc.load(path=full_path, name="best_model")
+                bc.policy.eval()
+                method = Method(bc, env, transform)
+                method.get_retrieval_info()
+                features[_type] = method.retrieval_data
+
+                stats["features"] = features
+
+                with open(f"{full_path}stats.pckl", "wb") as handle:
+                    pickle.dump(stats, handle, protocol=pickle.HIGHEST_PROTOCOL)
