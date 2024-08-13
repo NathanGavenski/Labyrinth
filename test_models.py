@@ -16,12 +16,14 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from imitation_datasets.dataset import BaselineDataset
+from explain import Method
 
 
 def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--discover", action="store_true")
+    parser.add_argument("--collect", action="store_true")
 
     return parser.parse_args()
 
@@ -82,65 +84,78 @@ if __name__ == "__main__":
             os.system(f"cp {full_path}{all_acc[folder]['key']}.ckpt {full_path}best_model.ckpt")
         print(all_acc)
 
-    maze_paths="./src/environment/mazes/mazes5"
-    weight_folders = [f for f in listdir(path)]
-    for folder in tqdm(weight_folders, desc="Folders"):
-        full_path = f"{path}{folder}/"
+    if args.collect:
+        maze_paths="./src/environment/mazes/mazes5"
+        weight_folders = [f for f in listdir(path)]
+        for folder in tqdm(weight_folders, desc="Folders"):
+            full_path = f"{path}{folder}/"
 
-        bc.load(path="./tmp/bc/Maze/", name=str(400))
-        bc.policy.eval()
-        metrics = defaultdict(int)
-        solutions = defaultdict(list)
-        non_solutions = defaultdict(list)
+            bc.load(path=full_path, name="best_model")
+            bc.policy.eval()
+            metrics = defaultdict(int)
+            solutions = defaultdict(list)
+            non_solutions = defaultdict(list)
 
-        with torch.no_grad():
-            for maze_type in ["train", "eval", "test"]:
-                _path = f"{maze_paths}/{maze_type}"
-                structures = [join(_path, f) for f in listdir(_path) if isfile(join(_path, f))]
+            with torch.no_grad():
+                for maze_type in ["train", "eval", "test"]:
+                    _path = f"{maze_paths}/{maze_type}"
+                    structures = [join(_path, f) for f in listdir(_path) if isfile(join(_path, f))]
 
-                average_reward = []
-                success_rate = []
+                    average_reward = []
+                    success_rate = []
 
-                structures = tqdm(structures, desc=f"eval with {maze_type}")
-                for structure in structures:
-                    env = gym.make("Maze-v0", **params)
-                    done = False
+                    structures = tqdm(structures, desc=f"eval with {maze_type}")
+                    for structure in structures:
+                        env = gym.make("Maze-v0", **params)
+                        done = False
 
-                    try:
-                        obs = env.load(structure)
-                        accumulated_reward = 0
-                        early_stop_count = defaultdict(int)
-                        while not done:
-                            obs = transform(obs)
-                            action = torch.argmax(bc.forward(obs[None]), dim=1).squeeze().item()
-                            obs, reward, done, _ = env.step(action)
-                            accumulated_reward += reward
-                            early_stop_count[tuple(obs.flatten().tolist())] += 1
+                        try:
+                            obs = env.load(structure)
+                            accumulated_reward = 0
+                            early_stop_count = defaultdict(int)
+                            while not done:
+                                obs = transform(obs)
+                                action = torch.argmax(bc.forward(obs[None]), dim=1).squeeze().item()
+                                obs, reward, done, _ = env.step(action)
+                                accumulated_reward += reward
+                                early_stop_count[tuple(obs.flatten().tolist())] += 1
 
-                            if np.max(list(early_stop_count.values())) >= 5:
-                                step_reward = -.1 / (env.shape[0] * env.shape[1])
-                                lower_reward = env.max_episode_steps * step_reward
-                                accumulated_reward = lower_reward
-                                break
+                                if np.max(list(early_stop_count.values())) >= 5:
+                                    step_reward = -.1 / (env.shape[0] * env.shape[1])
+                                    lower_reward = env.max_episode_steps * step_reward
+                                    accumulated_reward = lower_reward
+                                    break
 
-                        if done:
-                            solutions[maze_type].append(structure)
-                        else:
-                            non_solutions[maze_type].append(structure)
+                            if done:
+                                solutions[maze_type].append(structure)
+                            else:
+                                non_solutions[maze_type].append(structure)
+                        finally:
+                            env.close()
 
-                    finally:
-                        env.close()
+                        success_rate.append(1 if done else 0)
+                        average_reward.append(accumulated_reward)
+                    metrics[f"{maze_type} aer"] = np.mean(average_reward)
+                    metrics[f"{maze_type} aer (std)"] = np.std(average_reward)
+                    metrics[f"{maze_type} sr"] = np.mean(success_rate)
 
-                    success_rate.append(1 if done else 0)
-                    average_reward.append(accumulated_reward)
-                metrics[f"{maze_type} aer"] = np.mean(average_reward)
-                metrics[f"{maze_type} aer (std)"] = np.std(average_reward)
-                metrics[f"{maze_type} sr"] = np.mean(success_rate)
+            with open(f"{full_path}stats.pckl", "wb") as handle:
+                stats = {
+                    "metrics": metrics,
+                    "solutions": solutions,
+                    "non solutions": non_solutions
+                }
+                pickle.dump(stats, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f"{full_path}stats.pckl", "wb") as handle:
-            stats = {
-                "metrics": metrics,
-                "solutions": solutions,
-                "non solutions": non_solutions
-            }
-            pickle.dump(stats, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    if args.features:
+        for _type in ["train", "eval", "test"]:
+            dataset = BaselineDataset(
+                f"NathanGavenski/image{_type}",
+                source="hf",
+                hf_split="shortest_route",
+                transform=transforms.Resize(64)
+            )
+
+            weight_folders = [f for f in listdir(path)]
+            for folder in tqdm(weight_folders, desc="Folders"):
+                pass
