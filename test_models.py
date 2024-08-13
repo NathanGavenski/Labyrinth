@@ -25,6 +25,7 @@ def get_args():
 
     return parser.parse_args()
 
+
 if __name__ == "__main__":
     args = get_args()
     params = {
@@ -94,8 +95,8 @@ if __name__ == "__main__":
 
         with torch.no_grad():
             for maze_type in ["train", "eval", "test"]:
-                path = f"{maze_paths}/{maze_type}"
-                structures = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
+                _path = f"{maze_paths}/{maze_type}"
+                structures = [join(_path, f) for f in listdir(_path) if isfile(join(_path, f))]
 
                 average_reward = []
                 success_rate = []
@@ -142,4 +143,4 @@ if __name__ == "__main__":
                 "solutions": solutions,
                 "non solutions": non_solutions
             }
-            pickle.dump(stats, handle, protocol=pickle.HIGHEST_PROTOCOL)                    
+            pickle.dump(stats, handle, protocol=pickle.HIGHEST_PROTOCOL)
