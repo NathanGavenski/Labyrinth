@@ -4,16 +4,12 @@ from collections import defaultdict
 import os
 from os import listdir
 from os.path import isfile, join
-from functools import partial
-import types
 import gym
 from src import maze
 import torch
 from torchvision import transforms
 from benchmark.methods import BC
-import time
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
 from imitation_datasets.dataset import BaselineDataset
 from explain import Method
