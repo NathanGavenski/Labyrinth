@@ -156,7 +156,7 @@ if __name__ == "__main__":
             for _type in tqdm(["train", "eval", "test"], desc="type"):
                 bc.load(path=full_path, name="best_model")
                 bc.policy.eval()
-                method = Method(bc, env, transform)
+                method = Method(bc, env, transform, _type)
                 method.get_retrieval_info()
                 features[_type] = method.retrieval_data
 
