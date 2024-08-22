@@ -351,10 +351,11 @@ class Method:
         self,
         method: BC,
         env: gym.Env,
-        transform: Callable[[torch.tensor], torch.tensor]
+        transform: Callable[[torch.tensor], torch.tensor],
+        dataset: str = "train"
     ) -> None:
         self.train_dataset = BaselineDataset(
-            "NathanGavenski/imagetrain",
+            f"NathanGavenski/image{dataset}",
             source="hf",
             hf_split="shortest_route",
             transform=transforms.Resize(64)

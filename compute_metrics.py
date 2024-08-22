@@ -129,10 +129,10 @@ if __name__ == "__main__":
         embeddings = np.concatenate(list(models.values()), axis=0)
         embeddings = tf.Variable(embeddings, name=f"features_{_type}")
 
-        if not os.path.exists("./logs/"):
-            os.makedirs("./logs/")
+        if not os.path.exists(f"./logs/{_type}"):
+            os.makedirs(f"./logs/{_type}")
 
-        with open(f"./logs/metadata_{_type}.tsv", "w") as f:
+        with open(f"./logs/{_type}/metadata_{_type}.tsv", "w") as f:
             # f.write("model\n")
             for model, embedding in models.items():
                 for _ in range(embedding.shape[0]):
@@ -140,9 +140,9 @@ if __name__ == "__main__":
 
         embedding = config.embeddings.add()
         embedding.tensor_name = _type
-        embedding.metadata_path = f"./logs/metadata_{_type}.tsv"
+        embedding.metadata_path = f"./logs/{_type}/metadata_{_type}.tsv"
         writer = tf.summary.create_file_writer("./logs")
-        projector.visualize_embeddings("./logs", config)
+        projector.visualize_embeddings(f"./logs/{_type}", config)
 
         saver = tf.train.Checkpoint(embedding=embeddings)
-        saver.save(f"./logs/{_type}.ckpt")
+        saver.save(f"./logs/{_type}/{_type}.ckpt")
