@@ -1,3 +1,4 @@
+import argparse
 from collections import defaultdict
 import os
 
@@ -6,10 +7,71 @@ import gym
 import numpy as np
 from src import maze
 from tqdm import tqdm
+import torch
 from torchvision import transforms
+from explain import Method
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--strategy", default="democratic", required=True)
+    return parser.parse_args()
+
+
+class Ensemble:
+    def __init__(
+        self,
+        policies: list[BC],
+        env: gym.Env,
+        transform: transforms.Compose,
+        strategy: str = "democratic",
+    ) -> None:
+        self.policies: list[BC] = policies
+        self.strategy: str = strategy
+        self.features: dict[int, Method] = {}
+        if strategy != "democratic":
+            for i, policy in enumerate(policies):
+                self.features[i] = Method(policy, env, transform, "train")
+
+    def predict_action(
+        self,
+        obs: np.ndarray,
+        transform: transforms.Compose,
+    ) -> int:
+        if self.strategy == "democratic":
+            actions = []
+            for policy in self.policies:
+                actions.append(int(policy.predict(obs, transform)))
+            return max(set(actions), key=actions.count)
+
+        if self.strategy == "knn":
+            actions = []
+            for features, policy in zip(self.features.values(), self.policies):
+                weight = 1 / features.retrieve_distance(obs)
+                action = int(policy.predict(obs, transform))
+                actions.append([weight, action])
+
+            actions = np.array(actions)
+            actions[:, 0] = actions[:, 0] / actions[:, 0].sum()
+
+            _actions = np.zeros((0, 4))
+            for data in actions:
+                _action = np.zeros((4,))
+                _action[int(data[1])] = data[0]
+                _actions = np.append(_actions, _action[None], axis=0)
+            actions = _actions.sum(axis=0)
+            return np.argmax(actions)
+
+        if self.strategy == "kmeans":
+            raise NotImplementedError()
+
+        return None
 
 
 if __name__ == "__main__":
+    args = get_args()
+
     params = {
         "shape": (5, 5),
         "screen_width": 600,
@@ -34,8 +96,9 @@ if __name__ == "__main__":
         bc = BC(env, config_file="./configs/resnet.yaml")
         bc.load(weights, "best_model")
         policies[folder] = bc
+    policies = Ensemble(list(policies.values()), env, transform, strategy=args.strategy)
 
-    _maze_path = f"{maze_path}eval"
+    _maze_path = f"{maze_path}test"
     structures = [os.path.join(_maze_path, f) for f in os.listdir(_maze_path)]
     success_rate = 0
     solutions = []
@@ -48,10 +111,7 @@ if __name__ == "__main__":
             early_stop_count = defaultdict(int)
 
             while not done:
-                actions = []
-                for policy in policies.values():
-                    actions.append(int(policy.predict(obs, transform)))
-                action = max(set(actions), key=actions.count)
+                action = policies.predict_action(obs, transform)
                 obs, reward, done, _ = env.step(action)
                 early_stop_count[tuple(obs.flatten().tolist())] += 1
 

@@ -4,6 +4,7 @@
 maze/environment/mazes/*
 dataset/
 plots/
+peter/
 
 tmp/*
 *.jsonl
