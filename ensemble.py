@@ -16,6 +16,7 @@ def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--strategy", default="democratic", required=True)
+    parser.add_argument("--type", default="train", required=True)
     return parser.parse_args()
 
 
@@ -30,7 +31,7 @@ class Ensemble:
         self.policies: list[BC] = policies
         self.strategy: str = strategy
         self.features: dict[int, Method] = {}
-        if strategy != "democratic":
+        if strategy not in ["democratic", "confidence"]:
             for i, policy in enumerate(policies):
                 self.features[i] = Method(policy, env, transform, "train")
 
@@ -44,6 +45,17 @@ class Ensemble:
             for policy in self.policies:
                 actions.append(int(policy.predict(obs, transform)))
             return max(set(actions), key=actions.count)
+
+        if self.strategy == "confidence":
+            actions = np.ndarray((0, 4))
+            obs = transform(obs)[None]
+            for policy in self.policies:
+                policy.policy.eval()
+                action = policy.forward(obs).detach()
+                action = torch.softmax(action, dim=1).numpy()
+                actions = np.append(actions, action, axis=0)
+            actions = actions.sum(0)
+            return np.argmax(actions)
 
         if self.strategy == "knn":
             actions = []
@@ -98,7 +110,7 @@ if __name__ == "__main__":
         policies[folder] = bc
     policies = Ensemble(list(policies.values()), env, transform, strategy=args.strategy)
 
-    _maze_path = f"{maze_path}test"
+    _maze_path = f"{maze_path}{args.type}"
     structures = [os.path.join(_maze_path, f) for f in os.listdir(_maze_path)]
     success_rate = 0
     solutions = []
