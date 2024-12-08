@@ -10,6 +10,7 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 from gym.envs.classic_control import rendering
+from gym.error import DependencyNotInstalled
 import numpy as np
 from numpy import ndarray
 
@@ -20,6 +21,7 @@ from .utils import SettingsException, ResetException, ActionException
 from .utils.render import RenderUtils
 
 
+# TODO add gym logger
 # FIXME typing
 class Maze(gym.Env):
     """
@@ -108,6 +110,10 @@ class Maze(gym.Env):
         self._pathways = None
         self.done = False
         self.visual = visual
+
+        # pygame
+        self.clock = None
+        self.screen = None
 
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -289,9 +295,33 @@ class Maze(gym.Env):
         if not self.reseted:
             raise ResetException("Please reset the environment first.")
 
+        self.render_mode = "human"
+        if self.render_mode is None:
+            assert self.spec is not None
+            return
+
+        try:
+            import pygame
+            from pygame import gfxdraw
+        except ImportError as e:
+            raise DependencyNotInstalled("pygame is not installed, run `pip install pygame`") from e
+
+        if self.screen is None:
+            pygame.init()
+            if self.render_mode == "human":
+                pygame.display.init()
+                self.screen = pygame.display.set_mode(
+                    (self.screen_width, self.screen_height)
+                )
+
+                if self.clock is None:
+                    self.clock = pygame.time.Clock()
+
+            else:
+                self.screen = pygame.Surface((self.screen_width, self.screen_height))
+
         if self.render_utils is None:
-            viewer = rendering.Viewer(self.screen_width, self.screen_height)
-            self.render_utils = RenderUtils(self.shape, viewer)
+            self.render_utils = RenderUtils(self.shape, self.screen)
 
             if self.icy_floor:
                 if self.ice_floors is None:
@@ -300,14 +330,16 @@ class Maze(gym.Env):
                 if self.render_utils is None:
                     raise SettingsException("Viewer not set.")
 
-                self.render_utils \
-                    .draw_ice_floors(self.ice_floors)
+        self.render_utils \
+            .redraw() \
+            .draw_end(self.end) \
+            .draw_start(self.start) \
+            .draw_agent(self.agent) \
+            .draw_walls(self.maze)
 
+        if self.ice_floors:
             self.render_utils \
-                .draw_start(self.start) \
-                .draw_end(self.end) \
-                .draw_agent(self.agent) \
-                .draw_walls(self.maze)
+                .draw_ice_floors(self.ice_floors)
 
         if self.occlusion:
             if self.render_utils is None:
@@ -328,9 +360,15 @@ class Maze(gym.Env):
         tile_w = self.render_utils.tile_w
         new_x = self.agent[1] * tile_w - self.start[1] * tile_w
         new_y = self.agent[0] * tile_h - self.start[0] * tile_h
-        self.render_utils.agent_transition.set_translation(new_x, new_y)
 
-        return self.render_utils.viewer.render(return_rgb_array=mode == "rgb_array")
+        if self.render_mode == "human":
+            pygame.event.pump()
+            self.clock.tick(50)
+            pygame.display.flip()
+        elif self.render_mode == "rgb_array":
+            return np.transpose(
+                np.array(pygame.surfarray.pixels3d(self.screen)), axes=(1, 0, 2)
+            )
 
     def translate_position(self, position: Tuple[int, int]) -> Tuple[int, int]:
         """
@@ -490,7 +528,10 @@ class Maze(gym.Env):
             Union[List[int], ndarray]: State of the environment.
         """
         if self.render_utils is not None:
-            self.close()
+            import pygame
+
+            pygame.display.quit()
+            pygame.quit()
 
         self.reseted = True
         self.step_count = 0
