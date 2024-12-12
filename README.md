@@ -138,7 +138,7 @@ pip install -e .
 
 
 ## TO DO
-* [ ] Migrate to gymnasium
+* [x] Migrate to gymnasium
 * [ ] Make it work with python 3.12
 * [ ] Create unit tests for the dataset and maze scripts
 * [ ] Update gifs
