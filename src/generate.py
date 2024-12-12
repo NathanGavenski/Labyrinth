@@ -7,7 +7,7 @@ import pathlib
 from typing import Optional, Tuple
 import logging
 
-import gym
+import gymnasium as gym
 from tqdm import tqdm
 
 try:
@@ -84,7 +84,7 @@ def generate(
         verbose (Optional[bool]): Whether it should show the progress bar when
             creating mazes. Defaults to False.
     """
-    env = gym.make('MazeScripts-v0', shape=shape)
+    env = gym.make('Maze-v0', shape=shape)
 
     global_path = pathlib.Path(__file__).parent.resolve()
     mypath = f'{global_path}/environment/mazes/mazes{shape[0]}/'

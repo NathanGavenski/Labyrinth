@@ -113,7 +113,7 @@ class RenderUtils:
             (right - self.tile_w // 2, top),
             (right, bottom + self.tile_h // 2)
         ]
-        pygame.filled_polygon(self.viewer, agent, Colors.GREEN.value)
+        pygame.draw.polygon(self.viewer, Colors.GREEN.value, agent)
         return self
 
     def draw_end(self, end: List[int]) -> Self:

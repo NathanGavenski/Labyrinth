@@ -34,11 +34,14 @@ jobs:
     - name: Install environment dependencies
       run: |
         pip install -r requirements/requirements.txt
+    - name: Install environment
+      run: |
+        pip install -e .
 
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=9 $(find ./src -name "*.py" | xargs) --ignore-paths=src/tests/.
+        pylint --fail-under=9 $(find ./src -name "*.py" | xargs)
 
     - name: Testing the code with pytest
       run: |
-        xvfb-run -s "-screen 0 1400x900x24" pytest src/
+        xvfb-run -s "-screen 0 1400x900x24" pytest tests/

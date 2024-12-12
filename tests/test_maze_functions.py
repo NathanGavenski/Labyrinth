@@ -5,19 +5,19 @@ from typing import Tuple
 import unittest
 import shutil
 
-import gym
+import gymnasium as gym
 import numpy as np
 from PIL import Image
 import pytest
 
-from src import maze
-from src.create_expert import state_to_action
-from src.maze.utils.utils import SettingsException, ActionException
-
+import maze
+from create_expert import state_to_action
+from maze.utils.utils import SettingsException, ActionException
 
 github = os.getenv("SERVER")
 github = bool(int(github)) if github is not None else False
-
+PATH = "/".join(__file__.split("/")[:-1])
+TMP_PATH = f"{PATH}/tmp/"
 
 def get_global_position(position: Tuple[int, int], size: Tuple[int] = (10, 10)) -> int:
     """Get the global position of a tile in the maze.
@@ -57,24 +57,26 @@ def translate_position(
 class TestCases(unittest.TestCase):
     """Test cases for the Maze environment."""
 
-    test_files_path = "./src/tests/assets/"
+    test_files_path = "./assets/"
 
     @classmethod
     def setUpClass(cls) -> None:
         """Set up the test environment."""
         cls.env = None
-        if not os.path.exists("./tests/"):
-            os.makedirs("./tests/")
+        if not os.path.exists(TMP_PATH):
+            os.makedirs(TMP_PATH)
 
     @classmethod
     def tearDownClass(cls) -> None:
         """Tear down the test environment."""
-        shutil.rmtree("./tests/")
-        cls.env.close()
+        shutil.rmtree(TMP_PATH)
+        if cls.env is not None:
+            cls.env.close()
 
     def tearDown(self) -> None:
         """Tear down after every test function."""
-        TestCases.env.close()
+        if TestCases.env is not None:
+            TestCases.env.close()
 
     def test_init(self):
         """Test the initialization of the environment."""
@@ -102,11 +104,11 @@ class TestCases(unittest.TestCase):
         """Test the save function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.reset()
-        env.save("./tests/test.txt")
+        env.save(f"{TMP_PATH}/test.txt")
 
-        assert os.path.exists("./tests/test.txt")
+        assert os.path.exists(f"{TMP_PATH}/test.txt")
 
-        with open("./tests/test.txt", encoding="utf-8") as _file:
+        with open(f"{TMP_PATH}/test.txt", encoding="utf-8") as _file:
             for line in _file:
                 info = line
 
@@ -118,9 +120,9 @@ class TestCases(unittest.TestCase):
     def test_load(self):
         """Test the load function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load("./src/tests/assets/structure_test.txt")
+        env.load(f"{PATH}/assets/structure_test.txt")
 
-        with open("./src/tests/assets/structure_test.txt", encoding="utf-8") as _file:
+        with open(f"{PATH}/assets/structure_test.txt", encoding="utf-8") as _file:
             for line in _file:
                 info = line
 
@@ -132,7 +134,7 @@ class TestCases(unittest.TestCase):
     def test_step(self):
         """Test the step function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state, _ = env.load("./src/tests/assets/structure_test.txt")
+        state, _ = env.load(f"{PATH}/assets/structure_test.txt")
         assert state[0] == 0
 
         state, *_ = env.step(0)
@@ -142,7 +144,7 @@ class TestCases(unittest.TestCase):
     def test_step_wall(self):
         """Test the step function when the agent tries to move into a wall."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state, _ = env.load("./src/tests/assets/structure_test.txt")
+        state, _ = env.load(f"{PATH}/assets/structure_test.txt")
         assert state[0] == 0
 
         state, *_ = env.step(1)
@@ -151,7 +153,7 @@ class TestCases(unittest.TestCase):
     def test_reset(self):
         """Test the reset function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state, _ = env.load("./src/tests/assets/structure_test.txt")
+        state, _ = env.load(f"{PATH}/assets/structure_test.txt")
         assert state[0] == 0
 
         state, *_ = env.step(0)
@@ -175,14 +177,14 @@ class TestCases(unittest.TestCase):
     def test_change_start_and_goal(self):
         """Test the change_start_and_goal function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load("./src/tests/assets/structure_test.txt")
+        env.load(f"{PATH}/assets/structure_test.txt")
         env.change_start_and_goal()
         assert env.start != (0, 0)
 
     def test_agent_random_position(self):
         """Test the agent_random_position function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load("./src/tests/assets/structure_test.txt")
+        env.load(f"{PATH}/assets/structure_test.txt")
         agent_initial_position = env.agent
         env.agent_random_position()
         assert agent_initial_position != env.agent
@@ -205,16 +207,16 @@ class TestCases(unittest.TestCase):
             occlusion=True,
             render_mode="rgb_array"
         )
-        env.load("./src/tests/assets/structure_test.txt")
+        env.load(f"{PATH}/assets/structure_test.txt")
         state = env.render()
-        test_state = np.array(Image.open("./src/tests/assets/occlusion_test.png"))
+        test_state = np.array(Image.open(f"{PATH}/assets/occlusion_test.png"))
         assert (state == test_state).all()
         env.close()
 
     def test_occlusion_vector(self):
         TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=True)
-        state, _ = env.load("./src/tests/assets/occlusion_vector_test.txt")
-        with open("./src/tests/assets/vector_occlusion_test.txt", encoding="utf-8") as _file:
+        state, _ = env.load(f"{PATH}/assets/occlusion_vector_test.txt")
+        with open(f"{PATH}/assets/vector_occlusion_test.txt", encoding="utf-8") as _file:
             for line in _file:
                 test_state = line
         assert (state == ast.literal_eval(test_state)).all()
@@ -222,9 +224,9 @@ class TestCases(unittest.TestCase):
     def test_key_and_door(self):
         """Test the key_and_door function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
-        state, info = env.load("./src/tests/assets/key_and_door_test.txt")
+        state, info = env.load(f"{PATH}/assets/key_and_door_test.txt")
 
-        with open("./src/tests/assets/key_and_door_test.txt", 'r', encoding="utf-8") as _file:
+        with open(f"{PATH}/assets/key_and_door_test.txt", 'r', encoding="utf-8") as _file:
             for line in _file:
                 info = line
 
@@ -244,9 +246,9 @@ class TestCases(unittest.TestCase):
     def test_solve_shortest(self):
         """Test the solve function with the shortest option."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load("./src/tests/assets/structure_test.txt")
+        env.load(f"{PATH}/assets/structure_test.txt")
         solve = env.solve()
-        with open("./src/tests/assets/solve_test.txt", encoding="utf-8") as _file:
+        with open(f"{PATH}/assets/solve_test.txt", encoding="utf-8") as _file:
             for line in _file:
                 test_solve = line
 
@@ -254,9 +256,9 @@ class TestCases(unittest.TestCase):
         env.close()
 
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
-        env.load("./src/tests/assets/key_and_door_test.txt")
+        env.load(f"{PATH}/assets/key_and_door_test.txt")
 
-        with open("./src/tests/assets/solve_key_and_door.txt", 'r', encoding="utf-8") as _file:
+        with open(f"{PATH}/assets/solve_key_and_door.txt", 'r', encoding="utf-8") as _file:
             for line in _file:
                 test_solve = line
         assert env.solve(mode="shortest")[0] == ast.literal_eval(test_solve)
@@ -265,13 +267,13 @@ class TestCases(unittest.TestCase):
         """Test the solve function with the all option."""
         TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
         env.reset()
-        env.save("./tests/tmp.txt")
+        env.save(f"{TMP_PATH}/tmp.txt")
         first_solutions = env.solve("all")
         first_solutions.sort(key=len)
 
         env.close()
         TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
-        env.load("./tests/tmp.txt")
+        env.load(f"{TMP_PATH}/tmp.txt")
         env.reset()
         second_solutions = env.solve("all")
         second_solutions.sort(key=len)
@@ -321,12 +323,12 @@ class TestCases(unittest.TestCase):
 
         assert env.agent == env.end
 
-    def test_key_and_door_occlusion(self):
+    def test_more_than_one_mode(self):
         """Test if environment allows 'Key and Door' and 'Occlusion' at the same time."""
         with pytest.raises(SettingsException) as excinfo:
             gym.make("Maze-v0", shape=(10, 10), key_and_door=True, occlusion=True)
 
-        assert "Both modes cannot be active at the same time." in str(excinfo.value)
+        assert "Different modes cannot be active at the same time." in str(excinfo.value)
 
     def test_icy_floor(self):
         """Test the icy floor setting."""

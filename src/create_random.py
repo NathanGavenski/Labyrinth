@@ -6,7 +6,7 @@ from os.path import isfile, join
 import shutil
 from typing import Any, List
 
-import gym
+import gymnasium as gym
 import numpy as np
 from tqdm import tqdm
 
@@ -104,7 +104,7 @@ def generate(args: argparse.Namespace) -> List[Any]:
     amount_per_maze = (args.amount + 1 * len(mazes)) // len(mazes)
     pbar = tqdm(range(args.amount))
     for maze_idx, _maze in enumerate(mazes):
-        env = gym.make('MazeScripts-v0', shape=(args.width, args.height), render_mode="rgb_array")
+        env = gym.make('Maze-v0', shape=(args.width, args.height), render_mode="rgb_array")
         env.load(_maze)
 
         if args.unbiased and (maze_idx % args.times != 0):
