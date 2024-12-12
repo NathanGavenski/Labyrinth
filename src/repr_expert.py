@@ -5,7 +5,7 @@ from os import listdir, makedirs
 from os.path import isfile, join, exists
 from typing import List, Tuple
 
-import gym
+import gymnasium as gym
 from matplotlib import pyplot as plt
 import numpy as np
 from tqdm import tqdm
@@ -144,7 +144,7 @@ def plot_expert(args: argparse.Namespace) -> Tuple[plt.Figure, List[plt.Axes]]:
         max_visited = 0
         mazes = mazes if not args.verbose else tqdm(mazes)
         for _maze in mazes:
-            env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
+            env = gym.make('Maze-v0', shape=(args.width, args.height))
             env.reset()
             env.load(_maze)
             solutions = env.solve(mode='all')
