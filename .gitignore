@@ -10,9 +10,9 @@ tmp/*
 *.jsonl
 *.tar.gz
 *.npz
+*.ipynb
 benchmark_results/*
 !tmp/experiments/bias_measure.txt
-*.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
