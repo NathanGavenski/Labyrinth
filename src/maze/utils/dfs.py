@@ -9,6 +9,11 @@ from .node import Node
 class DFS:
     """Depth first search algorithm"""
 
+    # Key and door
+    key = None
+    door = None
+    key_and_door = False
+
     def __init__(
             self,
             graph: List[Tuple[int, int]],
@@ -31,14 +36,8 @@ class DFS:
 
         self.start = 0 if start is None else start
         self.end = shape[0] * shape[1] - 1 if end is None else end
-        self.key = None
-        self.door = None
-        self.key_and_door = False
         self.shape = shape
         self.graph = graph
-        self.update = None
-        self.paths = []
-        self.path = []
         self.random_amount = random_amount
 
     def set_key_and_door(self, key: int, door: int) -> None:
@@ -64,6 +63,9 @@ class DFS:
         path = {x: Node(x, []) for x in range(self.end + 1)}
 
         for edges in self.graph.values():
+            if len(edges[0]) == 0:
+                continue
+
             for (x, edge) in edges:
                 path[x].add_edge(path[edge])
 
@@ -74,10 +76,10 @@ class DFS:
         self.graph = path
 
     def generate_path(
-            self,
-            min_paths: int = None,
-            max_paths: int = None,
-    ) -> List[Node]:
+        self,
+        min_paths: int = None,
+        max_paths: int = None,
+    ) -> Dict[int, Node]:
         """Generates a maze-like with DFS.
 
         Args:
@@ -85,7 +87,7 @@ class DFS:
                 Defaults to None (no paths required).
 
         Returns:
-            graph (List[Node]): List of nodes. These nodes have a list for edges and walls.
+            graph (Dict[int, Node]): List of nodes. These nodes have a list for edges and walls.
         """
         path = {x: Node(x, []) for x in range(max(self.graph.keys()) + 1)}
 
@@ -117,40 +119,33 @@ class DFS:
             for node in path.values()
         ])
 
-        if self.find_loop(path):
-            logging.error("Found a loop")
-
         if min_paths is not None or max_paths is not None:
             path = self.find_path(path, self.start, self.end, False)
 
-            while True:
-                for node in path.values():
-                    node.visited = False
+            for node in path.values():
+                node.visited = False
+                node.d = []
 
-                self.update = False
-                self._find_all_paths(path[self.end], path[self.start])
-                if not self.update:
-                    break
-
-                if min_paths is not None and len(path[self.end].d) > min_paths:
-                    break
-
-                if max_paths is not None and len(path[self.end].d) > max_paths:
-                    logging.debug(
-                        "generate_path:Generated more paths than allowed: %i" %
-                        len(path[self.end].d)
-                    )
-                    self.graph = self.generate_path(min_paths, max_paths)
-                    return self.graph
-
-                if max_paths is not None and len(path[self.end].d) <= max_paths:
-                    break
-
-            logging.debug(f"generate_path: {path[self.end].d} solutions found for maze")
+            visited = [False] * len(path.keys())
+            self._find_all_paths(path[self.start], path[self.end], visited, [])
 
             if min_paths is not None and min_paths > len(path[self.end].d):
+                logging.error(
+                    "generate_path:Generated less paths than required: %i" %
+                    len(path[self.end].d)
+                )
                 self.graph = self.generate_path(min_paths, max_paths)
                 return self.graph
+            
+            if max_paths is not None and len(path[self.end].d) > max_paths:
+                logging.error(
+                    "generate_path:Generated more paths than allowed: %i" %
+                    len(path[self.end].d)
+                )
+                self.graph = self.generate_path(min_paths, max_paths)
+                return self.graph
+
+            logging.debug(f"generate_path: {path[self.end].d} solutions found for maze")
 
         self.graph = path
 
@@ -236,13 +231,13 @@ class DFS:
                 for node in path.values()
             ])
 
-            while True:
-                for node in path.values():
-                    node.visited = False
-                self.update = False
-                self._find_all_paths(path[self.end], path[self.start])
-                if not self.update:
-                    break
+            for node in path.values():
+                node.visited = False
+                node.d = []
+            
+            self.count = 0
+            visited = [False] * len(self.graph)
+            self._find_all_paths(path[self.start], path[self.end], visited, [])
 
             logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
             if isinstance(path[self.end].d[0], list):
@@ -257,25 +252,6 @@ class DFS:
         door_end_path = door_end_nodes[self.end].d
         path = start_key_path + key_door_path[1:] + door_end_path[1:]
         return [path]
-
-    def find_loop(self, graph: Dict[int, List[Node]]) -> bool:
-        """Detect whether a loop exists in a graph.
-
-        Args:
-            graph (dict[int, list[Node]]): graph nodes.
-
-        Returns:
-            loop_exists (bool): True if there is a loop.
-        """
-        for node in graph.values():
-            for edge in node.edges:
-                if node in graph[edge.identifier].edges:
-                    logging.debug(
-                        "Node %i found in %i" %
-                        (edge.identifier, node.identifier)
-                    )
-                    return True
-        return False
 
     def find_path(
         self,
@@ -342,90 +318,28 @@ class DFS:
         elif early_stop:
             return
 
-    def are_all_subsets(
-        self,
-        sublist: List[Node],
-        superlists: List[List[Node]],
-        node: Node
-    ) -> bool:
-        """Tests if all elemets from a sublist is part of a superlist.
-
-        Args:
-            sublist (list[Node]): sublist elements.
-            superlists (list[list[Node]]): all superlists (contains own node).
-            node (Node): node to check if it is in the sublist.
-
-        Returns:
-            is_part (bool): if it is a sublist from the superlists.
-        """
-        is_subset = []
-        for superlist in superlists:
-            is_subset.append(set(sublist) == set(superlist[:-1]) or node in sublist)
-        return any(is_subset)
-
-    def are_all_lists_subsets(
-        self,
-        sublists: List[List[Node]],
-        superlists: List[List[Node]],
-        node: Node
-    ) -> bool:
-        """Check if all sublists are part of a superlist.
-
-        Args:
-            sublists (list[list[Node]]): list of lists of elements.
-            superlists (list[list[Node]]): list of lists of elements.
-            node (Node): node element.
-
-        Returns:
-            is_part (bool) if all sublists are part of the superlists.
-        """
-        return all(self.are_all_subsets(sublist, superlists, node) for sublist in sublists)
-
     def _find_all_paths(
         self,
-        node: Node,
-        start: Node
+        start: Node,
+        finish: Node,
+        visited: List[bool],
+        path: List[Node],
     ) -> None:
-        """Function for finding all paths from start to goal. This function works
-        backwards from the graph. It searches for possible paths going from the
-        end node until it doesn't find any more forks on the graphs. From that,
-        it works forward updating all nodes until the end.
-
+        """Find all possible paths from start to finish.
+        
         Args:
-            node Node: node to start looking for all possible paths. Should
-                start with the goal node.
-        """
-        logging.debug(f"_find_all_paths: Visiting node {node.identifier}")
-        not_part_of = []
+            start (Node): starting node.
+            finish (Node): finishing node.
+            visited (List[bool]): list of visited nodes.
+            path (List[Node]): list of nodes.
+        """    
+        visited[start.identifier] = True
+        start.d.append(path.copy())
+        path.append(start)
 
-        if node.visited:
-            return
-
-        node.visited = True
-        if node.identifier == start.identifier:
-            return
-
-        for edge in node.visited_edges:
-            if not isinstance(edge.d[0], list):
-                edge.d = [edge.d]
-            if not isinstance(node.d[0], list):
-                node.d = [node.d]
-
-            is_part = self.are_all_lists_subsets(edge.d, node.d, node)
-            log_msg = f"_find_all_paths:Comparing {edge.identifier} {edge.d} "
-            log_msg += f"with {node.identifier} {node.d} "
-            log_msg += f"({is_part})"
-            logging.debug(log_msg)
-            if not is_part:
-                not_part_of.append(edge)
-
-                for d in edge.get_d():
-                    logging.debug(f"Adding {d} to {node.identifier}")
-                    logging.debug([
-                        f"{node.identifier}: {_path} ({_path == d})"
-                        for _path in node.get_d()
-                    ])
-                    self.update |= node.add_d(d + [node])
-
-            if not edge.visited:
-                self._find_all_paths(edge, start)
+        if start.identifier != finish.identifier:
+            for edge in start.edges:
+                if not visited[edge.identifier]:
+                    self._find_all_paths(edge, finish, visited, path)
+        path.pop()
+        visited[start.identifier] = False

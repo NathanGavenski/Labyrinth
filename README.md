@@ -75,13 +75,13 @@ env = gym.make("Maze-v0", icy_floor=True)
 
 ---
 ## Creating a maze from a file
-Since the save file from a maze contains only a list of nodes (edges, start, finish, etc.), I've created a way of drawing a map for the cases that we don't want to use the random creation.
+Since the save file from a maze contains only a list of nodes (edges, start, finish, etc.), I've created a way of "drawing" a map for the cases that we don't want to use the random creation.
 To use it you can create your own file using the designed pattern, or call the function
 ```python
 create_default_maze(size: Tuple[int, int], path: str)
 ```
 
-The function will create a file like this:
+The function will create a file at `path` with the parameter `size` like this:
 
 ```python
 """This file was created automatically. For more instructions read the README.md"""
@@ -107,11 +107,11 @@ For example:
 
 ```python
 maze = [
-	[' ', '|', ' ', ' ', 'E']
-	['-', '+', ' ', '+', '-']
-	[' ', ' ', ' ', '|', ' ']
-	[' ', '+', '-', '+', '-']
-	['S', '|', ' ', '|', ' ']
+	[' ', '|', ' ', ' ', 'E']  # ['6', '|', '7', ' ', '8']
+	['-', '+', ' ', '+', '-']  # ['-', '+', ' ', '+', '-']
+	[' ', ' ', ' ', '|', ' ']  # ['3', ' ', '4', '|', '5']
+	[' ', '+', '-', '+', '-']  # [' ', '+', '-', '+', '-']
+	['S', '|', ' ', '|', ' ']  # ['0', '|', '1', '|', '2']
 ]
 ```
 
@@ -123,8 +123,22 @@ After creating the maze you should use:
 convert_from_file(structure_file: str, path: str)
 ```
 
-which creates a file that the environment can load into it to use as a level.
+which creates a file that the environment can load.
 
 ## Installing
 
-Under development
+For now, we only support installing from source.
+To install it, you just need to execute the following commands in your terminal:
+
+```bash
+git clone https://github.com/NathanGavenski/maze-gym
+cd maze-gym
+pip install -e .
+```
+
+
+## TO DO
+* [ ] Migrate to gymnasium
+* [ ] Make it work with python 3.12
+* [ ] Create unit tests for the dataset and maze scripts
+* [ ] Update gifs

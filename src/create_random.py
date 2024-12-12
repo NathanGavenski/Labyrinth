@@ -104,7 +104,7 @@ def generate(args: argparse.Namespace) -> List[Any]:
     amount_per_maze = (args.amount + 1 * len(mazes)) // len(mazes)
     pbar = tqdm(range(args.amount))
     for maze_idx, _maze in enumerate(mazes):
-        env = gym.make('MazeScripts-v0', shape=(args.width, args.height))
+        env = gym.make('MazeScripts-v0', shape=(args.width, args.height), render_mode="rgb_array")
         env.load(_maze)
 
         if args.unbiased and (maze_idx % args.times != 0):
@@ -117,9 +117,10 @@ def generate(args: argparse.Namespace) -> List[Any]:
         done = False
         state = env.agent
         while idx < amount_per_maze - 1:
-            image = env.render('rgb_array')
+            image = env.render()
             action = np.random.randint(0, 4)
-            _, _, done, _ = env.step(action)
+            _, _, done, terminated, _ = env.step(action)
+            done |= terminated
             next_state = env.agent
 
             if state != next_state:
@@ -128,7 +129,7 @@ def generate(args: argparse.Namespace) -> List[Any]:
                 image_idx += 1
 
                 # next state
-                image = env.render('rgb_array')
+                image = env.render()
                 np.save(f'{args.save_path}/{image_idx}', image)
                 image_idx += 1
 
@@ -139,7 +140,7 @@ def generate(args: argparse.Namespace) -> List[Any]:
                 idx += 1
 
             if done:
-                env.reset(agent=True)
+                env.reset(options={"agent": True})
                 state = env.agent
             else:
                 state = next_state
