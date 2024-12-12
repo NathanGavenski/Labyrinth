@@ -27,6 +27,7 @@ class TestDFS(TestCase):
         for key, value in self.graph.items():
             for edge in value:
                 self.edges[key].append((key, edge))
+        self.edges[8].append(())
 
         self.dfs = DFS(self.edges, (3, 3))
 
@@ -37,7 +38,6 @@ class TestDFS(TestCase):
         assert self.dfs.start == 0
         assert self.dfs.end == 8
         assert not self.dfs.key_and_door
-        assert self.dfs.update is None
         assert self.dfs.random_amount == 0
 
     def test_convert_graph(self) -> None:
@@ -60,38 +60,130 @@ class TestDFS(TestCase):
         assert self.dfs.door == 3
         assert self.dfs.key_and_door
 
-    def test_are_all_subsets(self) -> None:
-        assert self.dfs.are_all_subsets(
-            [1, 2, 3],
-            [[4, 5, 6, 8], [1, 2, 3, 8]],
-            Node(8, [])
-        )
-        assert self.dfs.are_all_subsets(
-            [1, 2, 3, 8],
-            [[4, 5, 6, 8], [1, 2, 5, 8]],
-            Node(8, [])
-        )
-        assert not self.dfs.are_all_subsets(
-            [1, 2, 4],
-            [[4, 5, 6, 8], [1, 2, 3, 8]],
-            Node(8, [])
-        )
+    def test_generate_path(self) -> None:
+        graph = {
+            0: [1, 3],
+            1: [0, 2, 4],
+            2: [1, 5],
+            3: [0, 4, 6],
+            4: [1, 3, 5, 7],
+            5: [2, 4, 8],
+            6: [3, 7],
+            7: [4, 6, 8],
+            8: [5, 7]
+        }
+        edges = defaultdict(list)
+        for key, value in graph.items():
+            for edge in value:
+                edges[key].append((key, edge))
 
-    def test_are_all_lists_subsets(self) -> None:
-        assert self.dfs.are_all_lists_subsets(
-            [[1, 2, 3], [4, 5, 6]],
-            [[1, 2, 3, 8], [4, 5, 6, 8]],
-            Node(8, [])
-        )
-        assert not self.dfs.are_all_lists_subsets(
-            [[1, 2, 3], [4, 7, 6]],
-            [[1, 2, 3, 8], [4, 5, 6, 8]],
-            Node(8, [])
-        )
+        dfs = DFS(edges, (3, 3))
+        maze = dfs.generate_path()
 
-    def test_find_loop(self) -> None:
-        self.dfs.convert_graph()
-        assert not self.dfs.find_loop(self.dfs.graph)
+        # Check if the maze is a dictionary with Node objects
+        assert isinstance(maze, dict)
+        assert isinstance(maze[0], Node)
 
-        self.dfs.graph[0].edges[0].add_edge(self.dfs.graph[0])
-        assert self.dfs.find_loop(self.dfs.graph)
+        # Check if some walls have been removed
+        count = 0
+        for key, value in maze.items():
+            if value.edges != graph[key]:
+                count += 1
+        assert count > 0
+
+        dfs = DFS(edges, (3, 3), random_amount=25)
+        maze = dfs.generate_path(min_paths=2)
+        solutions = dfs.find_paths(maze, False)
+        assert len(solutions) >= 2
+
+        dfs = DFS(edges, (3, 3), random_amount=25)
+        maze = dfs.generate_path(max_paths=2)
+        solutions = dfs.find_paths(maze, False)
+        assert len(solutions) <= 2
+
+    def test__generate_path(self) -> None:
+        _graph = {
+            0: [1, 3],
+            1: [0, 2, 4],
+            2: [1, 5],
+            3: [0, 4, 6],
+            4: [1, 3, 5, 7],
+            5: [2, 4, 8],
+            6: [3, 7],
+            7: [4, 6, 8],
+            8: [5, 7]
+        }
+        graph = {x: Node(x, []) for x in self.graph}
+        for key, value in _graph.items():
+            for edge in value:
+                graph[key].add_edge(graph[edge])
+
+        self.random_amount = 0
+        self.dfs._generate_path(graph[0], graph[0], graph[8])
+
+        # Check if some walls have been removed
+        count = 0
+        for node in graph.values():
+            if node.edges != _graph[node.identifier]:
+                count += 1
+        assert count > 0
+
+    def test_find_paths(self) -> None:
+        graph = {x: Node(x, []) for x in self.graph}
+        for key, value in self.graph.items():
+            for edge in value:
+                graph[key].add_edge(graph[edge])
+
+        path = self.dfs.find_paths(graph, True)
+        assert isinstance(path, list)
+        assert isinstance(path[0], list)
+        assert isinstance(path[0][0], Node)
+        assert len(path) == 1
+
+        path = self.dfs.find_paths(graph, False)
+        assert isinstance(path, list)
+        assert isinstance(path[0], list)
+        assert isinstance(path[0][0], Node)
+        assert len(path) == 6
+
+
+    def test_find_path(self) -> None:
+        graph = {x: Node(x, []) for x in self.graph}
+        for key, value in self.graph.items():
+            for edge in value:
+                graph[key].add_edge(graph[edge])
+
+        path = self.dfs.find_path(graph, 0, 8, False)
+        assert isinstance(path, dict)
+        assert isinstance(path[8], Node)
+
+    def test__find_path(self) -> None:
+        graph = {x: Node(x, []) for x in self.graph}
+        for key, value in self.graph.items():
+            for edge in value:
+                graph[key].add_edge(graph[edge])
+
+        self.dfs._find_path(graph[0].d, graph[0], graph[8], False)
+
+        for key, value in graph.items():
+            for node in value:
+                assert key in graph[node].visited_edges
+
+    def test__find_all_paths(self) -> None:
+        graph = {x: Node(x, []) for x in self.graph}
+        for key, value in self.graph.items():
+            for edge in value:
+                graph[key].add_edge(graph[edge])
+
+        visited = [False] * len(self.graph)
+        self.dfs._find_all_paths(graph[0], graph[8], visited, [])
+
+        solutions = [
+            [0, 1, 2, 5], [0, 1, 4, 7], [0, 1, 4, 5],
+            [0, 3, 4, 7], [0, 3, 4, 5], [0, 3, 6, 7]
+        ]
+
+        d = sorted(sorted(sublist) for sublist in graph[8].d)
+        solutions = sorted(sorted(sublist) for sublist in solutions)
+        assert solutions == d
+ 

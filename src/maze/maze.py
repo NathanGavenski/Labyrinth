@@ -4,12 +4,11 @@ from collections import defaultdict
 from copy import deepcopy
 import os
 import random
-from typing import List, Tuple, Optional, Union, Dict
+from typing import Any, List, Tuple, Optional, Union, Dict
 
 import gym
 from gym import spaces
 from gym.utils import seeding
-from gym.envs.classic_control import rendering
 from gym.error import DependencyNotInstalled
 import numpy as np
 from numpy import ndarray
@@ -22,8 +21,7 @@ from .utils.render import RenderUtils
 
 
 # TODO add gym logger
-# FIXME typing
-class Maze(gym.Env):
+class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     """
     Description:
         A maze with size [x, y] with an agent (green diamond),
@@ -59,6 +57,10 @@ class Maze(gym.Env):
     Episode Termination:
         Reaching the goal or a fixed number of steps.
     """
+    metadata = {
+        "render_modes": ["human", "rgb_array"],
+        "render_fps": 25,
+    }
 
     actions = {
         0: (1, 0),
@@ -66,6 +68,30 @@ class Maze(gym.Env):
         2: (-1, 0),
         3: (0, -1)
     }
+
+    # env
+    done = False
+    state = None
+    reseted = False
+
+    # maze
+    dfs = None
+    maze = None
+    undirected_pathways = None
+    agent_transition = None
+    pathways = None
+    _pathways = None
+    step_count = 0
+
+    ## extra modes
+    key = None
+    door = None
+    ice_floors = None
+
+    # pygame
+    clock = None
+    screen = None
+    render_utils = None
 
     def __init__(
             self,
@@ -79,6 +105,7 @@ class Maze(gym.Env):
             key_and_door: Optional[bool] = False,
             icy_floor: Optional[bool] = False,
             visual: bool = False,
+            render_mode: Optional[str] = None
     ) -> None:
         """Maze environment.
 
@@ -90,7 +117,7 @@ class Maze(gym.Env):
             screen_height (int, optional): Height for image size (pixels). Defaults to 224.
             max_episode_steps (int, optional): Max number of steps per episode. Defaults to 1000.
             occlusion (bool, optional): Whether occlusion setting should be use. Defaults to False.
-            key_and_door (bool, optional): Whether key and door setting should be use. 
+            key_and_door (bool, optional): Whether key and door setting should be use.
                 Defaults to False.
             icy_floor (bool, optional): Whether icy floor seeting should be use. Defaults to False.
 
@@ -99,49 +126,26 @@ class Maze(gym.Env):
         """
         super().__init__()
         self.shape = shape
-        self.render_utils = None
-        self.state = None
-        self.reseted = False
-        self.dfs = None
-        self.maze = None
-        self.undirected_pathways = None
-        self.agent_transition = None
-        self.pathways = None
-        self._pathways = None
-        self.done = False
         self.visual = visual
-
-        # pygame
-        self.clock = None
-        self.screen = None
-
         self.screen_width = screen_width
         self.screen_height = screen_height
-
-        self.start = start
-        self.end = (self.shape[0] - 1, self.shape[1] -
-                    1) if end is None else end
-        self.agent = self.start
-
         self.max_episode_steps = max_episode_steps
-        self.step_count = 0
-        self.occlusion = occlusion
+        self.start = start
+        self.end = (self.shape[0] - 1, self.shape[1] - 1) if end is None else end
+        self.agent = self.start
+        self.render_mode = render_mode
 
         self.seed()
 
         self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(
-            0, 255, (screen_width, screen_height, 3), np.uint8)
+        self.observation_space = spaces.Box(0, 255, (screen_width, screen_height, 3), np.uint8)
 
+        self.occlusion = occlusion
         self.key_and_door = key_and_door
-        self.key, self.door = None, None
-
         self.icy_floor = icy_floor
-        self.ice_floors = None
 
-        if self.key_and_door and self.occlusion:
-            raise SettingsException(
-                "Both modes cannot be active at the same time.")
+        if sum([self.occlusion, self.key_and_door, self.icy_floor]) > 1:
+            raise SettingsException("Both modes cannot be active at the same time.")
 
     def seed(self, seed: int = None) -> List[int]:
         """
@@ -151,13 +155,13 @@ class Maze(gym.Env):
         return [seed]
 
     def _generate(
-            self,
-            visited: List[int] = None,
-            initial: List[int] = None,
-            goal: List[int] = None,
-            min_paths: int = None,
-            max_paths: int = None,
-            random_amount: int = 0,
+        self,
+        visited: List[int] = None,
+        initial: List[int] = None,
+        goal: List[int] = None,
+        min_paths: int = None,
+        max_paths: int = None,
+        random_amount: int = 0,
     ) -> Tuple[List[Tuple[int]], List[Tuple[int]]]:
         """Create a maze using DFS algorithm.
 
@@ -207,9 +211,9 @@ class Maze(gym.Env):
         return transform_edges_into_walls(visited, maze.shape), visited
 
     def get_global_position(
-            self,
-            position: Union[List[int], Tuple[int, int]],
-            size: Tuple[int, int] = None
+        self,
+        position: Union[List[int], Tuple[int, int]],
+        size: Tuple[int, int] = None
     ) -> int:
         """Get global position from a tile.
 
@@ -224,9 +228,9 @@ class Maze(gym.Env):
         return position[0] * size[0] + position[1]
 
     def get_local_position(
-            self,
-            position: int,
-            size: Tuple[int, int] = None
+        self,
+        position: int,
+        size: Tuple[int, int] = None
     ) -> Tuple[int, int]:
         """Get local position from a global position.
 
@@ -274,9 +278,7 @@ class Maze(gym.Env):
             pathways_dict[key] = list(set(values))
         return pathways_dict
 
-    # TODO change to pygame dependency
-    # TODO change key and door to have a transition function
-    def render(self, mode: str = "human") -> Union[List[float], None]:
+    def render(self) -> Union[List[float], None]:
         """Render the environment current state.
 
         Args:
@@ -295,14 +297,12 @@ class Maze(gym.Env):
         if not self.reseted:
             raise ResetException("Please reset the environment first.")
 
-        self.render_mode = "human"
         if self.render_mode is None:
             assert self.spec is not None
             return
 
         try:
             import pygame
-            from pygame import gfxdraw
         except ImportError as e:
             raise DependencyNotInstalled("pygame is not installed, run `pip install pygame`") from e
 
@@ -334,36 +334,23 @@ class Maze(gym.Env):
             .redraw() \
             .draw_end(self.end) \
             .draw_start(self.start) \
-            .draw_agent(self.agent) \
-            .draw_walls(self.maze)
+            .draw_agent(self.agent)
+
+        if self.key_and_door:
+            self.render_utils.draw_key(self.key).draw_door(self.door)
 
         if self.ice_floors:
-            self.render_utils \
-                .draw_ice_floors(self.ice_floors)
+            self.render_utils.draw_ice_floors(self.ice_floors)
+
+        self.render_utils.draw_walls(self.maze)
 
         if self.occlusion:
-            if self.render_utils is None:
-                raise SettingsException("Viewer is not set")
-
             mask = create_mask(self.shape, self.maze, self.agent)
             self.render_utils.draw_mask(mask)
 
-        if self.key_and_door:
-            if self.render_utils is None:
-                raise SettingsException("Viewer is not set")
-
-            self.render_utils \
-                .draw_key(self.key) \
-                .draw_door(self.door)
-
-        tile_h = self.render_utils.tile_h
-        tile_w = self.render_utils.tile_w
-        new_x = self.agent[1] * tile_w - self.start[1] * tile_w
-        new_y = self.agent[0] * tile_h - self.start[0] * tile_h
-
         if self.render_mode == "human":
             pygame.event.pump()
-            self.clock.tick(50)
+            self.clock.tick(self.metadata["render_fps"])
             pygame.display.flip()
         elif self.render_mode == "rgb_array":
             return np.transpose(
@@ -387,8 +374,7 @@ class Maze(gym.Env):
         return (height, width)
 
     def get_state(self) -> Union[List[int], ndarray]:
-        """
-        Get the current state as a vector.
+        """Get the current state as a vector.
 
         Returns:
             state: List[int] with the current positions:
@@ -397,13 +383,14 @@ class Maze(gym.Env):
                 2: goal global position
                 3+ maze structure in a vector
         """
-        if self.visual:
+        if self.render_mode == "rgb_array":
             import pyglet
             try:
                 pyglet.options["headless"] = True
-                return self.render("rgb_array").copy()
+                return self.render().copy()
             finally:
                 pyglet.options["headless"] = False
+
         maze = self.maze
         if self.occlusion:
             maze = create_mask(self.shape, self.maze, self.agent)
@@ -502,7 +489,7 @@ class Maze(gym.Env):
             self.agent = tuple(destiny)
         self.step_count += 1
         done = (np.array(self.agent) == self.end).all()
-        done |= self.step_count >= self.max_episode_steps
+        terminated = self.step_count >= self.max_episode_steps
         if self.icy_floor and tuple(destiny) in self.ice_floors:
             reward = -100
             done = True
@@ -513,9 +500,14 @@ class Maze(gym.Env):
                 reward = 1
 
         self.done = done
-        return self.get_state(), reward, done, {}
+        return self.get_state(), reward, done, terminated, {}
 
-    def reset(self, agent: bool = True, render: bool = False) -> Union[List[int], ndarray]:
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Union[List[int], ndarray]:
         """Reset the environment.
 
         Args:
@@ -527,9 +519,16 @@ class Maze(gym.Env):
         Returns:
             Union[List[int], ndarray]: State of the environment.
         """
+        agent = True if options is None or "agent" not in options.keys() else options["agent"]
+        self.seed(seed)
+
         if self.render_utils is not None:
             import pygame
 
+            self.screen = None
+            self.render_utils = None
+            del self.screen
+            del self.render_utils
             pygame.display.quit()
             pygame.quit()
 
@@ -559,7 +558,7 @@ class Maze(gym.Env):
         if self.icy_floor and self.ice_floors is None:
             self.ice_floors = self.set_ice_floors()
 
-        return self.get_state() if not render else self.render("rgb_array")
+        return self.render() if self.render_mode == "rgb_array" else self.get_state(), {}
 
     def generate(self, path: str, amount: int = 1) -> None:
         """Generate a maze and save it to a file.
@@ -580,8 +579,14 @@ class Maze(gym.Env):
     def close(self) -> None:
         """Close the environment. Note: This does not reset the environment."""
         if self.render_utils is not None:
-            self.render_utils.viewer.close()
+            import pygame
+
+            self.screen = None
             self.render_utils = None
+            del self.screen
+            del self.render_utils
+            pygame.display.quit()
+            pygame.quit()
 
     def save(self, path: str) -> None:
         """Save the current maze separated by ';'.
@@ -621,9 +626,8 @@ class Maze(gym.Env):
                 save_string += f";{self.ice_floors}"
             _file.write(save_string)
 
-    def load(self, path: str) -> None:
-        """
-        Load the maze from a file.
+    def load(self, path: str) -> Union[List[int], ndarray]:
+        """Load the maze from a file.
 
         Args:
             path (str): Path to save the file
@@ -652,7 +656,7 @@ class Maze(gym.Env):
         if self.key_and_door and self.key is None and self.door is None:
             self.door, self.key = self.set_key_and_door()
 
-        return self.reset(agent=True, render=False)
+        return self.reset(options={"agent": True})
 
     def solve(self, mode: str = 'shortest') -> List[Tuple[int, int]]:
         """Solve the current maze. For key and door the graph has to be directed, because
@@ -660,9 +664,9 @@ class Maze(gym.Env):
 
         Args:
             mode (str, optional): Mode to solve. Defaults to 'shortest'.
-            Name        Description
-            shortest    returns the shortest path
-            all         returns all paths
+                Name        Description
+                shortest    returns the shortest path
+                all         returns all paths
 
         Raises:
             ValueError: If mode is not 'shortest' or 'all'.
@@ -685,9 +689,18 @@ class Maze(gym.Env):
                 )
             if self.key is not None:
                 mode = "shortest"
+            if self.icy_floor and self.ice_floors is not None:
+                mode = "all"
 
-            #graph = self.pathways if self.key is not None else self.undirected_pathways
             paths = self.dfs.find_paths(self.pathways, mode == "shortest")
+
+        if self.icy_floor and self.ice_floors is not None:
+            ice_floors = set([self.get_global_position(floor) for floor in self.ice_floors])
+            _paths = []
+            for path in paths:
+                if len(set(path).intersection(ice_floors)) == 0:
+                    _paths.append(path)
+            paths = _paths
 
         if mode == "shortest":
             return [[node.identifier for node in min(paths)]]
@@ -697,9 +710,7 @@ class Maze(gym.Env):
             numbered_paths.append([node.identifier for node in path])
         return numbered_paths
 
-    def change_start_and_goal(
-        self, min_distance: int = None
-    ) -> Tuple[Tuple[int], Tuple[int]]:
+    def change_start_and_goal(self, min_distance: int = None) -> Tuple[Tuple[int], Tuple[int]]:
         """Changes the start and goal of the maze to not be always at the bottom left and
         upper right corners.
 
@@ -745,8 +756,7 @@ class Maze(gym.Env):
         return start, end
 
     def agent_random_position(self) -> None:
-        """
-        Put the agent in a random position of the maze. This is mostly used if you want
+        """Put the agent in a random position of the maze. This is mostly used if you want
         to create a dataset with diverse positions for your agent.
         """
         self.reset()
@@ -790,7 +800,7 @@ class Maze(gym.Env):
             raise SettingsException("No possible candidate for door or key")
 
         door = door_tiles[-1]
-        key_tiles = [node for node in key_tiles if door not in node.d]
+        key_tiles = [node for node in key_tiles if door not in node.d[0]]
         if len(key_tiles) == 0:
             raise SettingsException("No possible candidate for door or key")
         key = random.choice(key_tiles)
@@ -798,8 +808,7 @@ class Maze(gym.Env):
         return self.get_local_position(door.identifier), self.get_local_position(key.identifier)
 
     def __hash__(self) -> int:
-        """
-        Create a hash of the edges of the maze.
+        """Create a hash of the edges of the maze.
 
         Returns:
             hash (int): in order to have a consistent hash, it sorts the inner tuples (the edges), 
@@ -810,18 +819,20 @@ class Maze(gym.Env):
         return hash(pathways)
 
     def set_ice_floors(self) -> List[int]:
-        """_summary_
-
-        Raises:
-            NotImplementedError: _description_
+        """Set ice floors in the maze. Ice floors are tiles that the agent can slide through
 
         Returns:
-            List[int]: _description_
+            List[int]: List of ice floors.
         """
-        paths = self.dfs.graph[self.dfs.end].d
-        ice_floors_option1 = list(set(paths[0]).difference(set(paths[1])))
-        ice_floors_option1 = [node.identifier for node in ice_floors_option1]
-        ice_floors_option2 = list(set(paths[1]).difference(set(paths[0])))
-        ice_floors_option2 = [node.identifier for node in ice_floors_option2]
-        ice_floors = ice_floors_option1 if len(ice_floors_option1) != 0 else ice_floors_option2
+        paths = self.solve(mode="all")
+        paths.sort(key=len)
+        for longer_path in paths[::-1]:
+            for smaller_path in paths:
+                ice_floors_option = list(set(smaller_path).difference(set(longer_path)))
+                if len(ice_floors_option) != 0:
+                    ice_floors = ice_floors_option
+                    break
+            else:
+                continue
+            break
         return [self.get_local_position(position) for position in ice_floors]

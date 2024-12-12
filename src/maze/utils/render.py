@@ -6,7 +6,6 @@ except ImportError:
 from typing import List
 
 import pygame
-from pygame import gfxdraw
 
 from .colors import Colors
 
@@ -23,12 +22,14 @@ class RenderUtils:
         Exception: screen_info and viewer can not be None at the same time.
     """
 
+    start = None
+    end = None
+
     def __init__(
         self,
         shape: List[int],
         viewer: pygame.Surface = None,
         screen_info: List[int] = None,
-        mask: bool = False,
     ) -> None:
         if viewer is None and screen_info is None:
             raise ValueError("screen_info and viewer can not be None at the same time.")
@@ -49,10 +50,12 @@ class RenderUtils:
         self.tile_h = screen_h / height
         self.tile_w = screen_w / width
 
-        self.start = None
-        self.end = None
-
     def redraw(self) -> Self:
+        """Redraws the environment.
+
+        Returns:
+            Self: return instance.
+        """
         self.viewer.fill(Colors.WHITE.value)
         return self
 
@@ -110,7 +113,7 @@ class RenderUtils:
             (right - self.tile_w // 2, top),
             (right, bottom + self.tile_h // 2)
         ]
-        gfxdraw.filled_polygon(self.viewer, agent, Colors.GREEN.value)
+        pygame.filled_polygon(self.viewer, agent, Colors.GREEN.value)
         return self
 
     def draw_end(self, end: List[int]) -> Self:
@@ -233,10 +236,6 @@ class RenderUtils:
         """
         for ice_floor in ice_floors:
             y, x = ice_floor
-            left = x * self.tile_w
-            right = (x + 1) * self.tile_w
-            bottom = y * self.tile_h
-            top = (y + 1) * self.tile_h
             rect = pygame.Rect(
                 x * self.tile_w,
                 y * self.tile_h,
