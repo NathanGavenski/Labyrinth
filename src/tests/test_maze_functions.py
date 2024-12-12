@@ -10,7 +10,6 @@ import numpy as np
 from PIL import Image
 import pytest
 
-# pylint: disable=[W0611]
 from src import maze
 from src.create_expert import state_to_action
 from src.maze.utils.utils import SettingsException, ActionException
@@ -50,8 +49,8 @@ def translate_position(
     """
     y_original, x_original = shape
     y_maze, x_maze = maze_shape
-    x_position = int(position[1] / (x_original/x_maze))
-    y_position = int(position[0] / (y_original/y_maze))
+    x_position = int(position[1] / (x_original / x_maze))
+    y_position = int(position[0] / (y_original / y_maze))
     return (y_position, x_position)
 
 
@@ -80,7 +79,7 @@ class TestCases(unittest.TestCase):
     def test_init(self):
         """Test the initialization of the environment."""
         TestCases.env = env = gym.make("Maze-v0", shape=(3, 3))
-        state = env.reset()
+        state, info = env.reset()
 
         maze_size = env.shape
         maze_size = ((maze_size[0] * 2) - 1) ** 2
@@ -99,7 +98,6 @@ class TestCases(unittest.TestCase):
         end = get_global_position(end, maze_size)
         assert state[2] == end
 
-    # pylint: disable=[W0212, protected-access]
     def test_save(self):
         """Test the save function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
@@ -134,33 +132,32 @@ class TestCases(unittest.TestCase):
     def test_step(self):
         """Test the step function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state = env.load("./src/tests/assets/structure_test.txt")
+        state, _ = env.load("./src/tests/assets/structure_test.txt")
         assert state[0] == 0
 
-        state, _, _, _ = env.step(0)
+        state, *_ = env.step(0)
         assert state[0] == 38
         assert env.agent == (1, 0)
 
     def test_step_wall(self):
         """Test the step function when the agent tries to move into a wall."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state = env.load("./src/tests/assets/structure_test.txt")
+        state, _ = env.load("./src/tests/assets/structure_test.txt")
         assert state[0] == 0
 
-        state, _, _, _ = env.step(1)
+        state, *_ = env.step(1)
         assert state[0] == 0
 
     def test_reset(self):
         """Test the reset function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state = env.load("./src/tests/assets/structure_test.txt")
+        state, _ = env.load("./src/tests/assets/structure_test.txt")
         assert state[0] == 0
 
-        state, _, _, _ = env.step(0)
+        state, *_ = env.step(0)
         assert state[0] == 38.0
 
-        state = env.reset()
-        print(state[0])
+        state, _ = env.reset()
         assert state[0] == 0
 
     def test_global_position(self):
@@ -193,7 +190,7 @@ class TestCases(unittest.TestCase):
     def test_size(self):
         """Test the size function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
-        state = env.reset()
+        state, _ = env.reset()
 
         maze_size = (5, 5)
         maze_size = ((maze_size[0] * 2) - 1) ** 2
@@ -202,16 +199,21 @@ class TestCases(unittest.TestCase):
     @pytest.mark.skipif(github, reason="render looks different on github")
     def test_occlusion_render(self):
         """Test the occlusion function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=True)
+        TestCases.env = env = gym.make(
+            "Maze-v0",
+            shape=(10, 10),
+            occlusion=True,
+            render_mode="rgb_array"
+        )
         env.load("./src/tests/assets/structure_test.txt")
-        state = env.render("rgb_array")
+        state = env.render()
         test_state = np.array(Image.open("./src/tests/assets/occlusion_test.png"))
         assert (state == test_state).all()
         env.close()
 
     def test_occlusion_vector(self):
         TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=True)
-        state = env.load("./src/tests/assets/occlusion_vector_test.txt")
+        state, _ = env.load("./src/tests/assets/occlusion_vector_test.txt")
         with open("./src/tests/assets/vector_occlusion_test.txt", encoding="utf-8") as _file:
             for line in _file:
                 test_state = line
@@ -220,7 +222,7 @@ class TestCases(unittest.TestCase):
     def test_key_and_door(self):
         """Test the key_and_door function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
-        state = env.load("./src/tests/assets/key_and_door_test.txt")
+        state, info = env.load("./src/tests/assets/key_and_door_test.txt")
 
         with open("./src/tests/assets/key_and_door_test.txt", 'r', encoding="utf-8") as _file:
             for line in _file:
@@ -232,8 +234,6 @@ class TestCases(unittest.TestCase):
 
         maze_size = env.shape
         maze_size = ((maze_size[0] * 2) - 1) ** 2
-
-        test_render = np.array(Image.open(f"{self.test_files_path}render_key_and_door_test.png"))
 
         assert door == env.door
         assert key == env.key
@@ -276,7 +276,10 @@ class TestCases(unittest.TestCase):
         second_solutions = env.solve("all")
         second_solutions.sort(key=len)
 
-        for _x, _y in zip(first_solutions, second_solutions):
+        first = sorted(sorted(sublist) for sublist in first_solutions)
+        second = sorted(sorted(sublist) for sublist in second_solutions)
+
+        for _x, _y in zip(first, second):
             assert len(_x) == len(_y)
             assert (set(_y) - set(_x)) == set()
 
@@ -287,8 +290,10 @@ class TestCases(unittest.TestCase):
         door = env.get_global_position(env.door)
 
         env.key_and_door = False
+        env.dfs.key_and_door = False
         path = env.solve("shortest")[0]
         env.key_and_door = True
+        env.dfs.key_and_door = True
 
         agent = None
         for idx, tile in enumerate(path):
@@ -296,7 +301,7 @@ class TestCases(unittest.TestCase):
                 action = state_to_action(tile, path[idx + 1], shape=(10, 10))
                 if path[idx + 1] == door:
                     agent = state[0]
-                state, _, _, _ = env.step(action)
+                state, *_ = env.step(action)
 
                 if agent is not None:
                     assert agent == state[0]
@@ -326,7 +331,7 @@ class TestCases(unittest.TestCase):
     def test_icy_floor(self):
         """Test the icy floor setting."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), icy_floor=True)
-        state = env.reset()
+        state, info = env.reset()
         floors = []
         for floor in env.ice_floors:
             floor = env.translate_position(floor)
@@ -350,7 +355,7 @@ class TestCases(unittest.TestCase):
         for idx, tile in enumerate(path):
             if idx < len(path) - 1:
                 action = state_to_action(tile, path[idx + 1], shape=(10, 10))
-                state, _, done, _ = env.step(action)
+                state, _, done, _, _ = env.step(action)
         assert done
 
         with pytest.raises(ActionException):

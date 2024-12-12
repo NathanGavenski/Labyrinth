@@ -1,7 +1,7 @@
-setuptools==66 
-wheel==0.38.4
-gym==0.21.0
+gym
+pygame
 matplotlib
 tqdm
 opencv-python
 pyglet==1.5.27
+numpy==1.25.0

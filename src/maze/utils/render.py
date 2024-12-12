@@ -5,7 +5,7 @@ except ImportError:
     from typing_extensions import Self
 from typing import List
 
-from gym.envs.classic_control import rendering
+import pygame
 
 from .colors import Colors
 
@@ -22,10 +22,13 @@ class RenderUtils:
         Exception: screen_info and viewer can not be None at the same time.
     """
 
+    start = None
+    end = None
+
     def __init__(
         self,
         shape: List[int],
-        viewer: rendering.Viewer = None,
+        viewer: pygame.Surface = None,
         screen_info: List[int] = None,
     ) -> None:
         if viewer is None and screen_info is None:
@@ -34,23 +37,27 @@ class RenderUtils:
         self.shape = shape
 
         if screen_info is None:
-            screen_h = viewer.height
-            screen_w = viewer.width
+            screen_h = viewer.get_height()
+            screen_w = viewer.get_width()
         else:
             screen_w, screen_h = screen_info
 
         if viewer is not None:
             self.viewer = viewer
-        else:
-            self.viewer = rendering.Viewer(screen_w, screen_h)
+            self.viewer.fill(Colors.WHITE.value)
 
         width, height = shape
         self.tile_h = screen_h / height
         self.tile_w = screen_w / width
 
-        self.start = None
-        self.end = None
-        self.agent_transition = None
+    def redraw(self) -> Self:
+        """Redraws the environment.
+
+        Returns:
+            Self: return instance.
+        """
+        self.viewer.fill(Colors.WHITE.value)
+        return self
 
     def draw_walls(
         self,
@@ -68,28 +75,23 @@ class RenderUtils:
             if self.shape[0] * 2 > x > 0:
                 for y, tile in enumerate(tiles):
                     if tile == 1 and self.shape[0] * 2 > y > 0:
+                        start_pos, end_pos = None, None
                         if x % 2 == 0 and (y % 2 != 0 or y == 1):
                             # horizontal wall
                             _y = x // 2
                             _x = y // 2 + 1
-                            line = rendering.Line(
-                                ((_x - 1) * self.tile_w, _y * self.tile_h),
-                                (_x * self.tile_w, _y * self.tile_h)
-                            )
-                            line.set_color(*Colors.BLACK.value)
-                            line.linewidth.stroke = 2
-                            self.viewer.add_geom(line)
+                            start_pos = ((_x - 1) * self.tile_w, _y * self.tile_h)
+                            end_pos = (_x * self.tile_w, _y * self.tile_h)
                         elif x % 2 > 0:
                             # vertical wall
                             _y = x // 2 + 1
                             _x = y // 2
-                            line = rendering.Line(
-                                (_x * self.tile_w, (_y - 1) * self.tile_h),
-                                (_x * self.tile_w, _y * self.tile_h)
+                            start_pos = (_x * self.tile_w, (_y - 1) * self.tile_h),
+                            end_pos = (_x * self.tile_w, _y * self.tile_h)
+                        if start_pos is not None and end_pos is not None:
+                            pygame.draw.line(
+                                self.viewer, Colors.BLACK.value, start_pos, end_pos, 2
                             )
-                            line.set_color(*Colors.BLACK.value)
-                            line.linewidth.stroke = 2
-                            self.viewer.add_geom(line)
         return self
 
     def draw_agent(self, agent: List[int]) -> Self:
@@ -105,16 +107,13 @@ class RenderUtils:
         right = (agent[1] + 1) * self.tile_w
         bottom = agent[0] * self.tile_h
         top = (agent[0] + 1) * self.tile_h
-        agent = rendering.FilledPolygon([
+        agent = [
             (left + self.tile_w // 2, bottom),
             (left, top - self.tile_h // 2),
             (right - self.tile_w // 2, top),
             (right, bottom + self.tile_h // 2)
-        ])
-        self.agent_transition = rendering.Transform()
-        agent.add_attr(self.agent_transition)
-        agent.set_color(*Colors.GREEN.value)
-        self.viewer.add_geom(agent)
+        ]
+        pygame.filled_polygon(self.viewer, agent, Colors.GREEN.value)
         return self
 
     def draw_end(self, end: List[int]) -> Self:
@@ -127,19 +126,13 @@ class RenderUtils:
             self (self): return instance.
         """
         self.end = end
-
-        left = end[1] * self.tile_w
-        right = (end[1] + 1) * self.tile_w
-        top = end[0] * self.tile_h
-        bottom = (end[0] + 1) * self.tile_h
-        end = rendering.FilledPolygon([
-            (left, bottom),
-            (left, top),
-            (right, top),
-            (right, bottom)
-        ])
-        end.set_color(*Colors.BLUE.value)
-        self.viewer.add_geom(end)
+        rect = pygame.Rect(
+            end[1] * self.tile_w,
+            end[0] * self.tile_h,
+            self.tile_w + 2,
+            self.tile_h + 2
+        )
+        pygame.draw.rect(self.viewer, Colors.BLUE.value, rect)
         return self
 
     def draw_start(self, start: List[int]) -> Self:
@@ -152,19 +145,13 @@ class RenderUtils:
             self (self): return instance.
         """
         self.start = start
-
-        left = start[1] * self.tile_w
-        right = (start[1] + 1) * self.tile_w
-        top = start[0] * self.tile_h
-        bottom = (start[0] + 1) * self.tile_h
-        start = rendering.FilledPolygon([
-            (left, bottom),
-            (left, top),
-            (right, top),
-            (right, bottom)
-        ])
-        start.set_color(*Colors.RED.value)
-        self.viewer.add_geom(start)
+        rect = pygame.Rect(
+            start[1] * self.tile_w,
+            start[0] * self.tile_h,
+            self.tile_w + 2,
+            self.tile_h + 2
+        )
+        pygame.draw.rect(self.viewer, Colors.RED.value, rect)
         return self
 
     def draw_mask(self, mask: List[List[int]]) -> Self:
@@ -185,22 +172,15 @@ class RenderUtils:
                     if (_y, _x) in [self.start, self.end]:
                         continue
 
-                    if tile == 1 and \
-                        self.shape[1] * 2 > x > 0 and \
-                            (x % 2 != 0 and y % 2 != 0):
-
+                    if (
+                        tile == 1
+                        and self.shape[1] * 2 > x > 0
+                        and (x % 2 != 0 and y % 2 != 0)
+                    ):
                         left = _x * self.tile_w
-                        right = (_x + 1) * self.tile_w
                         bottom = _y * self.tile_h
-                        top = (_y + 1) * self.tile_h
-                        mask = rendering.FilledPolygon([
-                            (left, bottom),
-                            (left, top),
-                            (right, top),
-                            (right, bottom)
-                        ])
-                        mask.set_color(*Colors.BLACK.value)
-                        self.viewer.add_onetime(mask)
+                        rect = pygame.Rect(left, bottom, self.tile_w + 2, self.tile_h + 2)
+                        pygame.draw.rect(self.viewer, Colors.BLACK.value, rect)
         return self
 
     def draw_key(self, key: List[int]) -> Self:
@@ -215,19 +195,13 @@ class RenderUtils:
         if key is None:
             return self
         key_y, key_x = key
-        left = key_x * self.tile_w + self.tile_w * 0.25
-        right = (key_x + 1) * self.tile_w - self.tile_w * 0.25
-        bottom = key_y * self.tile_h + self.tile_h * 0.25
-        top = (key_y + 1) * self.tile_h - self.tile_h * 0.25
-
-        key_rendering = rendering.FilledPolygon([
-            (left, bottom),
-            (left, top),
-            (right, top),
-            (right, bottom)
-        ])
-        key_rendering.set_color(*Colors.GOLD.value)
-        self.viewer.add_onetime(key_rendering)
+        rect = pygame.Rect(
+            key_x * self.tile_w + self.tile_w * 0.25,
+            key_y * self.tile_h + self.tile_h * 0.25,
+            self.tile_w * 0.5,
+            self.tile_h * 0.5,
+        )
+        pygame.draw.rect(self.viewer, Colors.GOLD.value, rect)
         return self
 
     def draw_door(self, door: List[int]) -> Self:
@@ -242,19 +216,13 @@ class RenderUtils:
         if door is None:
             return self
         door_y, door_x = door
-        left = door_x * self.tile_w
-        right = (door_x + 1) * self.tile_w
-        bottom = door_y * self.tile_h
-        top = (door_y + 1) * self.tile_h
-
-        door_rendering = rendering.FilledPolygon([
-            (left, bottom),
-            (left, top),
-            (right, top),
-            (right, bottom)
-        ])
-        door_rendering.set_color(*Colors.BROWN.value)
-        self.viewer.add_onetime(door_rendering)
+        rect = pygame.Rect(
+            door_x * self.tile_w,
+            door_y * self.tile_h,
+            self.tile_w + 2,
+            self.tile_h + 2,
+        )
+        pygame.draw.rect(self.viewer, Colors.BROWN.value, rect)
         return self
 
     def draw_ice_floors(self, ice_floors: List[int]) -> Self:
@@ -268,17 +236,11 @@ class RenderUtils:
         """
         for ice_floor in ice_floors:
             y, x = ice_floor
-            left = x * self.tile_w
-            right = (x + 1) * self.tile_w
-            bottom = y * self.tile_h
-            top = (y + 1) * self.tile_h
-
-            ice_rendering = rendering.FilledPolygon([
-                (left, bottom),
-                (left, top),
-                (right, top),
-                (right, bottom)
-            ])
-            ice_rendering.set_color(*Colors.ICE.value)
-            self.viewer.add_geom(ice_rendering)
+            rect = pygame.Rect(
+                x * self.tile_w,
+                y * self.tile_h,
+                self.tile_w + 2,
+                self.tile_h + 2,
+            )
+            pygame.draw.rect(self.viewer, Colors.ICE.value, rect)
         return self

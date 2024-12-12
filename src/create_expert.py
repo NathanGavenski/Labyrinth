@@ -132,7 +132,8 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
             'MazeScripts-v0',
             shape=(args.width, args.height),
             screen_width=600,
-            screen_height=600
+            screen_height=600,
+            render_mode="rgb_array"
         )
         env.load(_maze)
 
@@ -141,12 +142,12 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
 
         solutions = env.solve(mode='all')
         for solution_idx, solution in enumerate(solutions):
-            env.reset(agent=True)
+            env.reset(options={"agent": True})
             done = False
 
             total_reward = 0
             for idx, tile in enumerate(solution):
-                image = env.render('rgb_array')
+                image = env.render()
                 np.save(f'{save_path}/{image_idx}', image)
                 image_idx += 1
 
@@ -156,7 +157,8 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
                         solution[idx + 1],
                         shape=(args.width, args.height)
                     )
-                    _, reward, done, _ = env.step(action)
+                    _, reward, done, terminated, _ = env.step(action)
+                    done |= terminated
                     total_reward += reward
 
                     entry = [
@@ -172,7 +174,7 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
                     ]
                     dataset = np.append(dataset, np.array(entry)[None], axis=0)
                 if done:
-                    image = env.render('rgb_array')
+                    image = env.render()
                     np.save(f'{save_path}/{image_idx}', image)
                     image_idx += 1
                     dataset[-1, 5] = total_reward

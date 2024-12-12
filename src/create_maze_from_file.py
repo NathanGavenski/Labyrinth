@@ -75,14 +75,14 @@ def find_edges_start_and_end(
     maze_shape: Tuple[int, int]
 ) -> Tuple[List[Tuple[int, int]], Tuple[int, int], Tuple[int, int]]:
     """Find all edges in the maze.
-    
+
     Args:
         nodes (List[int]): list of nodes in the maze
         vector_maze (List[str]): vector representation of the maze
         maze (List[List[str]]): maze structure
         maze_original_shape (Tuple[int, int]): original shape of the maze
         maze_shape (Tuple[int, int]): shape of the maze
-    
+
     Returns:
         Tuple[List[Tuple[int, int]], Tuple[int, int], Tuple[int, int]]: edges, start, end positions
     """
@@ -113,7 +113,7 @@ def find_ice_floors(
         nodes (List[int]): list of nodes in the maze.
         vector_maze (List[str]): vector representation of the maze.
         maze_original_shape (Tuple[int, int]): original shape of the maze (e.g., 5x5).
-    
+
     Returns:
         List[Tuple[int, int]]: ice floors in the maze.
     """
