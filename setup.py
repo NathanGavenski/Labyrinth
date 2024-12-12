@@ -10,9 +10,12 @@ if __name__ == "__main__":
         packages=find_packages(where='src'),
         package_dir={'': 'src'},
         install_requires=[
-            # List your dependencies here, if any
-            # 'numpy>=1.19.2',
+            "gymnasium",
+            "pygame",
+            "tqdm",
+            "pyglet",
+            "numpy"
         ],
-        python_requires='>=3.6',
+        python_requires='>=3.9',
     )
 

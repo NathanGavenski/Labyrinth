@@ -7,7 +7,7 @@ import shutil
 from typing import Any, List, Tuple
 import logging
 
-import gym
+import gymnasium as gym
 import numpy as np
 from tqdm import tqdm
 
@@ -129,7 +129,7 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
     dataset = np.ndarray(shape=[0, 9])
     for maze_idx, _maze in enumerate(tqdm(mazes)):
         env = gym.make(
-            'MazeScripts-v0',
+            'Maze-v0',
             shape=(args.width, args.height),
             screen_width=600,
             screen_height=600,

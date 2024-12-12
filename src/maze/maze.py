@@ -6,10 +6,10 @@ import os
 import random
 from typing import Any, List, Tuple, Optional, Union, Dict
 
-import gym
-from gym import spaces
-from gym.utils import seeding
-from gym.error import DependencyNotInstalled
+import gymnasium as gym
+from gymnasium import logger, spaces
+from gymnasium.utils import seeding
+from gymnasium.error import DependencyNotInstalled
 import numpy as np
 from numpy import ndarray
 
@@ -145,7 +145,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.icy_floor = icy_floor
 
         if sum([self.occlusion, self.key_and_door, self.icy_floor]) > 1:
-            raise SettingsException("Both modes cannot be active at the same time.")
+            raise SettingsException("Different modes cannot be active at the same time.")
 
     def seed(self, seed: int = None) -> List[int]:
         """
@@ -299,6 +299,11 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         if self.render_mode is None:
             assert self.spec is not None
+            logger.warn(
+                "You are calling render method without specifying any render mode. "
+                "You can specify the render_mode at initialization, "
+                f'e.g. gym.make("{self.spec.id}", render_mode="rgb_array")'
+            )
             return
 
         try:
@@ -470,7 +475,11 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             raise ActionException(f"Action should be in {self.actions.keys()} it was {action}")
 
         if self.done:
-            raise ActionException("Episode is already done.")
+            logger.warn(
+                "You are calling 'step()' even though this environment has already finished. "
+                "You should always call 'reset()' after finishing the environment."
+            )
+            raise ActionException("Episode is already finished.")
 
         destiny = np.array(self.agent) + self.actions[action]
         agent_global_position = self.get_global_position(self.agent)
@@ -499,7 +508,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             else:
                 reward = 1
 
-        self.done = done
+        self.done = done or terminated
         return self.get_state(), reward, done, terminated, {}
 
     def reset(
