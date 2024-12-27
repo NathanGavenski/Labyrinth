@@ -4,6 +4,7 @@ from typing import Any, List, Tuple
 
 import numpy as np
 from .maze.utils import get_neighbors
+from .interp import Interpreter
 
 
 def split(list_a: List[Any], chunk_size: int):
@@ -22,7 +23,7 @@ def split(list_a: List[Any], chunk_size: int):
 
 def convert(item: int, other: int, width: int) -> int:
     """Convert the position of the nodes into the correct position.
-    
+
     Args:
         item (int): current position
         other (int): other position
@@ -153,17 +154,16 @@ def find_key_and_lock(
     return key, lock
 
 
-def convert_from_file(structure_file: str, path: str) -> None:
+def convert_from_file(module: Interpreter, path: str) -> None:
     """Convert a maze from a python file to a file that can be used by the environment.
 
     Args:
         structure_file (str): file with the maze structure.
         path (str): path to save the converted maze.
     """
-    module = importlib.import_module(structure_file)
     maze = module.maze
-    key_and_lock = module.key_and_lock
-    icy_floor = module.icy_floor
+    key_and_lock = module.variables.get("key_and_lock", False)
+    icy_floor = module.variables.get("icy_floor", False)
 
     maze = np.array(maze[::-1])  # maze structure for indexing
     maze_shape = maze.shape
@@ -236,13 +236,18 @@ def create_default_maze(size: Tuple[int, int], path: str) -> None:
     maze[h * 2 - 2][0] = "S"
 
     if ".py" not in path:
-        path += ".py"
+        path += ".maze"
     with open(path, "w", encoding="utf-8") as _file:
-        _file.write('"""This file was created automatically. ')
-        _file.write('For more instructions read the README.md"""\n')
-        _file.write("key_and_lock = False\n")
-        _file.write("icy_floor = False\n\n")
-        _file.write("maze = [\n")
+        _file.write('"""\nThis file was created automatically.')
+        _file.write('\nFor more instructions read the README.md\n"""\n')
+        _file.write("key_and_lock: False\n")
+        _file.write("icy_floor: False\n\n")
+        _file.write("maze:\n")
+        _file.write("-" * ((len(maze[0]) + 2) * 2 - 1) + "\n")
         for row in maze:
-            _file.write("\t" + str(row) + ",\n")
-        _file.write("]")
+            _file.write("| ")
+            for token in row:
+                _file.write(f"{token} ")
+            _file.write("|\n")
+        _file.write("-" * ((len(maze[0]) + 2) * 2 - 1) + "\n")
+        _file.write("end")
