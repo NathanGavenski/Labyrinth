@@ -20,7 +20,6 @@ from .utils import SettingsException, ResetException, ActionException
 from .utils.render import RenderUtils
 
 
-# TODO add gym logger
 class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     """
     Description:
@@ -335,11 +334,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 if self.render_utils is None:
                     raise SettingsException("Viewer not set.")
 
-        self.render_utils \
-            .redraw() \
-            .draw_end(self.end) \
-            .draw_start(self.start) \
-            .draw_agent(self.agent)
+        self.render_utils.redraw()
 
         if self.key_and_door:
             self.render_utils.draw_key(self.key).draw_door(self.door)
@@ -351,15 +346,22 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         if self.occlusion:
             mask = create_mask(self.shape, self.maze, self.agent)
-            self.render_utils.draw_mask(mask)
+            self.render_utils \
+                .draw_mask(mask)
+
+        self.render_utils \
+            .draw_start(self.start) \
+            .draw_end(self.end) \
+            .draw_agent(self.agent)
 
         if self.render_mode == "human":
             pygame.event.pump()
             self.clock.tick(self.metadata["render_fps"])
             pygame.display.flip()
         elif self.render_mode == "rgb_array":
+            screen = pygame.transform.flip(self.screen, False, True)
             return np.transpose(
-                np.array(pygame.surfarray.pixels3d(self.screen)), axes=(1, 0, 2)
+                np.array(pygame.surfarray.pixels3d(screen)), axes=(1, 0, 2)
             )
 
     def translate_position(self, position: Tuple[int, int]) -> Tuple[int, int]:
@@ -635,17 +637,27 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 save_string += f";{self.ice_floors}"
             _file.write(save_string)
 
-    def load(self, path: str) -> Union[List[int], ndarray]:
+    def load(
+        self,
+        structure: str,
+        variables: Dict[str, bool] = None
+    ) -> Union[List[int], Dict[str, Any]]:
         """Load the maze from a file.
 
         Args:
-            path (str): Path to save the file
-        """
-        with open(path, 'r', encoding="utf-8") as _file:
-            for line in _file:
-                info = line
+            structure (str): structure for the maze.
+            variables: (Dict[str, bool]): variables to use in the maze. Defaults to None.
 
-        visited, start, end, *misc = info.split(";")
+        Returns:
+            state (List[int]): state of the environment after loading and reseting.
+            info (Dict[str, Any]): information from the environment.
+        """
+        visited, start, end, *misc = structure.split(";")
+        if variables is not None:
+            self.key_and_door = variables['key_and_lock']
+            self.icy_floor = variables['icy_floor']
+            self.occlusion = variables['occlusion']
+
         if self.key_and_door:
             key, door = misc[0], misc[1]
             self.key = ast.literal_eval(key)
@@ -708,6 +720,9 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             _paths = []
             for path in paths:
                 if len(set(path).intersection(ice_floors)) == 0:
+                    goal = self.get_global_position(self.end, self.shape)
+                    goal = self.dfs.graph[goal]
+                    path.append(goal)
                     _paths.append(path)
             paths = _paths
 

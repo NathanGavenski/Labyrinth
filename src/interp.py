@@ -126,3 +126,4 @@ class Interpreter:
         output += f"variables: {self.variables},\n    "
         output += f"stack: {self.stack},\n    maze:\n{maze})"
         return output
+

@@ -154,13 +154,21 @@ def find_key_and_lock(
     return key, lock
 
 
-def convert_from_file(module: Interpreter, path: str) -> None:
+def invoke_interpreter(path: str) -> Interpreter:
+    interpreter = Interpreter()
+    with open(path, "r") as f:
+        for line in f:
+            interpreter.eval(line)
+    return interpreter
+
+def convert_from_file(path: str) -> None:
     """Convert a maze from a python file to a file that can be used by the environment.
 
     Args:
-        structure_file (str): file with the maze structure.
+        module (Interpreter): interpreted file in its interpreter form.
         path (str): path to save the converted maze.
     """
+    module = invoke_interpreter(path)
     maze = module.maze
     key_and_lock = module.variables.get("key_and_lock", False)
     icy_floor = module.variables.get("icy_floor", False)
@@ -200,13 +208,12 @@ def convert_from_file(module: Interpreter, path: str) -> None:
     if key_and_lock:
         key, lock = find_key_and_lock(nodes, vector_maze, maze_original_shape)
 
-    with open(path, "w", encoding="utf-8") as _file:
-        save_string = f"{converted_edges};{start};{end}"
-        if key_and_lock:
-            save_string += f";{key};{lock}"
-        if icy_floor:
-            save_string += f";{ice_floors}"
-        _file.write(save_string)
+    save_string = f"{converted_edges};{start};{end}"
+    if key_and_lock:
+        save_string += f";{key};{lock}"
+    if icy_floor:
+        save_string += f";{ice_floors}"
+    return save_string, module.variables
 
 
 def create_default_maze(size: Tuple[int, int], path: str) -> None:
@@ -241,7 +248,8 @@ def create_default_maze(size: Tuple[int, int], path: str) -> None:
         _file.write('"""\nThis file was created automatically.')
         _file.write('\nFor more instructions read the README.md\n"""\n')
         _file.write("key_and_lock: False\n")
-        _file.write("icy_floor: False\n\n")
+        _file.write("icy_floor: False\n")
+        _file.write("occlusion: False\n\n")
         _file.write("maze:\n")
         _file.write("-" * ((len(maze[0]) + 2) * 2 - 1) + "\n")
         for row in maze:
