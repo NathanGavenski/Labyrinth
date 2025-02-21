@@ -36,6 +36,7 @@ class DFS:
 
         self.start = 0 if start is None else start
         self.end = shape[0] * shape[1] - 1 if end is None else end
+        self.final_cell = shape[0] * shape[1] - 1
         self.shape = shape
         self.graph = graph
         self.random_amount = random_amount
@@ -60,7 +61,7 @@ class DFS:
 
     def convert_graph(self) -> None:
         """Convert a start and end into a graph."""
-        path = {x: Node(x, []) for x in range(self.end + 1)}
+        path = {x: Node(x, []) for x in range(self.final_cell + 1)}
 
         for edges in self.graph.values():
             if len(edges[0]) == 0:

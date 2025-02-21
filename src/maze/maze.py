@@ -342,8 +342,6 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if self.ice_floors:
             self.render_utils.draw_ice_floors(self.ice_floors)
 
-        self.render_utils.draw_walls(self.maze)
-
         if self.occlusion:
             mask = create_mask(self.shape, self.maze, self.agent)
             self.render_utils \
@@ -352,7 +350,8 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.render_utils \
             .draw_start(self.start) \
             .draw_end(self.end) \
-            .draw_agent(self.agent)
+            .draw_agent(self.agent) \
+            .draw_walls(self.maze)
 
         if self.render_mode == "human":
             pygame.event.pump()
@@ -629,13 +628,12 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 for edge in edges:
                     pathways.append((tile, edge))
 
-        with open(f'{path}/{file}', 'w', encoding="utf-8") as _file:
-            save_string = f"{pathways};{self.start};{self.end}"
-            if self.key_and_door:
-                save_string += f";{self.key};{self.door}"
-            if self.icy_floor:
-                save_string += f";{self.ice_floors}"
-            _file.write(save_string)
+        save_string = f"{pathways};{self.start};{self.end}"
+        if self.key_and_door:
+            save_string += f";{self.key};{self.door}"
+        if self.icy_floor:
+            save_string += f";{self.ice_floors}"
+        return save_string
 
     def load(
         self,

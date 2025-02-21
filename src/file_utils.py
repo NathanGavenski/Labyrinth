@@ -1,6 +1,8 @@
 """Module for creating a maze based on a python file"""
-import importlib
-from typing import Any, List, Tuple
+import ast
+from typing import Any, List, Tuple, Dict
+
+from gymnasium import Env
 
 import numpy as np
 from .maze.utils import get_neighbors
@@ -93,7 +95,7 @@ def find_edges_start_and_end(
     for node in nodes:
         if vector_maze[node] == 'S':
             start = nodes.index(node)
-            start = get_local_position(start, maze_shape[0])
+            start = get_local_position(start, maze_original_shape[0])
         if vector_maze[node] == 'E':
             end = nodes.index(node)
             end = get_local_position(end, maze_original_shape[0])
@@ -244,12 +246,95 @@ def create_default_maze(size: Tuple[int, int], path: str) -> None:
 
     if ".py" not in path:
         path += ".maze"
+    write_into_file(maze, path)
+
+
+def create_file_from_environment(environment: Env, path: str) -> None:
+    """Create a maze file from an environment.
+
+    Args:
+        environment (Env): environment to create the maze from
+        path (str): path to save the maze
+    """
+    structure = environment.save("").split(";")
+    pathways = ast.literal_eval(structure[0])
+    start = ast.literal_eval(structure[1])
+    end = ast.literal_eval(structure[2])
+
+    w, h = environment.shape
+    maze = []
+    for i in range(h):
+        # Vertical walls
+        row = []
+        for j in range(w):
+            if j == w - 1:
+                row.append([" ", "|"])
+            else:
+                current = environment.get_global_position((i, j))
+                next = environment.get_global_position((i, j + 1))
+                if (current, next) in pathways:
+                    row.append([" ", " "])
+                else:
+                    row.append([" ", "|"])
+        row = np.array(row).reshape(-1)[:-1]
+        row = list(row)
+        maze.append(row)
+
+        # Horizontal walls
+        if i < h - 1:
+            row = []
+            for j in range(w):
+                current = environment.get_global_position((i, j))
+                next = environment.get_global_position((i + 1, j))
+                if (current, next) in pathways:
+                    row.append([" ", "+"])
+                else:
+                    row.append(["-", "+"])
+            row = np.array(row).reshape(-1)[:-1]
+            row = list(row)
+            maze.append(row)
+
+    maze[start[0] * 2][start[1] * 2] = 'S'
+    maze[end[0] * 2][end[1] * 2] = 'E'
+
+    if environment.icy_floor:
+        ice_floors = ast.literal_eval(structure[-1])
+        for ice_floor in ice_floors:
+            maze[ice_floor[0] * 2][ice_floor[1] * 2] = 'I'
+
+    if environment.key_and_door:
+        key = ast.literal_eval(structure[-2])
+        door = ast.literal_eval(structure[-1])
+        maze[key[0] * 2][key[1] * 2] = 'K'
+        maze[door[0] * 2][door[1] * 2] = 'D'
+
+    maze = maze[::-1]
+
+    variables = {
+        "key_and_lock": environment.key_and_door,
+        "icy_floor": environment.icy_floor,
+        "occlusion": environment.occlusion
+    }
+    write_into_file(maze, path, variables)
+
+
+def write_into_file(maze: List[List[str]], path: str, variables: Dict[str, bool] = None) -> None:
+    """Write the maze into a file.
+
+    Args:
+        maze (List[List[str]]): maze to be written
+        path (str): path to save the maze
+    """
+    key_and_lock = False if variables is None else variables["key_and_lock"]
+    icy_floor = False if variables is None else variables["icy_floor"]
+    occlusion = False if variables is None else variables["occlusion"]
+
     with open(path, "w", encoding="utf-8") as _file:
         _file.write('"""\nThis file was created automatically.')
         _file.write('\nFor more instructions read the README.md\n"""\n')
-        _file.write("key_and_lock: False\n")
-        _file.write("icy_floor: False\n")
-        _file.write("occlusion: False\n\n")
+        _file.write(f"key_and_lock: {key_and_lock}\n")
+        _file.write(f"icy_floor: {icy_floor}\n")
+        _file.write(f"occlusion: {occlusion}\n\n")
         _file.write("maze:\n")
         _file.write("-" * ((len(maze[0]) + 2) * 2 - 1) + "\n")
         for row in maze:
