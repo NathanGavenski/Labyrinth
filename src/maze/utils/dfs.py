@@ -15,12 +15,12 @@ class DFS:
     key_and_door = False
 
     def __init__(
-            self,
-            graph: List[Tuple[int, int]],
-            shape: Tuple[int, int],
-            start: int = None,
-            end: int = None,
-            random_amount: int = 0
+        self,
+        graph: List[Tuple[int, int]],
+        shape: Tuple[int, int],
+        start: int = None,
+        end: int = None,
+        random_amount: int = 0
     ) -> None:
         """Depth first search algorithm for the maze generation.
 
@@ -327,13 +327,13 @@ class DFS:
         path: List[Node],
     ) -> None:
         """Find all possible paths from start to finish.
-        
+
         Args:
             start (Node): starting node.
             finish (Node): finishing node.
             visited (List[bool]): list of visited nodes.
             path (List[Node]): list of nodes.
-        """    
+        """
         visited[start.identifier] = True
         start.d.append(path.copy())
         path.append(start)

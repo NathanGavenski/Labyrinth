@@ -5,8 +5,8 @@ from typing import Any, List, Tuple, Dict
 from gymnasium import Env
 
 import numpy as np
-from .utils import get_neighbors
-from .interp import Interpreter
+from maze.utils import get_neighbors
+from maze.interp import Interpreter
 
 
 def split(list_a: List[Any], chunk_size: int):
@@ -158,6 +158,7 @@ def find_key_and_lock(
 
 def invoke_interpreter(path: str) -> Interpreter:
     interpreter = Interpreter()
+    interpreter.reset()
     with open(path, "r") as f:
         for line in f:
             interpreter.eval(line)

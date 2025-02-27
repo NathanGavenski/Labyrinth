@@ -33,7 +33,7 @@ Thus, 24th means the last space in the vector.
 
 ## Settings
 
-The maze comes with different settings, such as occlusions, door and key, teleports.
+The maze comes with different settings, such as occlusions, door and key, icy floor.
 
 ### Occlusion
 
@@ -83,22 +83,28 @@ create_default_maze(size: Tuple[int, int], path: str)
 
 The function will create a file at `path` with the parameter `size` like this:
 
-```python
-"""This file was created automatically. For more instructions read the README.md"""
-key_and_lock = False
-icy_floor = False
+```
+"""
+This file was created automatically.
+For more instructions read the README.md
+"""
+key_and_lock: False
+icy_floor: False
+occlusion: False
 
-maze = [
-	[' ', '|', ' ', '|', ' ', '|', ' ', '|', 'E']
-	['-', '+', '-', '+', '-', '+', '-', '+', '-']
-	[' ', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
-	['-', '+', '-', '+', '-', '+', '-', '+', '-']
-	[' ', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
-	['-', '+', '-', '+', '-', '+', '-', '+', '-']
-	[' ', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
-	['-', '+', '-', '+', '-', '+', '-', '+', '-']
-	['S', '|', ' ', '|', ' ', '|', ' ', '|', ' ']
-]
+maze:
+---------------------
+|   |   |   |   | E |
+| - + - + - + - + - |
+|   |   |   |   |   |
+| - + - + - + - + - |
+|   |   |   |   |   |
+| - + - + - + - + - |
+|   |   |   |   |   |
+| - + - + - + - + - |
+| S |   |   |   |   |
+---------------------
+end
 ```
 
 where `|` are vertical walls, `-` are horizontal walls and `S` is the starting , `E` is the end, `I` is ice floor, `K` is the key `D` and door positions. 
@@ -106,13 +112,13 @@ If you want to remove a wall, just need to leave it blank.
 For example:
 
 ```python
-maze = [
-	[' ', '|', ' ', ' ', 'E']  # ['6', '|', '7', ' ', '8']
-	['-', '+', ' ', '+', '-']  # ['-', '+', ' ', '+', '-']
-	[' ', ' ', ' ', '|', ' ']  # ['3', ' ', '4', '|', '5']
-	[' ', '+', '-', '+', '-']  # [' ', '+', '-', '+', '-']
-	['S', '|', ' ', '|', ' ']  # ['0', '|', '1', '|', '2']
-]
+-------------  
+|   |     E |  # ['6', '|', '7', ' ', '8']
+| - +   + - |  # ['-', '+', ' ', '+', '-']
+|       |   |  # ['3', ' ', '4', '|', '5']
+|   + - +   |  # [' ', '+', '-', '+', '-']
+| S |   |   |  # ['0', '|', '1', '|', '2']
+-------------    
 ```
 
 which creates the path `0 -> 3 -> 4 -> 7 -> 8`.
@@ -123,7 +129,24 @@ After creating the maze you should use:
 convert_from_file(structure_file: str, path: str)
 ```
 
-which creates a file that the environment can load.
+which creates a file that the environment can load, for example:
+
+```python
+structure, variables = convert_from_file("structure_test.maze")
+env = gym.make("Maze-v0", shape=(3, 3))
+env.load(structure, variables)
+```
+
+## Saving a maze into a file
+
+To save a maze into a file, you just have to:
+```python
+from maze.file_utils import create_file_from_environment
+
+env = gym.make("Maze-v0", shape=(3, 3))
+env.reset()
+create_file_from_environment(env, "test.maze")
+```
 
 ## Installing
 

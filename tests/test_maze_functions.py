@@ -13,6 +13,7 @@ import pytest
 import maze
 from create_expert import state_to_action
 from maze.utils.utils import SettingsException, ActionException
+from src.file_utils import create_file_from_environment, convert_from_file
 
 github = os.getenv("SERVER")
 github = bool(int(github)) if github is not None else False
@@ -69,7 +70,7 @@ class TestCases(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         """Tear down the test environment."""
-        shutil.rmtree(TMP_PATH)
+        # shutil.rmtree(TMP_PATH)
         if cls.env is not None:
             cls.env.close()
 
@@ -104,18 +105,39 @@ class TestCases(unittest.TestCase):
         """Test the save function."""
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.reset()
-        env.save(f"{TMP_PATH}/test.txt")
-
+        create_file_from_environment(env, f"{TMP_PATH}test.maze")
         assert os.path.exists(f"{TMP_PATH}/test.txt")
 
-        with open(f"{TMP_PATH}/test.txt", encoding="utf-8") as _file:
-            for line in _file:
-                info = line
-
+        info, _ = convert_from_file(f"{TMP_PATH}test.maze")
         visited, start, end = info.split(";")
-        assert env._pathways == ast.literal_eval(visited)
-        assert env.start == ast.literal_eval(start)
-        assert env.end == ast.literal_eval(end)
+        visited = ast.literal_eval(visited)
+        assert {frozenset(t) for t in env._pathways} == {frozenset(t) for t in visited}
+        assert env.start == tuple(ast.literal_eval(start))
+        assert env.end == tuple(ast.literal_eval(end))
+
+    def test_save_key_and_door(self):
+        """Test the save function with different variables."""
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        env.reset()
+        create_file_from_environment(env, f"{TMP_PATH}key_and_door.maze")
+        _, variables = convert_from_file(f"{TMP_PATH}key_and_door.maze")
+        assert variables["key_and_lock"]
+
+    def test_save_occlusion(self):
+        """Test the save function with occlusion."""
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=True)
+        env.reset()
+        create_file_from_environment(env, f"{TMP_PATH}occlusion.maze")
+        _, variables = convert_from_file(f"{TMP_PATH}occlusion.maze")
+        assert variables["occlusion"]
+
+    def test_save_icy_floor(self):
+        """Test the save function with icy floor."""
+        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), icy_floor=True)
+        env.reset()
+        create_file_from_environment(env, f"{TMP_PATH}icy_floor.maze")
+        _, variables = convert_from_file(f"{TMP_PATH}icy_floor.maze")
+        assert variables["icy_floor"]
 
     def test_load(self):
         """Test the load function."""

@@ -1,6 +1,7 @@
 """Gym registration for the Maze environment."""
 from gymnasium.envs.registration import register
 
+
 register(
     id="Maze-v0",
     entry_point="maze.maze:Maze",
