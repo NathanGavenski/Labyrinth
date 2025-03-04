@@ -3,6 +3,9 @@ from unittest import TestCase
 from src.maze.interp import Interpreter
 
 
+PATH = "/".join(__file__.split("/")[:-1])
+
+
 class TestInterpreter(TestCase):
     """Test cases for testing Interpreter class."""
 
@@ -75,7 +78,7 @@ class TestInterpreter(TestCase):
     def test_eval_tokens_with_maze_structure(self) -> None:
         from src.maze.file_utils import convert_from_file
         convert_from_file(
-            "/home/nathan/Documents/git/maze-gym/tests/assets/occlusion_vector_test.maze"
+            f"{PATH}/assets/occlusion_vector_test.maze"
         )
         tokens = ["<STRUCTURE>"]
         self.interpreter.eval_tokens(tokens)
