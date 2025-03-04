@@ -61,8 +61,12 @@ class Interpreter:
         if "<COMMENT>" in tokens[index]:
             self.comment_context = not self.comment_context
         index += 1
+
         while "<COMMENT>" not in tokens[index] and tokens[index] != "<NEWLINE>":
             index += 1
+
+        if "<COMMENT>" in tokens[index]:
+            self.comment_context = not self.comment_context
         index += 1
         return index
 
@@ -105,6 +109,9 @@ class Interpreter:
                 index = self.handle_comments(tokens, index)
             elif tokens[index] == "<VARIABLE>":
                 # Define a variable
+                if len(self.stack) == 0:
+                    index += 1
+                    continue
                 key = self.stack.pop()
                 if key not in self.available_keys:
                     continue
@@ -135,4 +142,3 @@ class Interpreter:
         output += f"variables: {self.variables},\n    "
         output += f"stack: {self.stack},\n    maze:\n{maze})"
         return output
-
