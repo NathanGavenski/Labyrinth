@@ -10,7 +10,12 @@ import gymnasium as gym
 import numpy as np
 from tqdm import tqdm
 
-from . import maze
+try:
+    from . import maze
+    from .maze import file_utils
+except ImportError:
+    import maze
+    from maze import file_utils
 
 
 def get_args() -> argparse.Namespace:
@@ -76,14 +81,14 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def generate(args: argparse.Namespace) -> List[Any]:
+def create(args: argparse.Namespace) -> List[Any]:
     """Create random dataset for imitation learning.
 
     Args:
         args (argparse.Namespace): Arguments from command line.
 
     Returns:
-        List[Any]: Random dataset for imitation learning. 
+        List[Any]: Random dataset for imitation learning.
         TODO explain what is in the dataset.
     """
     mypath = f'{args.path}/train/'
@@ -105,7 +110,7 @@ def generate(args: argparse.Namespace) -> List[Any]:
     pbar = tqdm(range(args.amount))
     for maze_idx, _maze in enumerate(mazes):
         env = gym.make('Maze-v0', shape=(args.width, args.height), render_mode="rgb_array")
-        env.load(_maze)
+        env.load(*file_utils.convert_from_file(_maze))
 
         if args.unbiased and (maze_idx % args.times != 0):
             env.change_start_and_goal()
@@ -135,7 +140,8 @@ def generate(args: argparse.Namespace) -> List[Any]:
 
                 entry = [maze_idx, image_idx - 2, action, image_idx - 1]
                 dataset = np.append(
-                    dataset, np.array(entry).astype(int)[None], axis=0)
+                    dataset, np.array(entry).astype(int)[None], axis=0
+                )
                 pbar.update()
                 idx += 1
 
@@ -151,5 +157,5 @@ def generate(args: argparse.Namespace) -> List[Any]:
 
 if __name__ == '__main__':
     arguments = get_args()
-    random_dataset = generate(arguments)
+    random_dataset = create(arguments)
     np.save(f'{arguments.save_path}/dataset', random_dataset)

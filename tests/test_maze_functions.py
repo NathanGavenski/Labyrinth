@@ -107,7 +107,7 @@ class TestCases(unittest.TestCase):
         TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
         env.reset()
         create_file_from_environment(env, f"{TMP_PATH}test.maze")
-        assert os.path.exists(f"{TMP_PATH}/test.txt")
+        assert os.path.exists(f"{TMP_PATH}/test.maze")
 
         info, _ = convert_from_file(f"{TMP_PATH}test.maze")
         visited, start, end = info.split(";")

@@ -13,8 +13,11 @@ from tqdm import tqdm
 
 try:
     from . import maze
+    from .maze import file_utils
 except ImportError:
     import maze
+    from maze import file_utils
+
 logging.basicConfig(level=logging.ERROR)
 
 
@@ -57,7 +60,8 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         '--folder',
         type=str,
-        default='train'
+        default='train',
+        help='Which folder to use from path'
     )
 
     # Maze specific
@@ -72,6 +76,11 @@ def get_args() -> argparse.Namespace:
         type=int,
         default=10,
         help="Height of the generated maze"
+    )
+    parser.add_argument(
+        '--shortest',
+        action='store_true',
+        help='If it should only use the shortest solution for each maze'
     )
 
     return parser.parse_args()
@@ -135,12 +144,12 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
             screen_height=600,
             render_mode="rgb_array"
         )
-        env.load(_maze)
+        env.load(*file_utils.convert_from_file(_maze))
 
         if args.unbiased and (maze_idx % args.times != 0):
             env.change_start_and_goal()
 
-        solutions = env.solve(mode='all')
+        solutions = env.solve(mode='all' if not args.shortest else 'shortest')
         for solution_idx, solution in enumerate(solutions):
             env.reset(options={"agent": True})
             done = False
