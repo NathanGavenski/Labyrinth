@@ -18,4 +18,3 @@ if __name__ == "__main__":
         ],
         python_requires='>=3.9',
     )
-

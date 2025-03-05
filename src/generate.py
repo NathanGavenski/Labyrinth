@@ -88,7 +88,7 @@ def generate(
 
     global_path = pathlib.Path(__file__).parent.resolve()
     mypath = f'{global_path}/environment/mazes/mazes{shape[0]}/'
-    env.generate(mypath, amount=train_amount + eval_amount + test_amount)
+    env.generate(mypath, amount=train_amount + eval_amount + test_amount, verbose=verbose)
     files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
     eval_amount += train_amount

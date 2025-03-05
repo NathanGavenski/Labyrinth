@@ -12,12 +12,14 @@ from gymnasium.utils import seeding
 from gymnasium.error import DependencyNotInstalled
 import numpy as np
 from numpy import ndarray
+from tqdm import tqdm
 
 from .utils import create_mask
 from .utils import transform_edges_into_walls
 from .utils import get_neighbors, DFS, RecursionLimit
 from .utils import SettingsException, ResetException, ActionException
 from .utils.render import RenderUtils
+from .file_utils import create_file_from_environment
 
 
 class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
@@ -570,21 +572,29 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         return self.render() if self.render_mode == "rgb_array" else self.get_state(), {}
 
-    def generate(self, path: str, amount: int = 1) -> None:
+    def generate(self, path: str, amount: int = 1, verbose: bool = False) -> None:
         """Generate a maze and save it to a file.
 
         Args:
             path (str): Path to save the maze (int, optional): Amount of mazes to generate.
             Defaults to 1.
         """
-        for _ in range(amount):
-            self.reset(agent=False)
+        keys = []
+        if verbose:
+            pbar = tqdm(total=amount, desc="Creating mazes")
+        while len(keys) < amount:
+            self.reset(options={"agent": True})
             hash_idx = hash(self)
-            if not os.path.exists(path):
-                os.makedirs(path)
+            if keys not in keys:
+                keys.append(hash_idx)
+                if not os.path.exists(path):
+                    os.makedirs(path)
 
-            file_path = f'{path}/{hash_idx}.txt'
-            self.save(file_path)
+                file_path = f'{path}/{hash_idx}.maze'
+                create_file_from_environment(self, file_path)
+
+                if verbose:
+                    pbar.update(1)
 
     def close(self) -> None:
         """Close the environment. Note: This does not reset the environment."""
