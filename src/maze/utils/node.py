@@ -230,3 +230,9 @@ class Node:
                 current_available_edges.append(node)
 
         return f'{self.identifier}: {[edge.identifier for edge in current_available_edges]}'
+
+    def add_itself_to_d(self) -> None:
+        """Add itself to the path."""
+        for d in self.d:
+            if self not in d:
+                d.append(self)

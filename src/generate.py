@@ -102,19 +102,19 @@ def generate(
         f'Test: {len(test_data)}'
     )
 
-    os.makedirs(f'{mypath}train/')
+    os.makedirs(f'{mypath}train/', exist_ok=True)
     train_data = train_data if not verbose else tqdm(train_data)
     for _file in train_data:
         os.rename(
             f'{mypath}{_file}',
             f'{mypath}train/{_file}'
         )
-    os.makedirs(f'{mypath}eval/')
+    os.makedirs(f'{mypath}eval/', exist_ok=True)
     evaluation_data = evaluation_data if not verbose else tqdm(evaluation_data)
     for _file in evaluation_data:
         os.rename(f'{mypath}{_file}', f'{mypath}eval/{_file}')
 
-    os.makedirs(f'{mypath}test/')
+    os.makedirs(f'{mypath}test/', exist_ok=True)
     test_data = test_data if not verbose else tqdm(test_data)
     for _file in test_data:
         os.rename(f'{mypath}{_file}', f'{mypath}test/{_file}')

@@ -511,7 +511,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             else:
                 reward = 1
 
-        self.done = done or terminated
+        self.done = done  # or terminated
         return self.get_state(), reward, done, terminated, {}
 
     def reset(
@@ -583,9 +583,9 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if verbose:
             pbar = tqdm(total=amount, desc="Creating mazes")
         while len(keys) < amount:
-            self.reset(options={"agent": True})
+            self.reset(options={"agent": False})
             hash_idx = hash(self)
-            if keys not in keys:
+            if hash_idx not in keys:
                 keys.append(hash_idx)
                 if not os.path.exists(path):
                     os.makedirs(path)

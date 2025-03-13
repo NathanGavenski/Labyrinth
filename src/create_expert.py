@@ -135,7 +135,7 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
         os.makedirs(save_path)
 
     image_idx = 0
-    dataset = np.ndarray(shape=[0, 9])
+    dataset = np.ndarray(shape=[0, 10])
     for maze_idx, _maze in enumerate(tqdm(mazes)):
         env = gym.make(
             'Maze-v0',
@@ -176,18 +176,17 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
                         image_idx - 1,  # state
                         action,  # action
                         image_idx,  # next_state
-                        0,  # episode reward
+                        0 if not done else total_reward,  # episode reward
                         reward,  # step reward
                         idx == 0,  # episode_starts
-                        False,  # episode_ends
+                        done,  # episode_ends
+                        _maze.split('/')[-1]  # maze name
                     ]
                     dataset = np.append(dataset, np.array(entry)[None], axis=0)
-                if done:
-                    image = env.render()
-                    np.save(f'{save_path}/{image_idx}', image)
-                    image_idx += 1
-                    dataset[-1, 5] = total_reward
-                    dataset[-1, -1] = True
+            if done:
+                image = env.render()
+                np.save(f'{save_path}/{image_idx}', image)
+                image_idx += 1
 
             env.close()
         del env
