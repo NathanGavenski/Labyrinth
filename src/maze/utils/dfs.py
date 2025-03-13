@@ -220,6 +220,11 @@ class DFS:
             List[List[int]]: A list of list of all the nodes that take the agent to its goal.
         """
         if not self.key_and_door:
+            if shortest:
+                path = self.find_path(edges, self.start, self.end, True)
+                if len(path[self.end].d) > 0 and isinstance(path[self.end].d[0], list):
+                    return path[self.end].d
+                return [path[self.end].d]
             path = self.find_path(edges, self.start, self.end, False)
             logging.debug(f"find_paths:First path found: {path[self.end].d}")
             logging.debug([
@@ -237,9 +242,6 @@ class DFS:
             path[self.end].add_itself_to_d()
 
             logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
-            if shortest:
-                return [min(path[self.end].d)]
-
             if isinstance(path[self.end].d[0], list):
                 return path[self.end].d
             return [path[self.end].d]

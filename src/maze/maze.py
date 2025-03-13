@@ -758,17 +758,13 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             width, height = self.shape
             min_distance = (width + height) // 2
 
-        paths = self.solve(mode='all')
-        longest_path = np.argmax(max(len(path) for path in paths))
-        path = paths[longest_path]
-        start = np.array(
-            self.get_local_position(
-                np.random.choice(path[1:], 1)[0]
-            )
-        )
+        all_nodes = list(range(self.shape[0] * self.shape[1]))
+        start_global = random.choice(all_nodes)
+        start = np.array(self.get_local_position(start_global))
 
+        all_nodes.remove(start_global)
         possible_goals = []
-        for tile in path:
+        for tile in all_nodes:
             tile = self.get_local_position(tile)
             distance = np.abs(start - tile).sum()
             if distance >= min_distance:
@@ -785,6 +781,35 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         self.dfs.start = self.get_global_position(self.start)
         self.dfs.end = self.get_global_position(self.end)
+        return start, end
+
+    def change_start(self, min_distance: int = None) -> Tuple[Tuple[int], Tuple[int]]:
+        if min_distance is None:
+            width, height = self.shape
+            min_distance = (width + height) // 2
+
+        all_nodes = list(range(self.shape[0] * self.shape[1]))
+        end = self.get_global_position(self.end)
+        start = self.get_global_position(self.start)
+        all_nodes.remove(end)
+        all_nodes.remove(start)
+
+        possible_starts = []
+        for tile in all_nodes:
+            tile = self.get_local_position(tile)
+            distance = np.abs(np.array(self.end) - tile).sum()
+            if distance >= min_distance:
+                possible_starts.append(tile)
+
+        if len(possible_starts) == 0:
+            raise ValueError("No possible starts given the goal")
+
+        start_indx = np.random.choice(list(range(len(possible_starts))), 1)[0]
+        start = possible_starts[start_indx]
+        self.start = tuple(start)
+        self.agent = self.start
+
+        self.dfs.start = self.get_global_position(self.start)
         return start, end
 
     def agent_random_position(self) -> None:
