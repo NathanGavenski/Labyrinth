@@ -54,5 +54,5 @@ class TestCreateTeacherDataset(unittest.TestCase):
             times=10, folder='train', width=10, height=10, shortest=False
         )
         dataset = create(args, folder='train')
-        self.assertEqual(dataset.shape[1], 9)
+        self.assertEqual(dataset.shape[1], 10)
         self.assertGreater(dataset.shape[0], 0)
