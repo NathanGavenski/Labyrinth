@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pytest
 
-from src.maze.utils.node import Node
+from src.labyrinth.utils.node import Node
 
 
 class TestNode(TestCase):

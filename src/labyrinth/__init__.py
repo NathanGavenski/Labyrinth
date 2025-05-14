@@ -1,10 +1,10 @@
-"""Gym registration for the Maze environment."""
+"""Gym registration for the Labyrinth environment."""
 from gymnasium.envs.registration import register
 
 
 register(
-    id="Maze-v0",
-    entry_point="maze.maze:Maze",
+    id="Labyrinth-v0",
+    entry_point="labyrinth.labyrinth:Labyrinth",
     order_enforce=False,
     disable_env_checker=True,
     kwargs={

@@ -1,4 +1,4 @@
-"""Create maze structures for maze environment."""
+"""Create labyrinth structures for labyrinth environment."""
 import argparse
 import os
 from os import listdir
@@ -11,9 +11,9 @@ import gymnasium as gym
 from tqdm import tqdm
 
 try:
-    from . import maze
+    from . import labyrinth
 except ImportError:
-    import maze
+    import labyrinth
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -24,45 +24,45 @@ def get_args() -> argparse.Namespace:
     Returns:
         argparse.Namespace: arguments from command line
     """
-    parser = argparse.ArgumentParser(description="Args for generating multiple mazes.")
+    parser = argparse.ArgumentParser(description="Args for generating multiple labyrinths.")
 
     # General
     parser.add_argument(
         '--verbose',
         action='store_true',
-        help='Whether or not it should show the progress bar when creating mazes'
+        help='Whether or not it should show the progress bar when creating labyrinths'
     )
     parser.add_argument(
         '--train',
         type=int,
         default=100,
-        help="How many mazes for the train set"
+        help="How many labyrinths for the train set"
     )
     parser.add_argument(
         '--eval',
         type=int,
         default=100,
-        help="How many mazes for the evaluation set"
+        help="How many labyrinths for the evaluation set"
     )
     parser.add_argument(
         '--test',
         type=int,
         default=100,
-        help="How many mazes for the test set"
+        help="How many labyrinths for the test set"
     )
 
-    # Maze specific
+    # labyrinth specific
     parser.add_argument(
         '--width',
         type=int,
         default=10,
-        help="Width of the generated maze"
+        help="Width of the generated labyrinth"
     )
     parser.add_argument(
         '--height',
         type=int,
         default=10,
-        help="Height of the generated maze"
+        help="Height of the generated labyrinth"
     )
 
     return parser.parse_args()
@@ -75,19 +75,19 @@ def generate(
     shape: Tuple[int, int],
     verbose: Optional[bool] = False
 ) -> None:
-    """Generate mazes for the maze environment.
+    """Generate labyrinths for the labyrinth environment.
 
     Args:
-        train (int): Amount of mazes for the train set
-        eval (int): Amount of mazes for the evaluation set
-        shape (Tuple[int, int]): Width and height of the generated mazes
+        train (int): Amount of labyrinths for the train set
+        eval (int): Amount of labyrinths for the evaluation set
+        shape (Tuple[int, int]): Width and height of the generated labyrinths
         verbose (Optional[bool]): Whether it should show the progress bar when
-            creating mazes. Defaults to False.
+            creating labyrinths. Defaults to False.
     """
-    env = gym.make('Maze-v0', shape=shape)
+    env = gym.make('Labyrinth-v0', shape=shape)
 
     global_path = pathlib.Path(__file__).parent.resolve()
-    mypath = f'{global_path}/environment/mazes/mazes{shape[0]}/'
+    mypath = f'{global_path}/environment/labyrinths/labyrinths{shape[0]}/'
     env.generate(mypath, amount=train_amount + eval_amount + test_amount, verbose=verbose)
     files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 

@@ -1,4 +1,4 @@
-"""Maze environment."""
+"""Labyrinth environment."""
 import ast
 from collections import defaultdict
 from copy import deepcopy
@@ -22,10 +22,10 @@ from .utils.render import RenderUtils
 from .file_utils import create_file_from_environment
 
 
-class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
+class Labyrinth(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     """
     Description:
-        A maze with size [x, y] with an agent (green diamond),
+        A labyrinth with size [x, y] with an agent (green diamond),
         a start (red square) and a goal (blue square). The goal
         of the objective is for the agent to reach the goal tile.
 
@@ -33,11 +33,11 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         Num         Observation         Min     Max
         0           Agent x position    0       shape - 1
         1           Agent y position    0       shape - 1
-        2..shape    Maze tile           0       1
+        2..shape    Labyrinth tile      0       1
 
         Note: For the rest of the state 0 means an empty
         space or no wall, and 1 means a wall. Since the
-        maze is a matrix and each tile should represent
+        labyrinth is a matrix and each tile should represent
         a current tile, the observation will be (shape * 2).
 
     Actions:
@@ -75,9 +75,9 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     state = None
     reseted = False
 
-    # maze
+    # labyrinth
     dfs = None
-    maze = None
+    labyrinth = None
     undirected_pathways = None
     agent_transition = None
     pathways = None
@@ -108,12 +108,12 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             visual: bool = False,
             render_mode: Optional[str] = None
     ) -> None:
-        """Maze environment.
+        """Labyrinth environment.
 
         Args:
-            shape (Tuple[int, int]): shape of the maze (width, height).
-            start (Tuple[int, int], optional): Start tile of the maze. Defaults to (0, 0).
-            end (Tuple[int, int], optional): End tile for the maze. Defaults to None.
+            shape (Tuple[int, int]): shape of the labyrinth (width, height).
+            start (Tuple[int, int], optional): Start tile of the labyrinth. Defaults to (0, 0).
+            end (Tuple[int, int], optional): End tile for the labyrinth. Defaults to None.
             screen_width (int, optional): Width for image size (pixels). Defaults to 224.
             screen_height (int, optional): Height for image size (pixels). Defaults to 224.
             max_episode_steps (int, optional): Max number of steps per episode. Defaults to 1000.
@@ -164,15 +164,15 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         max_paths: int = None,
         random_amount: int = 0,
     ) -> Tuple[List[Tuple[int]], List[Tuple[int]]]:
-        """Create a maze using DFS algorithm.
+        """Create a labyrinth using DFS algorithm.
 
         Args:
             visited (List[int], optional): List of visited nodes. Defaults to None.
 
         Returns:
-            Tuple[List[Tuple[int]], List[Tuple[int]]]: Maze and visited nodes.
+            Tuple[List[Tuple[int]], List[Tuple[int]]]: Labyrinth and visited nodes.
         """
-        maze = np.ndarray(shape=self.shape)
+        labyrinth = np.ndarray(shape=self.shape)
 
         initial = self.start if initial is None else initial
         goal = self.end if goal is None else goal
@@ -182,12 +182,12 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         if visited is None:
             edges = {}
-            for pos in range(maze.shape[0] * maze.shape[1]):
-                edges[pos] = get_neighbors(pos, maze.shape, undirected=False)
+            for pos in range(labyrinth.shape[0] * labyrinth.shape[1]):
+                edges[pos] = get_neighbors(pos, labyrinth.shape, undirected=False)
 
             self.dfs = DFS(
                 edges,
-                maze.shape,
+                labyrinth.shape,
                 start=start,
                 end=end,
                 random_amount=random_amount
@@ -206,10 +206,10 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             edges = defaultdict(list)
             for (x, y) in visited:
                 edges[x].append((x, y))
-            self.dfs = DFS(edges, maze.shape, start=start, end=end)
+            self.dfs = DFS(edges, labyrinth.shape, start=start, end=end)
             self.dfs.convert_graph()
 
-        return transform_edges_into_walls(visited, maze.shape), visited
+        return transform_edges_into_walls(visited, labyrinth.shape), visited
 
     def get_global_position(
         self,
@@ -220,7 +220,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         Args:
             position (List[int] | Tuple[int, int]): (x, y) coordinates
-            size (List[int], optional): Size of the maze. Defaults to None.
+            size (List[int], optional): Size of the labyrinth. Defaults to None.
 
         Returns:
             int: Global position.
@@ -237,7 +237,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         Args:
             position (int): Global position.
-            size (Tuple[int, int], optional): Size of the maze. Defaults to None.
+            size (Tuple[int, int], optional): Size of the labyrinth. Defaults to None.
 
         Returns:
             Tuple[int, int]: (x, y) coordinates
@@ -256,7 +256,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.occlusion = False
 
     def define_pathways(self, pathways: List[int]) -> List[int]:
-        """Define pathways for the maze.
+        """Define pathways for the labyrinth.
 
         Args:
             pathways (List[int]): List of visited nodes.
@@ -345,7 +345,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             self.render_utils.draw_ice_floors(self.ice_floors)
 
         if self.occlusion:
-            mask = create_mask(self.shape, self.maze, self.agent)
+            mask = create_mask(self.shape, self.labyrinth, self.agent)
             self.render_utils \
                 .draw_mask(mask)
 
@@ -353,7 +353,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             .draw_start(self.start) \
             .draw_end(self.end) \
             .draw_agent(self.agent) \
-            .draw_walls(self.maze)
+            .draw_walls(self.labyrinth)
 
         if self.render_mode == "human":
             pygame.event.pump()
@@ -367,7 +367,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
     def translate_position(self, position: Tuple[int, int]) -> Tuple[int, int]:
         """
-        Convert current position from original maze size to mask size.
+        Convert current position from original labyrinth size to mask size.
 
         Args:
             position: Tuple[int, int]: (y, x) coordinates
@@ -376,9 +376,9 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             (y, x) coordinates
         """
         yoriginal, xoriginal = self.shape
-        ymaze, xmaze = self.maze.shape
-        width = int(position[1] / (xoriginal / xmaze))
-        height = int(position[0] / (yoriginal / ymaze))
+        ylabyrinth, xlabyrinth = self.labyrinth.shape
+        width = int(position[1] / (xoriginal / xlabyrinth))
+        height = int(position[0] / (yoriginal / ylabyrinth))
         return (height, width)
 
     def get_state(self) -> Union[List[int], ndarray]:
@@ -389,7 +389,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 0: agent global position
                 1: start global position
                 2: goal global position
-                3+ maze structure in a vector
+                3+ labyrinth structure in a vector
         """
         if self.render_mode == "rgb_array":
             import pyglet
@@ -399,45 +399,45 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             finally:
                 pyglet.options["headless"] = False
 
-        maze = self.maze
+        labyrinth = self.labyrinth
         if self.occlusion:
-            maze = create_mask(self.shape, self.maze, self.agent)
-        maze = maze[1:-1, 1:-1]
+            labyrinth = create_mask(self.shape, self.labyrinth, self.agent)
+        labyrinth = labyrinth[1:-1, 1:-1]
 
-        agent = self.get_global_position(self.translate_position(self.agent), maze.shape)
-        start = self.get_global_position(self.translate_position(self.start), maze.shape)
-        goal = self.get_global_position(self.translate_position(self.end), maze.shape)
+        agent = self.get_global_position(self.translate_position(self.agent), labyrinth.shape)
+        start = self.get_global_position(self.translate_position(self.start), labyrinth.shape)
+        goal = self.get_global_position(self.translate_position(self.end), labyrinth.shape)
 
         if self.key_and_door:
             key = self.get_global_position(
                 self.translate_position(self.key),
-                maze.shape
+                labyrinth.shape
             ) if self.key else -1
             door = self.get_global_position(
                 self.translate_position(self.door),
-                maze.shape
+                labyrinth.shape
             ) if self.door else -1
 
         if self.icy_floor:
             ice_floors = [self.translate_position(ice) for ice in self.ice_floors]
-            ice_floors = [self.get_global_position(ice, maze.shape) for ice in ice_floors]
+            ice_floors = [self.get_global_position(ice, labyrinth.shape) for ice in ice_floors]
 
         if self.occlusion:
-            goal = self.get_global_position(self.translate_position(self.end), maze.shape)
+            goal = self.get_global_position(self.translate_position(self.end), labyrinth.shape)
             tiles = [x for x in range(goal + 1) if x % 2 != 0]
             for tile in tiles:
-                _neighbors = get_neighbors(tile, shape=maze.shape)
+                _neighbors = get_neighbors(tile, shape=labyrinth.shape)
                 _neighbors = [
-                    self.get_local_position(neighbor, maze.shape) for _, neighbor in _neighbors
+                    self.get_local_position(neighbor, labyrinth.shape) for _, neighbor in _neighbors
                 ]
-                values = np.array([maze[y, x] for y, x in _neighbors])
+                values = np.array([labyrinth[y, x] for y, x in _neighbors])
                 if (values == 1).all():
-                    height, width = self.get_local_position(tile, maze.shape)
-                    maze[height, width] = 1
+                    height, width = self.get_local_position(tile, labyrinth.shape)
+                    labyrinth[height, width] = 1
 
-        maze = maze.flatten()
-        maze[start] = 0
-        maze[goal] = 0
+        labyrinth = labyrinth.flatten()
+        labyrinth[start] = 0
+        labyrinth[goal] = 0
 
         state = np.array([agent, start, goal])
         if self.key_and_door:
@@ -445,7 +445,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if self.icy_floor:
             state = np.hstack((state, ice_floors))
 
-        state = np.hstack((state, maze))
+        state = np.hstack((state, labyrinth))
         return state
 
     # TODO adapt reward function to be 1 - (-.1 / (self.shape[0] *
@@ -523,9 +523,9 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         """Reset the environment.
 
         Args:
-            agent (bool, optional): If agent is True, reset the agent position and keep the maze.
-                If agent is False, reset the maze and agent. Defaults to True.
-            render (bool, optional): If should return a rendered view of the maze.
+            agent (bool, optional): If agent is True, reset the agent position and keep the labyrinth.
+                If agent is False, reset the labyrinth and agent. Defaults to True.
+            render (bool, optional): If should return a rendered view of the labyrinth.
                 Defaults to False.
 
         Returns:
@@ -549,13 +549,13 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.render_utils = None
         self.done = False
 
-        if not agent or self.maze is None:
+        if not agent or self.labyrinth is None:
             if self.icy_floor:
-                self.maze, self._pathways = self._generate(min_paths=2, random_amount=25)
+                self.labyrinth, self._pathways = self._generate(min_paths=2, random_amount=25)
             elif self.key_and_door:
-                self.maze, self._pathways = self._generate(max_paths=1)
+                self.labyrinth, self._pathways = self._generate(max_paths=1)
             else:
-                self.maze, self._pathways = self._generate(random_amount=25)
+                self.labyrinth, self._pathways = self._generate(random_amount=25)
 
             self.pathways = self.define_pathways(self._pathways)
         self.agent = self.start
@@ -564,7 +564,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             try:
                 self.door, self.key = self.set_key_and_door()
             except SettingsException:
-                self.maze = None
+                self.labyrinth = None
                 return self.reset()
 
         if self.icy_floor and self.ice_floors is None:
@@ -573,15 +573,16 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         return self.render() if self.render_mode == "rgb_array" else self.get_state(), {}
 
     def generate(self, path: str, amount: int = 1, verbose: bool = False) -> None:
-        """Generate a maze and save it to a file.
+        """Generate a labyrinth and save it to a file.
 
         Args:
-            path (str): Path to save the maze (int, optional): Amount of mazes to generate.
+            path (str): Path to save the labyrinth 
+            amount (int, optional): Amount of labyrinths to generate.
             Defaults to 1.
         """
         keys = []
         if verbose:
-            pbar = tqdm(total=amount, desc="Creating mazes")
+            pbar = tqdm(total=amount, desc="Creating labyrinths")
         while len(keys) < amount:
             self.reset(options={"agent": False})
             hash_idx = hash(self)
@@ -590,7 +591,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 if not os.path.exists(path):
                     os.makedirs(path)
 
-                file_path = f'{path}/{hash_idx}.maze'
+                file_path = f'{path}/{hash_idx}.labyrinth'
                 create_file_from_environment(self, file_path)
 
                 if verbose:
@@ -609,14 +610,14 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             pygame.quit()
 
     def save(self, path: str) -> None:
-        """Save the current maze separated by ';'.
+        """Save the current labyrinth separated by ';'.
 
         Args:
-            path (str): Path to save the current maze
+            path (str): Path to save the current labyrinth
 
         File:
             Position    Description
-            0           Maze paths
+            0           labyrinth paths
             1           Start position
             2           Goal position
             3           Key | Ice floors position
@@ -650,11 +651,11 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         structure: str,
         variables: Dict[str, bool] = None
     ) -> Union[List[int], Dict[str, Any]]:
-        """Load the maze from a file.
+        """Load the labyrinth from a file.
 
         Args:
-            structure (str): structure for the maze.
-            variables: (Dict[str, bool]): variables to use in the maze. Defaults to None.
+            structure (str): structure for the labyrinth.
+            variables: (Dict[str, bool]): variables to use in the labyrinth. Defaults to None.
 
         Returns:
             state (List[int]): state of the environment after loading and reseting.
@@ -678,7 +679,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.start = ast.literal_eval(start)
         self.end = ast.literal_eval(end)
 
-        self.maze, self._pathways = self._generate(visited=pathways)
+        self.labyrinth, self._pathways = self._generate(visited=pathways)
         self.pathways = self.define_pathways(self._pathways)
         self.agent = self.start
 
@@ -688,7 +689,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         return self.reset(options={"agent": True})
 
     def solve(self, mode: str = 'shortest') -> List[Tuple[int, int]]:
-        """Solve the current maze. For key and door the graph has to be directed, because
+        """Solve the current labyrinth. For key and door the graph has to be directed, because
         the agent has to come back, while the others it doesn't.
 
         Args:
@@ -743,7 +744,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         return numbered_paths
 
     def change_start_and_goal(self, min_distance: int = None) -> Tuple[Tuple[int], Tuple[int]]:
-        """Changes the start and goal of the maze to not be always at the bottom left and
+        """Changes the start and goal of the labyrinth to not be always at the bottom left and
         upper right corners.
 
         Args:
@@ -813,7 +814,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         return start, end
 
     def agent_random_position(self) -> None:
-        """Put the agent in a random position of the maze. This is mostly used if you want
+        """Put the agent in a random position of the labyrinth. This is mostly used if you want
         to create a dataset with diverse positions for your agent.
         """
         self.reset()
@@ -823,10 +824,11 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         )
 
     def set_key_and_door(self) -> Tuple[List[int], List[int]]:
-        """Set the key and door in the maze. Not all mazes have the right structure to have
-        key and door in the setting we want (key outside the path to the door), so sometimes
-        we restart the maze to find a new structure that might handle this setting. This is a
-        iffy solution at best, we should look into something that does not require a maze restart.
+        """Set the key and door in the labyrinth. Not all labyrinths have the right structure 
+        to have key and door in the setting we want (key outside the path to the door), so 
+        sometimes we restart the labyrinth to find a new structure that might handle this setting. 
+        This is a iffy solution at best, we should look into something that does not require a 
+        labyrinth restart.
 
         Returns:
             door (Tuple[int, int]): (y, x) coordinates for the door.
@@ -834,7 +836,7 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         Raises:
             SettingsException: if there are no possible candidates for key and door, it raises
-            and exception to reset the maze to look for another possible structure that suffices
+            and exception to reset the labyrinth to look for another possible structure that suffices
             key and door setting.
         """
         paths = self.solve(mode='all')
@@ -865,18 +867,18 @@ class Maze(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         return self.get_local_position(door.identifier), self.get_local_position(key.identifier)
 
     def __hash__(self) -> int:
-        """Create a hash of the edges of the maze.
+        """Create a hash of the edges of the labyrinth.
 
         Returns:
             hash (int): in order to have a consistent hash, it sorts the inner tuples (the edges), 
-            and the tuples (the list of edges), and remove duplicates before hashing the maze.
+            and the tuples (the list of edges), and remove duplicates before hashing the labyrinth.
         """
         pathways = sorted(map(sorted, self._pathways))
         pathways = tuple(set(map(tuple, pathways)))
         return hash(pathways)
 
     def set_ice_floors(self) -> List[int]:
-        """Set ice floors in the maze. Ice floors are tiles that the agent can slide through
+        """Set ice floors in the labyrinth. Ice floors are tiles that the agent can slide through
 
         Returns:
             List[int]: List of ice floors.

@@ -14,7 +14,7 @@ class RenderUtils:
     """Render class responsible for rendering the environment.
 
     Args:
-        shape (list[int]): (x, y) size for maze.
+        shape (list[int]): (x, y) size for labyrinth.
         viewer (Viewer, optional): viewer to render environment. Defaults to None.
         screen_info (list[int], optional): size of the viewer screen. Defaults to None.
 
@@ -61,17 +61,17 @@ class RenderUtils:
 
     def draw_walls(
         self,
-        maze: List[int],
+        labyrinth: List[int],
     ) -> Self:
-        """Renders walls for the maze.
+        """Renders walls for the labyrinth.
 
         Args:
-            maze (list[int]): Maze walls from _generate().
+            labyrinth (list[int]): Labyrinth walls from _generate().
 
         Returns:
             self (self): return instance.
         """
-        for x, tiles in enumerate(maze):
+        for x, tiles in enumerate(labyrinth):
             if self.shape[0] * 2 > x > 0:
                 for y, tile in enumerate(tiles):
                     if tile == 1 and self.shape[0] * 2 > y > 0:
@@ -95,7 +95,7 @@ class RenderUtils:
         return self
 
     def draw_agent(self, agent: List[int]) -> Self:
-        """Renders agent for the maze. Sets agent_transition.
+        """Renders agent for the labyrinth. Sets agent_transition.
 
         Args:
             agent (list[int]): agent (x, y) position.

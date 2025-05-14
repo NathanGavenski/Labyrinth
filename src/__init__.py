@@ -1,2 +1,2 @@
 """Import all modules in this package."""
-from . import maze
+from . import labyrinth

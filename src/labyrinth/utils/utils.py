@@ -1,4 +1,4 @@
-"""Utils package for the maze module."""
+"""Utils package for the labyrinth module."""
 from copy import deepcopy
 from typing import List, Tuple
 import resource
@@ -16,7 +16,7 @@ class SettingsException(Exception):
 
 
 class ResetException(Exception):
-    """Exception raised when not resetting the maze."""
+    """Exception raised when not resetting the labyrinth."""
 
     def __init__(self, message: str) -> None:
         self.message = message
@@ -33,11 +33,11 @@ class ActionException(Exception):
 
 def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> list:
     '''
-    Find all possile neighbors of a node in a maze like grid.
+    Find all possile neighbors of a node in a labyrinth like grid.
 
     Args:
         current_pos : int = node number
-        shape : tuple = maze shape (height, width)
+        shape : tuple = labyrinth shape (height, width)
         undirected : bool = if the direction of the nodes is relevant
 
     For example:
@@ -82,11 +82,11 @@ def get_neighbors(current_pos: int, shape: tuple, undirected: bool = False) -> l
 
 def remove_redundant_nodes(edges: list) -> list:
     '''
-    Remove redundant nodes for the maze.
+    Remove redundant nodes for the labyrinth.
 
     Args:
         edges : list = list of edges (walls) that need 
-        to be removed from the maze.
+        to be removed from the labyrinth.
 
     Return:
         It returns a list of tuples (list and array are not
@@ -106,12 +106,12 @@ def remove_redundant_nodes(edges: list) -> list:
 
 def transform_edges_into_walls(edges: list, shape: tuple) -> list:
     """
-    Constructs an array like maze ploting walls and squares.
+    Constructs an array like labyrinth ploting walls and squares.
     Where there is an edge, it removes the wall to create a passage.
 
     Args:
-        edges : list = list of edges (walls) that need to be removed from the maze.
-        shape : tuple = maze shape (width, height).
+        edges : list = list of edges (walls) that need to be removed from the labyrinth.
+        shape : tuple = labyrinth shape (width, height).
     """
     width, height = shape
     walls = np.zeros(shape=[height * 2 + 1, width * 2 + 1])
@@ -169,26 +169,26 @@ class RecursionLimit:
 
 def create_mask(
     shape: Tuple[int, int],
-    maze: List[List[int]],
+    labyrinth: List[List[int]],
     agent: Tuple[int]
 ) -> List[List[int]]:
-    """Create mask for occlusion based on the agent current position and maze structure.
+    """Create mask for occlusion based on the agent current position and labyrinth structure.
 
     Args:
-        shape (Tuple[int, int]): width and height of the maze
-        maze (List[List[int]]): maze structure
+        shape (Tuple[int, int]): width and height of the labyrinth
+        labyrinth (List[List[int]]): labyrinth structure
         agent (Tuple[int]): (x, y) coordinates for the agent
 
     Returns:
-        List[List[int]]: mask of the given maze for occlusion
+        List[List[int]]: mask of the given labyrinth for occlusion
     """
     tiles = []
     for height in range(shape[0]):
         for width in range(shape[1]):
             tiles.append(np.array((height, width)))
 
-    maze = maze
-    mask = deepcopy(maze)
+    labyrinth = labyrinth
+    mask = deepcopy(labyrinth)
 
     for tile in tiles:
         if (tile == agent).all():
@@ -200,7 +200,7 @@ def create_mask(
                 column = tile[1] * 2 + 1
                 lower_bound = agent_row if agent_row < target_row else target_row
                 upper_bound = agent_row if agent_row > target_row else target_row
-                if (maze[lower_bound:upper_bound + 1, column] == 1).any():
+                if (labyrinth[lower_bound:upper_bound + 1, column] == 1).any():
                     mask[target_row, column] = 1
             else:  # Horizontal mask
                 agent_column = agent[1] * 2 + 1
@@ -208,7 +208,7 @@ def create_mask(
                 row = tile[0] * 2 + 1
                 lower_bound = agent_column if agent_column < target_column else target_column
                 upper_bound = agent_column if agent_column > target_column else target_column
-                if (maze[row, lower_bound:upper_bound + 1] == 1).any():
+                if (labyrinth[row, lower_bound:upper_bound + 1] == 1).any():
                     mask[row, target_column] = 1
         else:  # Diagonal mask
             target_row, target_column = tile * 2 + 1
@@ -230,7 +230,7 @@ def create_mask(
                 row_upper_bound = agent_row
                 row = True
 
-            matrix = maze[
+            matrix = labyrinth[
                 row_lower_bound:row_upper_bound + 1,
                 column_lower_bound:column_upper_bound + 1
             ]

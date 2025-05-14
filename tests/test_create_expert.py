@@ -31,13 +31,13 @@ class TestCreateTeacherDataset(unittest.TestCase):
         self.assertEqual(args.height, 10)
         self.assertFalse(args.shortest)
 
-    @patch('os.listdir', return_value=['maze1.txt', 'maze2.txt'])
+    @patch('os.listdir', return_value=['labyrinth1.txt', 'labyrinth2.txt'])
     @patch('os.path.isfile', return_value=True)
     @patch('os.path.exists', return_value=True)
     @patch('os.makedirs')
     @patch('shutil.rmtree')
     @patch('numpy.save')
-    @patch('maze.file_utils.convert_from_file', return_value=([], []))
+    @patch('labyrinth.file_utils.convert_from_file', return_value=([], []))
     @patch('gymnasium.make')
     def test_create(
         self, mock_gym_make, mock_convert, mock_save, mock_rmtree, mock_makedirs,

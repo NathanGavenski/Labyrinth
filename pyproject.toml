@@ -3,9 +3,9 @@ requires = ["setuptools==59.5.0", "wheel==0.38.4"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "maze-environment"
+name = "labyrinth"
 version = "0.1"
-description = "A maze environment for simulations"
+description = "A labyrinth environment for simulations"
 authors = [
     {name = "Nathan Gavenski", email = "nathangavenski@gmail.com"},
 ]

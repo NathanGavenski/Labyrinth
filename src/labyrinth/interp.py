@@ -6,14 +6,14 @@ class Interpreter:
     variables = {key: False for key in available_keys}
     stack = []
 
-    maze = []
-    maze_context = False
+    labyrinth = []
+    labyrinth_context = False
 
     def reset(self) -> None:
-        self.maze = []
+        self.labyrinth = []
         self.stack = []
 
-        self.maze_context = False
+        self.labyrinth_context = False
         self.comment_context = False
 
         self.variables = {key: False for key in self.available_keys}
@@ -30,12 +30,12 @@ class Interpreter:
         expression = expression.replace("\n", " <NEWLINE>")
         expression = expression.replace("\"\"\"", "<COMMENT>")
         expression = expression.replace(":", " <VARIABLE> ")
-        expression = expression.replace("maze", " <STRUCTURE> ")
+        expression = expression.replace("labyrinth", " <STRUCTURE> ")
         expression = expression.replace("end", " <END> ")
         return expression
 
     def eval(self, expression: str) -> None:
-        """Evaluate a line of maze-language.
+        """Evaluate a line of labyrinth-language.
 
         Args:
             expression (str): expression line.
@@ -70,8 +70,8 @@ class Interpreter:
         index += 1
         return index
 
-    def handle_maze_structure(self, tokens: list[str], index: int) -> int:
-        """Handle maze sections.
+    def handle_labyrinth_structure(self, tokens: list[str], index: int) -> int:
+        """Handle labyrinth sections.
 
         Args:
             tokens (list[str]): list of tokens.
@@ -89,7 +89,7 @@ class Interpreter:
             return index
         elif tokens[index] == "<NEWLINE>":
             if len(self.stack) > 0:
-                self.maze.append(self.stack[1:-1])
+                self.labyrinth.append(self.stack[1:-1])
                 self.stack = []
             return 999
         else:
@@ -98,7 +98,7 @@ class Interpreter:
             return index + 1
 
     def eval_tokens(self, tokens: list[str]) -> None:
-        """Evaluate sequence of tokens in maze-language.
+        """Evaluate sequence of tokens in labyrinth-language.
 
         Args:
             tokens (list[str]): tokens to evaluate.
@@ -119,13 +119,13 @@ class Interpreter:
                 index += 3
             elif tokens[index] == "<STRUCTURE>":
                 self.stack = []  # Remove empty space
-                self.maze_context = True
+                self.labyrinth_context = True
                 break
             elif tokens[index] == "<END>":
-                self.maze_context = False
+                self.labyrinth_context = False
                 break
-            elif self.maze_context:
-                index = self.handle_maze_structure(tokens, index)
+            elif self.labyrinth_context:
+                index = self.handle_labyrinth_structure(tokens, index)
             elif tokens[index] == "<NEWLINE>" or len(tokens) == 2 and tokens[index] == "":
                 break
             elif not self.comment_context:
@@ -135,10 +135,10 @@ class Interpreter:
 
     def __str__(self):
         """Print interpreter in a more readable way."""
-        maze = ""
-        for structure in self.maze:
-            maze += f"\t{structure}\n"
+        labyrinth = ""
+        for structure in self.labyrinth:
+            labyrinth += f"\t{structure}\n"
         output = "Interpreter(\n    "
         output += f"variables: {self.variables},\n    "
-        output += f"stack: {self.stack},\n    maze:\n{maze})"
+        output += f"stack: {self.stack},\n    labyrinth:\n{labyrinth})"
         return output

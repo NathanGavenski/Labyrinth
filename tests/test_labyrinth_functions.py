@@ -1,4 +1,4 @@
-"""Unit tests for the Maze environment."""
+"""Unit tests for the Labyrinth environment."""
 import ast
 import os
 from typing import Tuple
@@ -10,11 +10,11 @@ import numpy as np
 from PIL import Image
 import pytest
 
-from src import maze
+from src import labyrinth
 from create_expert import state_to_action
-from maze.utils.utils import SettingsException, ActionException
-from src.maze.file_utils import create_file_from_environment, convert_from_file
-from src.maze.interp import Interpreter
+from labyrinth.utils.utils import SettingsException, ActionException
+from src.labyrinth.file_utils import create_file_from_environment, convert_from_file
+from src.labyrinth.interp import Interpreter
 
 github = os.getenv("SERVER")
 github = bool(int(github)) if github is not None else False
@@ -22,11 +22,11 @@ PATH = "/".join(__file__.split("/")[:-1])
 TMP_PATH = f"{PATH}/tmp/"
 
 def get_global_position(position: Tuple[int, int], size: Tuple[int] = (10, 10)) -> int:
-    """Get the global position of a tile in the maze.
+    """Get the global position of a tile in the labyrinth.
 
     Args:
         position (List[int]): Local position of the tile -- (x, y) coordinates.
-        size (List[int], optional): Maze width and height. Defaults to [10, 10].
+        size (List[int], optional): Labyrinth width and height. Defaults to [10, 10].
 
     Returns:
         int: Global position of the tile.
@@ -37,27 +37,27 @@ def get_global_position(position: Tuple[int, int], size: Tuple[int] = (10, 10)) 
 def translate_position(
     position: Tuple[int, int],
     shape: Tuple[int, int],
-    maze_shape: Tuple[int, int]
+    labyrinth_shape: Tuple[int, int]
 ) -> Tuple[int, int]:
-    """Translate the position of a tile in the maze.
+    """Translate the position of a tile in the labyrinth.
 
     Args:
         position (Tuple[int, int]): Original position.
-        shape (Tuple[int, int]): Original shape of the maze.
-        maze_shape (Tuple[int, int]): New shape of the maze.
+        shape (Tuple[int, int]): Original shape of the labyrinth.
+        labyrinth_shape (Tuple[int, int]): New shape of the labyrinth.
 
     Returns:
         position Tuple[int, int]: Translated position.
     """
     y_original, x_original = shape
-    y_maze, x_maze = maze_shape
-    x_position = int(position[1] / (x_original / x_maze))
-    y_position = int(position[0] / (y_original / y_maze))
+    y_labyrinth, x_labyrinth = labyrinth_shape
+    x_position = int(position[1] / (x_original / x_labyrinth))
+    y_position = int(position[0] / (y_original / y_labyrinth))
     return (y_position, x_position)
 
 
 class TestCases(unittest.TestCase):
-    """Test cases for the Maze environment."""
+    """Test cases for the Labyrinth environment."""
 
     test_files_path = "./assets/"
 
@@ -82,34 +82,34 @@ class TestCases(unittest.TestCase):
 
     def test_init(self):
         """Test the initialization of the environment."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(3, 3))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(3, 3))
         state, info = env.reset()
 
-        maze_size = env.shape
-        maze_size = ((maze_size[0] * 2) - 1) ** 2
-        assert maze_size + 3 == state.shape[0]
+        labyrinth_size = env.shape
+        labyrinth_size = ((labyrinth_size[0] * 2) - 1) ** 2
+        assert labyrinth_size + 3 == state.shape[0]
 
-        maze_size = [((env.shape[0] * 2) - 1), ((env.shape[1] * 2) - 1)]
-        agent = translate_position(env.agent, env.shape, maze_size)
-        agent = get_global_position(agent, maze_size)
+        labyrinth_size = [((env.shape[0] * 2) - 1), ((env.shape[1] * 2) - 1)]
+        agent = translate_position(env.agent, env.shape, labyrinth_size)
+        agent = get_global_position(agent, labyrinth_size)
         assert state[0] == agent
 
-        start = translate_position(env.start, env.shape, maze_size)
-        start = get_global_position(start, maze_size)
+        start = translate_position(env.start, env.shape, labyrinth_size)
+        start = get_global_position(start, labyrinth_size)
         assert state[1] == start
 
-        end = translate_position(env.end, env.shape, env.maze.shape)
-        end = get_global_position(end, maze_size)
+        end = translate_position(env.end, env.shape, env.labyrinth.shape)
+        end = get_global_position(end, labyrinth_size)
         assert state[2] == end
 
     def test_save(self):
         """Test the save function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
         env.reset()
-        create_file_from_environment(env, f"{TMP_PATH}test.maze")
-        assert os.path.exists(f"{TMP_PATH}/test.maze")
+        create_file_from_environment(env, f"{TMP_PATH}test.labyrinth")
+        assert os.path.exists(f"{TMP_PATH}/test.labyrinth")
 
-        info, _ = convert_from_file(f"{TMP_PATH}test.maze")
+        info, _ = convert_from_file(f"{TMP_PATH}test.labyrinth")
         visited, start, end = info.split(";")
         visited = ast.literal_eval(visited)
         assert {frozenset(t) for t in env._pathways} == {frozenset(t) for t in visited}
@@ -118,47 +118,47 @@ class TestCases(unittest.TestCase):
 
     def test_save_key_and_door(self):
         """Test the save function with different variables."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), key_and_door=True)
         env.reset()
-        create_file_from_environment(env, f"{TMP_PATH}key_and_door.maze")
-        _, variables = convert_from_file(f"{TMP_PATH}key_and_door.maze")
+        create_file_from_environment(env, f"{TMP_PATH}key_and_door.labyrinth")
+        _, variables = convert_from_file(f"{TMP_PATH}key_and_door.labyrinth")
         assert variables["key_and_lock"]
 
     def test_save_occlusion(self):
         """Test the save function with occlusion."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), occlusion=True)
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), occlusion=True)
         env.reset()
-        create_file_from_environment(env, f"{TMP_PATH}occlusion.maze")
-        _, variables = convert_from_file(f"{TMP_PATH}occlusion.maze")
+        create_file_from_environment(env, f"{TMP_PATH}occlusion.labyrinth")
+        _, variables = convert_from_file(f"{TMP_PATH}occlusion.labyrinth")
         assert variables["occlusion"]
 
     def test_save_icy_floor(self):
         """Test the save function with icy floor."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), icy_floor=True)
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), icy_floor=True)
         env.reset()
-        create_file_from_environment(env, f"{TMP_PATH}icy_floor.maze")
-        _, variables = convert_from_file(f"{TMP_PATH}icy_floor.maze")
+        create_file_from_environment(env, f"{TMP_PATH}icy_floor.labyrinth")
+        _, variables = convert_from_file(f"{TMP_PATH}icy_floor.labyrinth")
         assert variables["icy_floor"]
 
     def test_load(self):
         """Test the load function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
+        env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
 
         interpreter = Interpreter()
-        with open(f"{PATH}/assets/structure_test.maze", encoding="utf-8") as _file:
+        with open(f"{PATH}/assets/structure_test.labyrinth", encoding="utf-8") as _file:
             for line in _file:
                 interpreter.eval(line)
 
-        visited, start, end = convert_from_file(f"{PATH}/assets/structure_test.maze")[0].split(";")
+        visited, start, end = convert_from_file(f"{PATH}/assets/structure_test.labyrinth")[0].split(";")
         assert env._pathways == ast.literal_eval(visited)
         assert env.start == ast.literal_eval(start)
         assert env.end == ast.literal_eval(end)
 
     def test_step(self):
         """Test the step function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state, _ = env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
+        state, _ = env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
         assert state[0] == 0
 
         state, *_ = env.step(0)
@@ -167,8 +167,8 @@ class TestCases(unittest.TestCase):
 
     def test_step_wall(self):
         """Test the step function when the agent tries to move into a wall."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state, _ = env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
+        state, _ = env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
         assert state[0] == 0
 
         state, *_ = env.step(1)
@@ -176,8 +176,8 @@ class TestCases(unittest.TestCase):
 
     def test_reset(self):
         """Test the reset function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        state, _ = env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
+        state, _ = env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
         assert state[0] == 0
 
         state, *_ = env.step(0)
@@ -188,50 +188,50 @@ class TestCases(unittest.TestCase):
 
     def test_global_position(self):
         """Test the get_global_position function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
         assert env.get_global_position((9, 9), (10, 10)) == get_global_position((9, 9), (10, 10))
 
     def test_local_position(self):
         """Test the get_local_position function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
         env.reset()
         end = env.get_global_position((9, 9), (10, 10))
         assert (9, 9) == env.get_local_position(end)
 
     def test_change_start_and_goal(self):
         """Test the change_start_and_goal function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
+        env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
         env.change_start_and_goal()
         assert env.start != (0, 0)
 
     def test_agent_random_position(self):
         """Test the agent_random_position function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
+        env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
         agent_initial_position = env.agent
         env.agent_random_position()
         assert agent_initial_position != env.agent
 
     def test_size(self):
         """Test the size function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(5, 5))
         state, _ = env.reset()
 
-        maze_size = (5, 5)
-        maze_size = ((maze_size[0] * 2) - 1) ** 2
-        assert maze_size + 3 == state.shape[0]
+        labyrinth_size = (5, 5)
+        labyrinth_size = ((labyrinth_size[0] * 2) - 1) ** 2
+        assert labyrinth_size + 3 == state.shape[0]
 
     @pytest.mark.skipif(github, reason="render looks different on github")
     def test_occlusion_render(self):
         """Test the occlusion function."""
         TestCases.env = env = gym.make(
-            "Maze-v0",
+            "Labyrinth-v0",
             shape=(10, 10),
             occlusion=True,
             render_mode="rgb_array"
         )
-        env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
         env.occlusion = True
         state = env.render()
         test_state = np.array(Image.open(f"{PATH}/assets/occlusion_test.png"))
@@ -239,8 +239,8 @@ class TestCases(unittest.TestCase):
         env.close()
 
     def test_occlusion_vector(self):
-        TestCases.env = env = gym.make("Maze-v0", shape=(3, 3), occlusion=True)
-        state, _ = env.load(*convert_from_file(f"{PATH}/assets/occlusion_vector_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(3, 3), occlusion=True)
+        state, _ = env.load(*convert_from_file(f"{PATH}/assets/occlusion_vector_test.labyrinth"))
         with open(f"{PATH}/assets/vector_occlusion_test.txt", encoding="utf-8") as _file:
             for line in _file:
                 test_state = line
@@ -248,27 +248,27 @@ class TestCases(unittest.TestCase):
 
     def test_key_and_door(self):
         """Test the key_and_door function."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
-        structure, variables = convert_from_file(f"{PATH}/assets/key_and_door_test.maze")
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), key_and_door=True)
+        structure, variables = convert_from_file(f"{PATH}/assets/key_and_door_test.labyrinth")
         state, info = env.load(structure, variables)
 
         _, _, _, key, door = structure.split(';')
         key = ast.literal_eval(key)
         door = ast.literal_eval(door)
 
-        maze_size = env.shape
-        maze_size = ((maze_size[0] * 2) - 1) ** 2
+        labyrinth_size = env.shape
+        labyrinth_size = ((labyrinth_size[0] * 2) - 1) ** 2
 
         assert door == env.door
         assert key == env.key
         assert state[3] == 2
         assert state[4] == 316
-        assert state.shape[0] == maze_size + 5
+        assert state.shape[0] == labyrinth_size + 5
 
     def test_solve_shortest(self):
         """Test the solve function with the shortest option."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10))
-        env.load(*convert_from_file(f"{PATH}/assets/structure_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10))
+        env.load(*convert_from_file(f"{PATH}/assets/structure_test.labyrinth"))
         solve = env.solve()
         with open(f"{PATH}/assets/solve_test.txt", encoding="utf-8") as _file:
             for line in _file:
@@ -277,8 +277,8 @@ class TestCases(unittest.TestCase):
         assert solve[0] == ast.literal_eval(test_solve)
         env.close()
 
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
-        env.load(*convert_from_file(f"{PATH}/assets/key_and_door_test.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), key_and_door=True)
+        env.load(*convert_from_file(f"{PATH}/assets/key_and_door_test.labyrinth"))
 
         with open(f"{PATH}/assets/solve_key_and_door.txt", 'r', encoding="utf-8") as _file:
             for line in _file:
@@ -287,15 +287,15 @@ class TestCases(unittest.TestCase):
 
     def test_solve_all(self):
         """Test the solve function with the all option."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(5, 5))
         env.reset()
-        create_file_from_environment(env, f"{TMP_PATH}/tmp.maze")
+        create_file_from_environment(env, f"{TMP_PATH}/tmp.labyrinth")
         first_solutions = env.solve("all")
         first_solutions.sort(key=len)
 
         env.close()
-        TestCases.env = env = gym.make("Maze-v0", shape=(5, 5))
-        env.load(*convert_from_file(f"{TMP_PATH}/tmp.maze"))
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(5, 5))
+        env.load(*convert_from_file(f"{TMP_PATH}/tmp.labyrinth"))
         env.reset()
         second_solutions = env.solve("all")
         second_solutions.sort(key=len)
@@ -309,7 +309,7 @@ class TestCases(unittest.TestCase):
 
     def test_door(self):
         """Test the key and door setting without a key (the agent can't open the door)."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), key_and_door=True)
         state = env.reset()
         door = env.get_global_position(env.door)
 
@@ -334,7 +334,7 @@ class TestCases(unittest.TestCase):
 
     def test_key(self):
         """Test the key and door setting with a key (the agent can open a door)."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), key_and_door=True)
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), key_and_door=True)
         env.reset()
         path = env.solve("shortest")[0]
 
@@ -348,18 +348,18 @@ class TestCases(unittest.TestCase):
     def test_more_than_one_mode(self):
         """Test if environment allows 'Key and Door' and 'Occlusion' at the same time."""
         with pytest.raises(SettingsException) as excinfo:
-            gym.make("Maze-v0", shape=(10, 10), key_and_door=True, occlusion=True)
+            gym.make("Labyrinth-v0", shape=(10, 10), key_and_door=True, occlusion=True)
 
         assert "Different modes cannot be active at the same time." in str(excinfo.value)
 
     def test_icy_floor(self):
         """Test the icy floor setting."""
-        TestCases.env = env = gym.make("Maze-v0", shape=(10, 10), icy_floor=True)
+        TestCases.env = env = gym.make("Labyrinth-v0", shape=(10, 10), icy_floor=True)
         state, info = env.reset()
         floors = []
         for floor in env.ice_floors:
             floor = env.translate_position(floor)
-            floor = env.get_global_position(floor, env.maze[1:-1, 1:-1].shape)
+            floor = env.get_global_position(floor, env.labyrinth[1:-1, 1:-1].shape)
             floors.append(floor)
 
         assert (state[3:len(floors) + 3] == floors).all()
@@ -376,6 +376,7 @@ class TestCases(unittest.TestCase):
         index = min([path.index(floor) for floor in intersec])
         path = path[:index + 1]
 
+        done = False
         for idx, tile in enumerate(path):
             if idx < len(path) - 1:
                 action = state_to_action(tile, path[idx + 1], shape=(10, 10))

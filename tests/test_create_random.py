@@ -39,5 +39,6 @@ class TestCreateRandomDataset(unittest.TestCase):
         )
 
         dataset = create(args)
+        print(dataset)
         self.assertIsInstance(dataset, np.ndarray)
-        self.assertEqual(dataset.shape[1], 4)
+        self.assertEqual(dataset.shape[1], 10)

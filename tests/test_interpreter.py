@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from src.maze.interp import Interpreter
+from src.labyrinth.interp import Interpreter
 
 
 PATH = "/".join(__file__.split("/")[:-1])
@@ -16,18 +16,18 @@ class TestInterpreter(TestCase):
     def test_reset(self) -> None:
         self.interpreter.variables["key_and_lock"] = True
         self.interpreter.stack.append("test")
-        self.interpreter.maze.append(["row"])
+        self.interpreter.labyrinth.append(["row"])
 
         self.interpreter.reset()
 
         assert all(value is False for value in self.interpreter.variables.values())
         assert self.interpreter.stack == []
-        assert self.interpreter.maze == []
-        assert not self.interpreter.maze_context
+        assert self.interpreter.labyrinth == []
+        assert not self.interpreter.labyrinth_context
         assert not self.interpreter.comment_context
 
     def test_prepare_tokens(self) -> None:
-        expression = '"""comment"""\nkey_and_lock: True\nmaze:\nend'
+        expression = '"""comment"""\nkey_and_lock: True\nlabyrinth:\nend'
         expected = '<COMMENT>comment<COMMENT> <NEWLINE>'
         expected += 'key_and_lock <VARIABLE>  True <NEWLINE> '
         expected += '<STRUCTURE>  <VARIABLE>  <NEWLINE> <END> '
@@ -36,7 +36,7 @@ class TestInterpreter(TestCase):
     def test_eval_empty(self) -> None:
         self.interpreter.eval("")
         assert self.interpreter.stack == ['']
-        assert self.interpreter.maze == []
+        assert self.interpreter.labyrinth == []
 
     def test_eval_variable_assignment(self) -> None:
         self.interpreter.eval("key_and_lock : True")
@@ -61,9 +61,9 @@ class TestInterpreter(TestCase):
         assert index == len(tokens)
         assert self.interpreter.comment_context
 
-    def test_handle_maze_structure(self) -> None:
+    def test_handle_labyrinth_structure(self) -> None:
         tokens = ["", "", "|", "-", "+"]
-        index = self.interpreter.handle_maze_structure(tokens, 0)
+        index = self.interpreter.handle_labyrinth_structure(tokens, 0)
         assert self.interpreter.stack == [""]
         assert index == 2
 
@@ -75,27 +75,27 @@ class TestInterpreter(TestCase):
         self.interpreter.eval_tokens(tokens)
         assert self.interpreter.variables["key_and_lock"] is True
 
-    def test_eval_tokens_with_maze_structure(self) -> None:
-        from src.maze.file_utils import convert_from_file
+    def test_eval_tokens_with_labyrinthstructure(self) -> None:
+        from src.labyrinth.file_utils import convert_from_file
         convert_from_file(
-            f"{PATH}/assets/occlusion_vector_test.maze"
+            f"{PATH}/assets/occlusion_vector_test.labyrinth"
         )
         tokens = ["<STRUCTURE>"]
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        assert self.interpreter.maze == []
+        assert self.interpreter.labyrinth_context is True
+        assert self.interpreter.labyrinth == []
         assert self.interpreter.stack == []
 
         tokens = ['|', '', '', '', '', '', '', '', '', 'E', '|', '<NEWLINE>']
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        assert self.interpreter.maze == [['', '', '', '', 'E']]
+        assert self.interpreter.labyrinth_context is True
+        assert self.interpreter.labyrinth == [['', '', '', '', 'E']]
         assert self.interpreter.stack == []
 
         tokens = ['|', '', '', '+', '', '', '+', '', '', '|', '<NEWLINE>']
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        assert self.interpreter.maze == [
+        assert self.interpreter.labyrinth_context is True
+        assert self.interpreter.labyrinth == [
             ['', '', '', '', 'E'],
             ['', '+', '', '+', '']
         ]
@@ -103,8 +103,8 @@ class TestInterpreter(TestCase):
 
         tokens = ['|', '', '', '+', '', '', '+', '', '', '|', '<NEWLINE>']
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        assert self.interpreter.maze == [
+        assert self.interpreter.labyrinth_context is True
+        assert self.interpreter.labyrinth == [
             ['', '', '', '', 'E'],
             ['', '+', '', '+', ''],
             ['', '+', '', '+', ''],
@@ -113,8 +113,8 @@ class TestInterpreter(TestCase):
 
         tokens = ['|', '-', '+', '-', '+', '', '', '|', '<NEWLINE>']
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        assert self.interpreter.maze == [
+        assert self.interpreter.labyrinth_context is True
+        assert self.interpreter.labyrinth == [
             ['', '', '', '', 'E'],
             ['', '+', '', '+', ''],
             ['', '+', '', '+', ''],
@@ -124,8 +124,8 @@ class TestInterpreter(TestCase):
 
         ['|', 'S', '', '', '', '', '', '', '', '', '|', '<NEWLINE>']
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        assert self.interpreter.maze == [
+        assert self.interpreter.labyrinth_context is True
+        assert self.interpreter.labyrinth == [
             ['', '', '', '', 'E'],
             ['', '+', '', '+', ''],
             ['', '+', '', '+', ''],
@@ -136,8 +136,8 @@ class TestInterpreter(TestCase):
 
         ['-------------', '<NEWLINE>']
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        assert self.interpreter.maze == [
+        assert self.interpreter.labyrinth_context is True
+        assert self.interpreter.labyrinth == [
             ['', '', '', '', 'E'],
             ['', '+', '', '+', ''],
             ['', '+', '', '+', ''],
@@ -149,9 +149,9 @@ class TestInterpreter(TestCase):
 
         ['', '<END>', '']
         self.interpreter.eval_tokens(tokens)
-        assert self.interpreter.maze_context is True
-        print(self.interpreter.maze)
-        assert self.interpreter.maze == [
+        assert self.interpreter.labyrinth_context is True
+        print(self.interpreter.labyrinth)
+        assert self.interpreter.labyrinth == [
             ['', '', '', '', 'E'],
             ['', '+', '', '+', ''],
             ['', '+', '', '+', ''],
@@ -165,10 +165,10 @@ class TestInterpreter(TestCase):
     def test_str_representation(self) -> None:
         self.interpreter.variables["key_and_lock"] = True
         self.interpreter.stack.append("test")
-        self.interpreter.maze.append(["row"])
+        self.interpreter.labyrinth.append(["row"])
         expected_output = (
             "Interpreter(\n    "
             "variables: {'key_and_lock': True, 'icy_floor': False, 'occlusion': False},\n    "
-            "stack: ['test'],\n    maze:\n\t['row']\n)"
+            "stack: ['test'],\n    labyrinth:\n\t['row']\n)"
         )
         assert str(self.interpreter) == expected_output

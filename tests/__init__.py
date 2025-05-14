@@ -1,1 +1,1 @@
-"""Tests for the Maze Environment."""
+"""Tests for the labyrinth Environment."""

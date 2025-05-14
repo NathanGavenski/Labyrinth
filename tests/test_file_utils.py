@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from unittest.mock import patch, mock_open
 
-from src.maze.file_utils import (
+from src.labyrinth.file_utils import (
     split, convert, get_local_position, get_nodes, find_edges_start_and_end,
     find_ice_floors, find_key_and_lock, invoke_interpreter, convert_from_file,
     create_file_from_environment, write_into_file
@@ -13,7 +13,7 @@ from src.maze.file_utils import (
 PATH = "/".join(__file__.split("/")[:-1])
 
 
-class TestMazeModule(unittest.TestCase):
+class TestLabyrinthModule(unittest.TestCase):
     def test_split(self):
         self.assertEqual(list(split([1, 2, 3, 4, 5], 2)), [[1, 2], [3, 4], [5]])
 
@@ -28,19 +28,19 @@ class TestMazeModule(unittest.TestCase):
         self.assertEqual(get_nodes((3, 3)), [0, 2, 6, 8])
 
     def test_find_edges_start_and_end(self):
-        module = invoke_interpreter(f"{PATH}/assets/structure_test.maze")
-        maze = module.maze
+        module = invoke_interpreter(f"{PATH}/assets/structure_test.labyrinth")
+        labyrinth = module.labyrinth
 
-        maze = np.array(maze[::-1])
-        maze_shape = maze.shape
-        maze_original_shape = (maze_shape[0] + 1) // 2
-        maze_original_shape = (maze_original_shape, maze_original_shape)
+        labyrinth = np.array(labyrinth[::-1])
+        labyrinth_shape = labyrinth.shape
+        labyrinth_original_shape = (labyrinth_shape[0] + 1) // 2
+        labyrinth_original_shape = (labyrinth_original_shape, labyrinth_original_shape)
 
-        vector_maze = maze.reshape((-1))
-        nodes = get_nodes(maze_shape)
+        vector_labyrinth = labyrinth.reshape((-1))
+        nodes = get_nodes(labyrinth_shape)
 
         edges, start, end = find_edges_start_and_end(
-            nodes, vector_maze, maze, maze_original_shape, maze_shape
+            nodes, vector_labyrinth, labyrinth, labyrinth_original_shape, labyrinth_shape
         )
         self.assertEqual(start, [0, 0])
         self.assertEqual(end, [9, 9])
@@ -66,14 +66,14 @@ class TestMazeModule(unittest.TestCase):
 
     def test_find_ice_floors(self):
         nodes = [0, 2, 4]
-        vector_maze = ['I', ' ', ' ', '-', 'I']
-        result = find_ice_floors(nodes, vector_maze, (3, 3))
+        vector_labyrinth = ['I', ' ', ' ', '-', 'I']
+        result = find_ice_floors(nodes, vector_labyrinth, (3, 3))
         self.assertEqual(result, [(0, 0), (0, 2)])
 
     def test_find_key_and_lock(self):
         nodes = [0, 2, 4]
-        vector_maze = ['K', ' ', 'D', '-', ' ']
-        key, lock = find_key_and_lock(nodes, vector_maze, (3, 3))
+        vector_labyrinth = ['K', ' ', 'D', '-', ' ']
+        key, lock = find_key_and_lock(nodes, vector_labyrinth, (3, 3))
         self.assertEqual(key, [0, 0])
         self.assertEqual(lock, [0, 1])
 
@@ -83,12 +83,12 @@ class TestMazeModule(unittest.TestCase):
         self.assertTrue(interpreter)
 
     def test_convert_from_file(self):
-        save_string, variables = convert_from_file(f"{PATH}/assets/structure_test.maze")
+        save_string, variables = convert_from_file(f"{PATH}/assets/structure_test.labyrinth")
         self.assertTrue(isinstance(save_string, str))
         self.assertTrue(isinstance(variables, dict))
 
     @patch("builtins.open", new_callable=mock_open)
     def test_write_into_file(self, mock_file):
-        maze = [['S', '|'], ['-', 'E']]
-        write_into_file(maze, "dummy_path")
+        labyrinth = [['S', '|'], ['-', 'E']]
+        write_into_file(labyrinth, "dummy_path")
         mock_file.assert_called_once_with("dummy_path", "w", encoding="utf-8")

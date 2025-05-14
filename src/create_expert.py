@@ -12,11 +12,11 @@ import numpy as np
 from tqdm import tqdm
 
 try:
-    from . import maze
-    from .maze import file_utils
+    from . import labyrinth
+    from .labyrinth import file_utils
 except ImportError:
-    import maze
-    from maze import file_utils
+    import labyrinth
+    from labyrinth import file_utils
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -49,13 +49,13 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         '--unbiased',
         action='store_true',
-        help='Swaps start and goal for each maze in order to reduce bias'
+        help='Swaps start and goal for each labyrinth in order to reduce bias'
     )
     parser.add_argument(
         '--times',
         type=int,
         default=10,
-        help='How many times should repeat each maze when unbiased is turned on'
+        help='How many times should repeat each labyrinth when unbiased is turned on'
     )
     parser.add_argument(
         '--folder',
@@ -64,23 +64,23 @@ def get_args() -> argparse.Namespace:
         help='Which folder to use from path'
     )
 
-    # Maze specific
+    # labyrinth specific
     parser.add_argument(
         '--width',
         type=int,
         default=10,
-        help="Width of the generated maze"
+        help="Width of the generated labyrinth"
     )
     parser.add_argument(
         '--height',
         type=int,
         default=10,
-        help="Height of the generated maze"
+        help="Height of the generated labyrinth"
     )
     parser.add_argument(
         '--shortest',
         action='store_true',
-        help='If it should only use the shortest solution for each maze'
+        help='If it should only use the shortest solution for each labyrinth'
     )
 
     return parser.parse_args()
@@ -90,9 +90,9 @@ def state_to_action(source: int, target: int, shape: Tuple[int, int]) -> int:
     """Convert global index states into action (UP, DOWN, LEFT and RIGHT).
 
     Args:
-        source (int): global index for the source in the maze.
-        target (int): global index for the target in the maze.
-        shape (Tuple[int, int]): maze shape.
+        source (int): global index for the source in the labyrinth.
+        target (int): global index for the target in the labyrinth.
+        shape (Tuple[int, int]): labyrinth shape.
 
     Returns:
         int: action to take.
@@ -121,10 +121,10 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
         TODO explain what is in the dataset.
     """
     mypath = f'{args.path}/{folder}/'
-    mazes = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+    labyrinths = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
 
     if args.unbiased:
-        mazes = np.repeat(mazes, args.times, axis=0)
+        labyrinths = np.repeat(labyrinths, args.times, axis=0)
 
     save_path = f'{args.save_path}{folder}/'
     if os.path.exists(save_path):
@@ -136,17 +136,17 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
 
     image_idx = 0
     dataset = np.ndarray(shape=[0, 10])
-    for maze_idx, _maze in enumerate(tqdm(mazes)):
+    for lab_idx, labyrinth in enumerate(tqdm(labyrinths)):
         env = gym.make(
-            'Maze-v0',
+            'Labyrinth-v0',
             shape=(args.width, args.height),
             screen_width=600,
             screen_height=600,
             render_mode="rgb_array"
         )
-        env.load(*file_utils.convert_from_file(_maze))
+        env.load(*file_utils.convert_from_file(labyrinth))
 
-        if args.unbiased and (maze_idx % args.times != 0):
+        if args.unbiased and (lab_idx % args.times != 0):
             env.change_start_and_goal()
 
         solutions = env.solve(mode='all' if not args.shortest else 'shortest')
@@ -171,7 +171,7 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
                     total_reward += reward
 
                     entry = [
-                        maze_idx,  # maze version
+                        lab_idx,  # labyrinth version
                         solution_idx,  # solution number
                         image_idx - 1,  # state
                         action,  # action
@@ -180,7 +180,7 @@ def create(args: argparse.Namespace, folder: str = 'train') -> List[Any]:
                         reward,  # step reward
                         idx == 0,  # episode_starts
                         done,  # episode_ends
-                        _maze.split('/')[-1]  # maze name
+                        labyrinth.split('/')[-1]  # labyrinth name
                     ]
                     dataset = np.append(dataset, np.array(entry)[None], axis=0)
             if done:

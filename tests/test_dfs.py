@@ -4,8 +4,8 @@ from unittest import TestCase
 
 import pytest
 
-from src.maze.utils.dfs import DFS
-from src.maze.utils.node import Node
+from src.labyrinth.utils.dfs import DFS
+from src.labyrinth.utils.node import Node
 
 
 class TestDFS(TestCase):
@@ -78,27 +78,27 @@ class TestDFS(TestCase):
                 edges[key].append((key, edge))
 
         dfs = DFS(edges, (3, 3))
-        maze = dfs.generate_path()
+        labyrinth = dfs.generate_path()
 
-        # Check if the maze is a dictionary with Node objects
-        assert isinstance(maze, dict)
-        assert isinstance(maze[0], Node)
+        # Check if the labyrinth is a dictionary with Node objects
+        assert isinstance(labyrinth, dict)
+        assert isinstance(labyrinth[0], Node)
 
         # Check if some walls have been removed
         count = 0
-        for key, value in maze.items():
+        for key, value in labyrinth.items():
             if value.edges != graph[key]:
                 count += 1
         assert count > 0
 
         dfs = DFS(edges, (3, 3), random_amount=25)
-        maze = dfs.generate_path(min_paths=2)
-        solutions = dfs.find_paths(maze, False)
+        labyrinth = dfs.generate_path(min_paths=2)
+        solutions = dfs.find_paths(labyrinth, False)
         assert len(solutions) >= 2
 
         dfs = DFS(edges, (3, 3), random_amount=25)
-        maze = dfs.generate_path(max_paths=2)
-        solutions = dfs.find_paths(maze, False)
+        labyrinth = dfs.generate_path(max_paths=2)
+        solutions = dfs.find_paths(labyrinth, False)
         assert len(solutions) <= 2
 
     def test__generate_path(self) -> None:

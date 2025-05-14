@@ -1,4 +1,4 @@
-"""Depth first search algorithm for the maze generation."""
+"""Depth first search algorithm for the labyrinth generation."""
 import logging
 from typing import List, Tuple, Dict
 import random
@@ -22,14 +22,14 @@ class DFS:
         end: int = None,
         random_amount: int = 0
     ) -> None:
-        """Depth first search algorithm for the maze generation.
+        """Depth first search algorithm for the labyrinth generation.
 
         Args:
-            graph (List[Tuple[int, int]]): Graph structure for the maze, containing the edges.
+            graph (List[Tuple[int, int]]): Graph structure for the labyrinth, containing the edges.
                 Edges are represented by a tuple of two integers (x, y) coordinates.
             shape (Tuple[int, int]): Size of the map (width, height)
-            start (int, optional): Where the maze starts. Defaults to None.
-            end (int, optional): Where the maze ends. Defaults to None.
+            start (int, optional): Where the labyrinth starts. Defaults to None.
+            end (int, optional): Where the labyrinth ends. Defaults to None.
             random_amount (int, optional): How likely it should allow a edge to stay.
                 Defaults to 0 (it does not happen).
         """
@@ -81,10 +81,10 @@ class DFS:
         min_paths: int = None,
         max_paths: int = None,
     ) -> Dict[int, Node]:
-        """Generates a maze-like with DFS.
+        """Generates a labyrinth-like with DFS.
 
         Args:
-            min_paths (int, optional): whether the maze has to have more than one path.
+            min_paths (int, optional): whether the labyrinth has to have more than one path.
                 Defaults to None (no paths required).
 
         Returns:
@@ -146,7 +146,7 @@ class DFS:
                 self.graph = self.generate_path(min_paths, max_paths)
                 return self.graph
 
-            logging.debug(f"generate_path: {path[self.end].d} solutions found for maze")
+            logging.debug(f"generate_path: {path[self.end].d} solutions found for labyrinth")
 
         self.graph = path
 
@@ -164,9 +164,9 @@ class DFS:
         start: Node,
         end: Node,
     ) -> None:
-        """Recursive function to create maze. It performs a DFS algorithm where it visits each 
+        """Recursive function to create labyrinth. It performs a DFS algorithm where it visits each 
         node once. If the node was already visited, the edge has a random chance to not be removed.
-        It does not delete edges that were already visited to not cause no solutions in the maze.
+        It does not delete edges that were already visited to not cause no solutions in the labyrinth.
 
         Args:
             node (Node): current node.
@@ -211,7 +211,7 @@ class DFS:
         edges: Dict[int, List[Tuple[int, int]]],
         shortest: True,
     ) -> List[List[Node]]:
-        """Discover all possible paths to the goal of the maze.
+        """Discover all possible paths to the goal of the labyrinth.
 
         Args:
             edges (Dict[int, List[Tuple[int, int]]]): Dict with node identifiers and its neighbors.
@@ -241,7 +241,7 @@ class DFS:
             self._find_all_paths(path[self.start], path[self.end], visited, [])
             path[self.end].add_itself_to_d()
 
-            logging.debug(f"generate_path:{path[self.end].d} solutions found for maze")
+            logging.debug(f"generate_path:{path[self.end].d} solutions found for labyrinth")
             if isinstance(path[self.end].d[0], list):
                 return path[self.end].d
             return [path[self.end].d]
