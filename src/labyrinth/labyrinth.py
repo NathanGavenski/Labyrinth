@@ -443,7 +443,7 @@ class Labyrinth(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         if self.key_and_door:
             state = np.hstack((state, [key, door]))
         if self.icy_floor:
-            state = np.hstack((state, ice_floors))
+            labyrinth[ice_floors] = 2
 
         state = np.hstack((state, labyrinth))
         return state
