@@ -4,14 +4,14 @@ For more instructions read the README.md
 """
 key_and_lock: False
 icy_floor: False
-occlusion: True
+occlusion: False
 
-maze:
+labyrinth:
 -------------
 |         E |
 |   +   +   |
-|   |       |
-| - + - +   |
+|           |
+| - +   +   |
 | S         |
 -------------
 end

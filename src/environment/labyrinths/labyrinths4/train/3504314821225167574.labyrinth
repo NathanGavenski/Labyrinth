@@ -1,0 +1,19 @@
+"""
+This file was created automatically.
+For more instructions read the README.md
+"""
+key_and_lock: False
+icy_floor: False
+occlusion: False
+
+labyrinth:
+-----------------
+|           | E |
+|   + - +   +   |
+|       |       |
+| - + - +   +   |
+|               |
+|   + - + - +   |
+| S |           |
+-----------------
+end
