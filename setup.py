@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 if __name__ == "__main__":
     setup(
-        name='maze',
+        name='labyrinth',
         version='0.1',
-        description='A maze environment for simulations',
+        description='A labyrinth environment for simulations',
         author='Nathan Gavenski',
         author_email='nathangavenski@gmail.com',
         packages=find_packages(where='src'),
