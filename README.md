@@ -158,10 +158,3 @@ git clone https://github.com/NathanGavenski/labyrinth-gym
 cd labyrinth-gym
 pip install -e .
 ```
-
-
-## TO DO
-* [x] Migrate to gymnasium
-* [ ] Make it work with python 3.12
-* [ ] Create unit tests for the dataset and labyrinth scripts
-* [ ] Update gifs
