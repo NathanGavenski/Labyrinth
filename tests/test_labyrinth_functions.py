@@ -362,7 +362,8 @@ class TestCases(unittest.TestCase):
             floor = env.get_global_position(floor, env.labyrinth[1:-1, 1:-1].shape)
             floors.append(floor)
 
-        assert (state[3:len(floors) + 3] == floors).all()
+        for ice_floor in floors:
+            assert state[ice_floor + 3] == 2.0
 
         ice_floor = [env.get_global_position(floor) for floor in env.ice_floors]
         path = env.dfs.find_path(
