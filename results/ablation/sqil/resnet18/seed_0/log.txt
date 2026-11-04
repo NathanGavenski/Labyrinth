@@ -1,0 +1,61 @@
+2026-11-03 15:39:43,908 INFO Run sqil / resnet18 / seed 0 on cuda
+2026-11-03 15:39:53,816 INFO epoch 1/1000 (5.6s) loss=1.035, q_expert=1.596, q_agent=1.31, accuracy_expert=37.07, env_steps=1009, gradient_steps=9
+2026-11-03 15:40:13,310 INFO epoch 21/1000 (1.0s) loss=0.06812, q_expert=3.006, q_agent=2.249, accuracy_expert=25.26, env_steps=1189, gradient_steps=189
+2026-11-03 15:40:32,891 INFO epoch 41/1000 (1.1s) loss=0.08813, q_expert=4.101, q_agent=3.352, accuracy_expert=21.61, env_steps=1369, gradient_steps=369
+2026-11-03 15:40:52,469 INFO epoch 61/1000 (1.0s) loss=0.1578, q_expert=5.415, q_agent=4.796, accuracy_expert=23.44, env_steps=1549, gradient_steps=549
+2026-11-03 15:41:11,934 INFO epoch 81/1000 (1.0s) loss=0.1778, q_expert=6.457, q_agent=5.968, accuracy_expert=21.88, env_steps=1729, gradient_steps=729
+2026-11-03 15:41:31,688 INFO epoch 101/1000 (1.0s) loss=0.2248, q_expert=7.869, q_agent=7.359, accuracy_expert=21.01, env_steps=1909, gradient_steps=909
+2026-11-03 15:41:50,771 INFO epoch 121/1000 (1.0s) loss=0.3186, q_expert=9.972, q_agent=9.83, accuracy_expert=21.88, env_steps=2089, gradient_steps=1089
+2026-11-03 15:42:10,436 INFO epoch 141/1000 (1.0s) loss=0.4936, q_expert=11.7, q_agent=11.66, accuracy_expert=21.09, env_steps=2269, gradient_steps=1269
+2026-11-03 15:42:31,102 INFO epoch 161/1000 (1.0s) loss=0.5847, q_expert=13.52, q_agent=14, accuracy_expert=22.57, env_steps=2449, gradient_steps=1449
+2026-11-03 15:42:51,575 INFO epoch 181/1000 (1.0s) loss=0.7224, q_expert=15.72, q_agent=16.26, accuracy_expert=21.27, env_steps=2629, gradient_steps=1629
+2026-11-03 15:43:12,192 INFO epoch 201/1000 (1.0s) loss=0.9849, q_expert=17.69, q_agent=18.48, accuracy_expert=20.4, env_steps=2809, gradient_steps=1809
+2026-11-03 15:43:31,999 INFO epoch 221/1000 (1.0s) loss=1.303, q_expert=19.16, q_agent=20.38, accuracy_expert=29.17, env_steps=2989, gradient_steps=1989
+2026-11-03 15:43:51,947 INFO epoch 241/1000 (1.0s) loss=1.128, q_expert=21.76, q_agent=22.79, accuracy_expert=31.34, env_steps=3169, gradient_steps=2169
+2026-11-03 15:44:11,505 INFO epoch 261/1000 (1.0s) loss=1.448, q_expert=23.36, q_agent=25.17, accuracy_expert=14.76, env_steps=3349, gradient_steps=2349
+2026-11-03 15:44:31,655 INFO epoch 281/1000 (1.0s) loss=1.455, q_expert=24.36, q_agent=25.83, accuracy_expert=11.02, env_steps=3529, gradient_steps=2529
+2026-11-03 15:44:51,621 INFO epoch 301/1000 (1.0s) loss=1.687, q_expert=26.32, q_agent=28.52, accuracy_expert=12.5, env_steps=3709, gradient_steps=2709
+2026-11-03 15:45:10,966 INFO epoch 321/1000 (1.0s) loss=1.904, q_expert=28.01, q_agent=30.01, accuracy_expert=24.83, env_steps=3889, gradient_steps=2889
+2026-11-03 15:45:30,337 INFO epoch 341/1000 (1.0s) loss=2.387, q_expert=29.35, q_agent=31.68, accuracy_expert=14.24, env_steps=4069, gradient_steps=3069
+2026-11-03 15:45:50,120 INFO epoch 361/1000 (1.0s) loss=2.545, q_expert=32.19, q_agent=34, accuracy_expert=17.19, env_steps=4249, gradient_steps=3249
+2026-11-03 15:46:09,874 INFO epoch 381/1000 (1.0s) loss=2.483, q_expert=33.49, q_agent=35.92, accuracy_expert=16.15, env_steps=4429, gradient_steps=3429
+2026-11-03 15:46:29,560 INFO epoch 401/1000 (1.0s) loss=3.105, q_expert=35.13, q_agent=36.92, accuracy_expert=27.34, env_steps=4609, gradient_steps=3609
+2026-11-03 15:46:48,449 INFO epoch 421/1000 (1.0s) loss=3.205, q_expert=36.71, q_agent=38.55, accuracy_expert=21.27, env_steps=4789, gradient_steps=3789
+2026-11-03 15:47:08,067 INFO epoch 441/1000 (1.0s) loss=3.229, q_expert=38.6, q_agent=41.19, accuracy_expert=27.26, env_steps=4969, gradient_steps=3969
+2026-11-03 15:47:27,919 INFO epoch 461/1000 (1.0s) loss=3.681, q_expert=39.95, q_agent=42.38, accuracy_expert=15.36, env_steps=5149, gradient_steps=4149
+2026-11-03 15:47:47,656 INFO epoch 481/1000 (1.0s) loss=5.496, q_expert=42.46, q_agent=45.82, accuracy_expert=23.09, env_steps=5329, gradient_steps=4329
+2026-11-03 15:48:07,801 INFO epoch 501/1000 (0.7s) loss=3.964, q_expert=42.87, q_agent=46.09, accuracy_expert=11.98, env_steps=5509, gradient_steps=4509
+2026-11-03 15:48:27,556 INFO epoch 521/1000 (1.0s) loss=4.433, q_expert=45.67, q_agent=48.34, accuracy_expert=21.44, env_steps=5689, gradient_steps=4689
+2026-11-03 15:48:47,237 INFO epoch 541/1000 (1.0s) loss=4.552, q_expert=44.91, q_agent=48.6, accuracy_expert=14.76, env_steps=5869, gradient_steps=4869
+2026-11-03 15:49:07,218 INFO epoch 561/1000 (1.0s) loss=4.688, q_expert=45.68, q_agent=48.45, accuracy_expert=12.41, env_steps=6049, gradient_steps=5049
+2026-11-03 15:49:26,895 INFO epoch 581/1000 (0.9s) loss=5.049, q_expert=47.67, q_agent=51.98, accuracy_expert=12.07, env_steps=6229, gradient_steps=5229
+2026-11-03 15:49:46,628 INFO epoch 601/1000 (1.0s) loss=5.164, q_expert=48.55, q_agent=51.61, accuracy_expert=17.88, env_steps=6409, gradient_steps=5409
+2026-11-03 15:50:06,472 INFO epoch 621/1000 (1.0s) loss=7.243, q_expert=55.34, q_agent=59.93, accuracy_expert=13.54, env_steps=6589, gradient_steps=5589
+2026-11-03 15:50:26,080 INFO epoch 641/1000 (1.0s) loss=7.468, q_expert=55.57, q_agent=60.81, accuracy_expert=11.63, env_steps=6769, gradient_steps=5769
+2026-11-03 15:50:46,043 INFO epoch 661/1000 (1.0s) loss=7.14, q_expert=55.79, q_agent=60.12, accuracy_expert=13.19, env_steps=6949, gradient_steps=5949
+2026-11-03 15:51:05,870 INFO epoch 681/1000 (1.0s) loss=7.678, q_expert=58.24, q_agent=62.24, accuracy_expert=15.45, env_steps=7129, gradient_steps=6129
+2026-11-03 15:51:25,890 INFO epoch 701/1000 (1.0s) loss=7.882, q_expert=59.39, q_agent=62.82, accuracy_expert=11.81, env_steps=7309, gradient_steps=6309
+2026-11-03 15:51:45,747 INFO epoch 721/1000 (1.0s) loss=7.19, q_expert=59.82, q_agent=64.05, accuracy_expert=13.8, env_steps=7489, gradient_steps=6489
+2026-11-03 15:52:05,087 INFO epoch 741/1000 (1.0s) loss=7.476, q_expert=59.01, q_agent=64.76, accuracy_expert=12.41, env_steps=7669, gradient_steps=6669
+2026-11-03 15:52:24,673 INFO epoch 761/1000 (1.0s) loss=9.997, q_expert=59.03, q_agent=62.56, accuracy_expert=32.2, env_steps=7849, gradient_steps=6849
+2026-11-03 15:52:44,129 INFO epoch 781/1000 (1.0s) loss=9.347, q_expert=64.99, q_agent=70.21, accuracy_expert=21.01, env_steps=8029, gradient_steps=7029
+2026-11-03 15:53:03,949 INFO epoch 801/1000 (1.0s) loss=11.95, q_expert=66.88, q_agent=73.87, accuracy_expert=14.41, env_steps=8209, gradient_steps=7209
+2026-11-03 15:53:23,702 INFO epoch 821/1000 (1.0s) loss=10.25, q_expert=69.03, q_agent=74.44, accuracy_expert=9.809, env_steps=8389, gradient_steps=7389
+2026-11-03 15:53:43,241 INFO epoch 841/1000 (1.0s) loss=14.11, q_expert=74.11, q_agent=80.09, accuracy_expert=13.72, env_steps=8569, gradient_steps=7569
+2026-11-03 15:54:03,189 INFO epoch 861/1000 (1.0s) loss=14.38, q_expert=75.38, q_agent=82.74, accuracy_expert=12.59, env_steps=8749, gradient_steps=7749
+2026-11-03 15:54:22,753 INFO epoch 881/1000 (1.0s) loss=37.39, q_expert=108.1, q_agent=115.8, accuracy_expert=27.78, env_steps=8929, gradient_steps=7929
+2026-11-03 15:54:42,666 INFO epoch 901/1000 (1.0s) loss=19.17, q_expert=87.85, q_agent=97.92, accuracy_expert=22.31, env_steps=9109, gradient_steps=8109
+2026-11-03 15:55:02,429 INFO epoch 921/1000 (1.0s) loss=19.39, q_expert=91.42, q_agent=99.02, accuracy_expert=24.83, env_steps=9289, gradient_steps=8289
+2026-11-03 15:55:22,423 INFO epoch 941/1000 (1.0s) loss=21.53, q_expert=94.23, q_agent=101.1, accuracy_expert=30.21, env_steps=9469, gradient_steps=8469
+2026-11-03 15:55:42,384 INFO epoch 961/1000 (1.0s) loss=19.03, q_expert=92.34, q_agent=99.42, accuracy_expert=32.47, env_steps=9649, gradient_steps=8649
+2026-11-03 15:56:02,017 INFO epoch 981/1000 (1.0s) loss=20.97, q_expert=91.15, q_agent=99.18, accuracy_expert=28.91, env_steps=9829, gradient_steps=8829
+2026-11-03 15:56:20,674 INFO epoch 1000/1000 (1.0s) loss=73.52, q_expert=112.9, q_agent=123.7, accuracy_expert=14.58, env_steps=1e+04, gradient_steps=9000
+2026-11-03 15:56:20,895 INFO Training done: 1000 epochs, 16.4 min, 12 guarded resets
+2026-11-03 16:02:22,459 INFO train: AER -4.00 +/- 0.00 (raw -4.000) SR 0.00%
+2026-11-03 16:08:37,628 INFO eval: AER -4.00 +/- 0.00 (raw -4.000) SR 0.00%
+2026-11-03 16:14:33,560 INFO test: AER -4.00 +/- 0.00 (raw -4.000) SR 0.00%
+2026-11-03 16:20:32,268 INFO new_s0: AER -4.00 +/- 0.00 SR 0.00%
+2026-11-03 16:26:34,007 INFO new_s0_and_g: AER -4.00 +/- 0.00 SR 0.00%
+2026-11-03 16:26:47,825 INFO encoding eval: {"n_states": 100000, "policy_action_optimal": 0.00106, "cosine": {"same_tile": 0.42965, "nn_action_optimal": 0.66972, "policy_matches_nn": 0.29019, "wall_similarity": 0.608232}, "l2": {"same_tile": 0.51964, "nn_action_optimal": 0.57991, "policy_matches_nn": 0.39005, "wall_similarity": 0.610472}}
+2026-11-03 16:26:47,825 INFO encoding test: {"n_states": 100000, "policy_action_optimal": 0.00107, "cosine": {"same_tile": 0.49952, "nn_action_optimal": 0.53979, "policy_matches_nn": 0.41988, "wall_similarity": 0.59823}, "l2": {"same_tile": 0.5895, "nn_action_optimal": 0.61989, "policy_matches_nn": 0.36024, "wall_similarity": 0.61773125}}
+2026-11-03 16:26:47,876 INFO Wrote results/ablation\sqil\resnet18\seed_0\results.json

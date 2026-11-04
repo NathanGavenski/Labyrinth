@@ -1,0 +1,20 @@
+# GAIL (Ho and Ermon, 2016) with IL-Datasets' PPO generator. Values are IL-Datasets'
+# gail.yaml defaults except lr (5e-4, as for every other policy in the ablation) and
+# batch_size (256, as for every other method). The encoder keys (policy, hidden_dim)
+# are taken from configs/cnn.yaml or configs/resnet.yaml by benchmark_ablation.py.
+Default:
+  lr: 5e-4
+  critic_lr: 1e-3
+  discriminator_lr: 3e-4
+  policy: 'CnnPolicy'
+  hidden_dim: [512, 512]
+  n_steps: 2048
+  batch_size: 256
+  ppo_epochs: 10
+  discriminator_epochs: 1
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  entropy_coef: 0.0
+  # Labyrinth terminates on success, so the 'logit' reward (IL-Datasets default).
+  reward: 'logit'

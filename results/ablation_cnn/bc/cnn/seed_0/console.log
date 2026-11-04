@@ -1,0 +1,68 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+2026-11-03 18:21:24,139 INFO Run bc / cnn / seed 0 on cuda
+Creating dataset TRAIN:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset TRAIN: 100%|##########| 100/100 [00:00<?, ?it/s]
+Creating dataset EVAL:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset EVAL: 100%|##########| 100/100 [00:00<00:00, 100078.84it/s]
+Creating dataset TEST:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset TEST: 100%|##########| 100/100 [00:00<00:00, 99816.85it/s]
+2026-11-03 18:21:31,097 INFO epoch 1/10000 (0.8s) loss=1.218, accuracy=40.42
+2026-11-03 18:21:53,191 INFO epoch 201/10000 (0.1s) loss=0.0001586, accuracy=100
+2026-11-03 18:22:14,707 INFO epoch 401/10000 (0.1s) loss=3.797e-05, accuracy=100
+2026-11-03 18:22:32,121 INFO epoch 601/10000 (0.1s) loss=9.355e-06, accuracy=100
+2026-11-03 18:22:51,966 INFO epoch 801/10000 (0.1s) loss=1.086e-05, accuracy=100
+2026-11-03 18:23:12,569 INFO epoch 1001/10000 (0.1s) loss=0.006221, accuracy=99.92
+2026-11-03 18:23:30,913 INFO epoch 1201/10000 (0.1s) loss=0.00309, accuracy=99.84
+2026-11-03 18:23:54,335 INFO epoch 1401/10000 (0.1s) loss=0.0004993, accuracy=100
+2026-11-03 18:24:14,718 INFO epoch 1601/10000 (0.1s) loss=0.01778, accuracy=99.53
+2026-11-03 18:24:33,242 INFO epoch 1801/10000 (0.1s) loss=0.0002284, accuracy=100
+2026-11-03 18:24:52,765 INFO epoch 2001/10000 (0.1s) loss=0.002043, accuracy=99.92
+2026-11-03 18:25:14,794 INFO epoch 2201/10000 (0.1s) loss=0.008664, accuracy=99.81
+2026-11-03 18:25:43,169 INFO epoch 2401/10000 (0.1s) loss=0.0004763, accuracy=100
+2026-11-03 18:26:11,335 INFO epoch 2601/10000 (0.1s) loss=0.0001547, accuracy=100
+2026-11-03 18:26:40,581 INFO epoch 2801/10000 (0.1s) loss=0.0001798, accuracy=100
+2026-11-03 18:27:12,539 INFO epoch 3001/10000 (0.3s) loss=0.0005457, accuracy=100
+2026-11-03 18:27:42,668 INFO epoch 3201/10000 (0.1s) loss=8.602e-05, accuracy=100
+2026-11-03 18:27:57,171 INFO epoch 3401/10000 (0.1s) loss=0.001195, accuracy=99.92
+2026-11-03 18:28:14,564 INFO epoch 3601/10000 (0.1s) loss=1.854e-06, accuracy=100
+2026-11-03 18:28:35,140 INFO epoch 3801/10000 (0.1s) loss=6.748e-06, accuracy=100
+2026-11-03 18:28:54,004 INFO epoch 4001/10000 (0.1s) loss=3.056e-05, accuracy=100
+2026-11-03 18:29:14,216 INFO epoch 4201/10000 (0.1s) loss=3.568e-06, accuracy=100
+2026-11-03 18:29:35,383 INFO epoch 4401/10000 (0.1s) loss=3.182e-06, accuracy=100
+2026-11-03 18:30:00,819 INFO epoch 4601/10000 (0.1s) loss=3.195e-05, accuracy=100
+2026-11-03 18:30:24,305 INFO epoch 4801/10000 (0.1s) loss=1.475e-05, accuracy=100
+2026-11-03 18:30:44,384 INFO epoch 5001/10000 (0.1s) loss=0.0005855, accuracy=100
+2026-11-03 18:31:05,265 INFO epoch 5201/10000 (0.1s) loss=6.401e-05, accuracy=100
+2026-11-03 18:31:24,861 INFO epoch 5401/10000 (0.1s) loss=2.533e-06, accuracy=100
+2026-11-03 18:31:46,319 INFO epoch 5601/10000 (0.1s) loss=5.758e-05, accuracy=100
+2026-11-03 18:32:05,282 INFO epoch 5801/10000 (0.1s) loss=0.0171, accuracy=99.77
+2026-11-03 18:32:24,469 INFO epoch 6001/10000 (0.1s) loss=1.523e-06, accuracy=100
+2026-11-03 18:32:43,768 INFO epoch 6201/10000 (0.1s) loss=7.981e-06, accuracy=100
+2026-11-03 18:33:11,460 INFO epoch 6401/10000 (0.1s) loss=0.0011, accuracy=99.92
+2026-11-03 18:34:01,434 INFO epoch 6601/10000 (0.1s) loss=3.073e-05, accuracy=100
+2026-11-03 18:34:56,195 INFO epoch 6801/10000 (0.1s) loss=7.427e-07, accuracy=100
+2026-11-03 18:35:41,671 INFO epoch 7001/10000 (0.1s) loss=4.058e-06, accuracy=100
+2026-11-03 18:36:17,394 INFO epoch 7201/10000 (0.1s) loss=5.422e-06, accuracy=100
+2026-11-03 18:36:56,334 INFO epoch 7401/10000 (0.2s) loss=3.636e-06, accuracy=100
+2026-11-03 18:37:23,185 INFO epoch 7601/10000 (0.1s) loss=1.821e-06, accuracy=100
+2026-11-03 18:37:54,067 INFO epoch 7801/10000 (0.1s) loss=7.031e-06, accuracy=100
+2026-11-03 18:38:46,907 INFO epoch 8001/10000 (0.1s) loss=3.757e-07, accuracy=100
+2026-11-03 18:39:14,542 INFO epoch 8201/10000 (0.1s) loss=0.0001217, accuracy=100
+2026-11-03 18:39:49,649 INFO epoch 8401/10000 (0.1s) loss=0.0005188, accuracy=100
+2026-11-03 18:40:44,224 INFO epoch 8601/10000 (0.1s) loss=6.916e-07, accuracy=100
+2026-11-03 18:41:17,939 INFO epoch 8801/10000 (0.1s) loss=4.113e-05, accuracy=100
+2026-11-03 18:41:47,470 INFO epoch 9001/10000 (0.1s) loss=3.454e-05, accuracy=100
+2026-11-03 18:42:13,065 INFO epoch 9201/10000 (0.1s) loss=7.696e-05, accuracy=100
+2026-11-03 18:42:37,782 INFO epoch 9401/10000 (0.1s) loss=4.429e-06, accuracy=100
+2026-11-03 18:43:03,012 INFO epoch 9601/10000 (0.1s) loss=3.541e-05, accuracy=100
+2026-11-03 18:43:29,115 INFO epoch 9801/10000 (0.1s) loss=8.788e-05, accuracy=100
+2026-11-03 18:44:04,050 INFO epoch 10000/10000 (0.4s) loss=1.798e-06, accuracy=100
+2026-11-03 18:44:04,089 INFO Training done: 10000 epochs, 22.3 min, 0 guarded resets
+2026-11-03 18:44:29,889 INFO train: AER 1.00 +/- 0.00 (raw 0.959) SR 100.00%
+2026-11-03 18:51:34,049 INFO eval: AER -2.60 +/- 2.24 (raw -2.609) SR 28.00%
+2026-11-03 18:59:45,981 INFO test: AER -2.80 +/- 2.13 (raw -2.809) SR 24.00%
+2026-11-03 19:06:38,826 INFO new_s0: AER -3.15 +/- 1.88 SR 17.00%
+2026-11-03 19:14:43,909 INFO new_s0_and_g: AER -3.90 +/- 0.70 SR 2.00%
+2026-11-03 19:14:45,842 INFO encoding eval: {"n_states": 72252, "policy_action_optimal": 0.09043348281016443, "cosine": {"same_tile": 0.8617892930299508, "nn_action_optimal": 0.1318579416486741, "policy_matches_nn": 0.9310468914355312, "wall_similarity": 0.6639681254498144}, "l2": {"same_tile": 0.5923573049880972, "nn_action_optimal": 0.20065880529258706, "policy_matches_nn": 0.848364059126391, "wall_similarity": 0.5909763743564193}}
+2026-11-03 19:14:45,842 INFO encoding test: {"n_states": 76248, "policy_action_optimal": 0.09257947749449166, "cosine": {"same_tile": 0.8364809568775574, "nn_action_optimal": 0.17104710943237855, "policy_matches_nn": 0.9214274472773056, "wall_similarity": 0.6657571346133668}, "l2": {"same_tile": 0.5025049837372784, "nn_action_optimal": 0.23608488091490926, "policy_matches_nn": 0.8301070192005037, "wall_similarity": 0.6166594533627111}}
+2026-11-03 19:14:45,893 INFO Wrote results/ablation_cnn\bc\cnn\seed_0\results.json

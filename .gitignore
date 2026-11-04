@@ -143,3 +143,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ablation model weights / checkpoints (too large for git)
+results/**/*.pt

@@ -1,0 +1,61 @@
+2026-11-02 20:19:40,775 INFO Run bc / resnet18 / seed 0 on cuda
+2026-11-02 20:19:44,397 INFO epoch 1/1000 (0.5s) loss=1.121, accuracy=45.86
+2026-11-02 20:19:48,679 INFO epoch 21/1000 (0.2s) loss=0.1862, accuracy=93.13
+2026-11-02 20:19:53,078 INFO epoch 41/1000 (0.2s) loss=0.05056, accuracy=98.72
+2026-11-02 20:19:57,595 INFO epoch 61/1000 (0.2s) loss=0.005026, accuracy=99.84
+2026-11-02 20:20:01,957 INFO epoch 81/1000 (0.2s) loss=5.153e-05, accuracy=100
+2026-11-02 20:20:06,479 INFO epoch 101/1000 (0.2s) loss=4.621e-05, accuracy=100
+2026-11-02 20:20:10,825 INFO epoch 121/1000 (0.2s) loss=1.705e-05, accuracy=100
+2026-11-02 20:20:15,170 INFO epoch 141/1000 (0.2s) loss=1.11e-05, accuracy=100
+2026-11-02 20:20:19,682 INFO epoch 161/1000 (0.2s) loss=0.1119, accuracy=97.06
+2026-11-02 20:20:24,014 INFO epoch 181/1000 (0.2s) loss=0.03093, accuracy=99.14
+2026-11-02 20:20:28,511 INFO epoch 201/1000 (0.2s) loss=0.001618, accuracy=99.92
+2026-11-02 20:20:32,853 INFO epoch 221/1000 (0.2s) loss=7.273e-05, accuracy=100
+2026-11-02 20:20:37,198 INFO epoch 241/1000 (0.2s) loss=1.895e-05, accuracy=100
+2026-11-02 20:20:41,708 INFO epoch 261/1000 (0.2s) loss=1.776e-05, accuracy=100
+2026-11-02 20:20:46,075 INFO epoch 281/1000 (0.2s) loss=8.436e-06, accuracy=100
+2026-11-02 20:20:50,632 INFO epoch 301/1000 (0.2s) loss=8.939e-06, accuracy=100
+2026-11-02 20:20:55,023 INFO epoch 321/1000 (0.2s) loss=4.146e-06, accuracy=100
+2026-11-02 20:20:59,396 INFO epoch 341/1000 (0.2s) loss=3.527e-06, accuracy=100
+2026-11-02 20:21:04,034 INFO epoch 361/1000 (0.2s) loss=8.033e-06, accuracy=100
+2026-11-02 20:21:08,427 INFO epoch 381/1000 (0.2s) loss=2.247e-06, accuracy=100
+2026-11-02 20:21:12,991 INFO epoch 401/1000 (0.2s) loss=2.475e-06, accuracy=100
+2026-11-02 20:21:17,408 INFO epoch 421/1000 (0.2s) loss=6.411e-06, accuracy=100
+2026-11-02 20:21:21,809 INFO epoch 441/1000 (0.2s) loss=2.91e-06, accuracy=100
+2026-11-02 20:21:26,367 INFO epoch 461/1000 (0.2s) loss=1.246e-06, accuracy=100
+2026-11-02 20:21:30,785 INFO epoch 481/1000 (0.2s) loss=3.342e-06, accuracy=100
+2026-11-02 20:21:35,397 INFO epoch 501/1000 (0.2s) loss=1.657e-06, accuracy=100
+2026-11-02 20:21:39,793 INFO epoch 521/1000 (0.2s) loss=7.049e-07, accuracy=100
+2026-11-02 20:21:44,196 INFO epoch 541/1000 (0.2s) loss=1.319e-06, accuracy=100
+2026-11-02 20:21:48,811 INFO epoch 561/1000 (0.2s) loss=5.662e-07, accuracy=100
+2026-11-02 20:21:53,219 INFO epoch 581/1000 (0.2s) loss=1.628e-06, accuracy=100
+2026-11-02 20:21:57,795 INFO epoch 601/1000 (0.2s) loss=4.915e-07, accuracy=100
+2026-11-02 20:22:02,218 INFO epoch 621/1000 (0.2s) loss=9.898e-07, accuracy=100
+2026-11-02 20:22:06,636 INFO epoch 641/1000 (0.2s) loss=5.7e-07, accuracy=100
+2026-11-02 20:22:11,303 INFO epoch 661/1000 (0.2s) loss=3.829e-07, accuracy=100
+2026-11-02 20:22:15,742 INFO epoch 681/1000 (0.2s) loss=5.81e-07, accuracy=100
+2026-11-02 20:22:20,424 INFO epoch 701/1000 (0.2s) loss=8.607e-07, accuracy=100
+2026-11-02 20:22:24,868 INFO epoch 721/1000 (0.2s) loss=2.748e-07, accuracy=100
+2026-11-02 20:22:29,350 INFO epoch 741/1000 (0.2s) loss=3.482e-07, accuracy=100
+2026-11-02 20:22:33,999 INFO epoch 761/1000 (0.2s) loss=2.226e-07, accuracy=100
+2026-11-02 20:22:38,453 INFO epoch 781/1000 (0.2s) loss=2.493e-07, accuracy=100
+2026-11-02 20:22:43,054 INFO epoch 801/1000 (0.2s) loss=3.744e-07, accuracy=100
+2026-11-02 20:22:47,529 INFO epoch 821/1000 (0.2s) loss=2.538e-06, accuracy=100
+2026-11-02 20:22:51,962 INFO epoch 841/1000 (0.2s) loss=0.2887, accuracy=88.24
+2026-11-02 20:22:56,611 INFO epoch 861/1000 (0.2s) loss=0.02476, accuracy=99.26
+2026-11-02 20:23:01,046 INFO epoch 881/1000 (0.2s) loss=0.0003463, accuracy=100
+2026-11-02 20:23:05,677 INFO epoch 901/1000 (0.2s) loss=0.01099, accuracy=99.84
+2026-11-02 20:23:10,119 INFO epoch 921/1000 (0.2s) loss=0.05689, accuracy=98.81
+2026-11-02 20:23:14,596 INFO epoch 941/1000 (0.2s) loss=7.311e-05, accuracy=100
+2026-11-02 20:23:19,322 INFO epoch 961/1000 (0.2s) loss=3.976e-05, accuracy=100
+2026-11-02 20:23:23,751 INFO epoch 981/1000 (0.2s) loss=3.157e-05, accuracy=100
+2026-11-02 20:23:27,957 INFO epoch 1000/1000 (0.2s) loss=2.477e-05, accuracy=100
+2026-11-02 20:23:28,107 INFO Training done: 1000 epochs, 3.7 min, 0 guarded resets
+2026-11-02 20:23:45,278 INFO train: AER 1.00 +/- 0.00 (raw 0.959) SR 100.00%
+2026-11-02 20:26:22,844 INFO eval: AER -1.65 +/- 2.50 (raw -1.666) SR 47.00%
+2026-11-02 20:29:11,789 INFO test: AER -1.85 +/- 2.47 (raw -1.867) SR 43.00%
+2026-11-02 20:33:15,408 INFO new_s0: AER -3.40 +/- 1.62 SR 12.00%
+2026-11-02 20:37:43,632 INFO new_s0_and_g: AER -3.85 +/- 0.85 SR 3.00%
+2026-11-02 20:37:44,775 INFO encoding eval: {"n_states": 53444, "policy_action_optimal": 0.1723673377741187, "cosine": {"same_tile": 0.3489634009430432, "nn_action_optimal": 0.1910223785644787, "policy_matches_nn": 0.9720080832273034, "wall_similarity": 0.6082717423845521}, "l2": {"same_tile": 0.3292792455654517, "nn_action_optimal": 0.17232991542549211, "policy_matches_nn": 0.9720267944016167, "wall_similarity": 0.5769922722850086}}
+2026-11-02 20:37:44,775 INFO encoding test: {"n_states": 57468, "policy_action_optimal": 0.22097515138859888, "cosine": {"same_tile": 0.32471984408714416, "nn_action_optimal": 0.2556205192454931, "policy_matches_nn": 0.9480406487088466, "wall_similarity": 0.593324110809494}, "l2": {"same_tile": 0.3237801907148326, "nn_action_optimal": 0.2901614811721306, "policy_matches_nn": 0.9132908749216956, "wall_similarity": 0.5851760980023665}}
+2026-11-02 20:37:44,825 INFO Wrote results/ablation\bc\resnet18\seed_0\results.json

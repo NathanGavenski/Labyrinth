@@ -1,0 +1,72 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+2026-11-02 20:37:48,259 INFO Run dagger / resnet18 / seed 0 on cuda
+Creating dataset TRAIN:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset TRAIN: 100%|##########| 100/100 [00:00<?, ?it/s]
+Creating dataset EVAL:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset EVAL: 100%|##########| 100/100 [00:00<00:00, 99579.87it/s]
+Creating dataset TEST:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset TEST: 100%|##########| 100/100 [00:00<?, ?it/s]
+C:\Users\natha\Documents\git\Labyrinth\.venv\Lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+C:\Users\natha\Documents\git\Labyrinth\.venv\Lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=None`.
+  warnings.warn(msg)
+2026-11-02 20:37:51,875 INFO epoch 1/1000 (0.5s) loss=1.114, accuracy=47.62, dataset_size=1130
+2026-11-02 20:37:56,148 INFO epoch 21/1000 (0.2s) loss=0.195, accuracy=92.35, dataset_size=1130
+2026-11-02 20:38:00,525 INFO epoch 41/1000 (0.2s) loss=0.02811, accuracy=98.8, dataset_size=1130
+2026-11-02 20:38:05,020 INFO epoch 61/1000 (0.2s) loss=0.0589, accuracy=97.64, dataset_size=1130
+2026-11-02 20:38:09,375 INFO epoch 81/1000 (0.2s) loss=0.08946, accuracy=97.68, dataset_size=1130
+2026-11-02 20:38:29,285 INFO epoch 101/1000 (15.6s) dagger_beta=0.5, dagger_states=1177, dagger_expert_fraction=0.4783, dagger_mixture_success_rate=1, dagger_mixture_return=0.9569, dagger_round=2
+2026-11-02 20:38:38,060 INFO epoch 121/1000 (0.4s) loss=0.5419, accuracy=80.46, dataset_size=2307
+2026-11-02 20:38:46,865 INFO epoch 141/1000 (0.4s) loss=0.672, accuracy=82.07, dataset_size=2307
+2026-11-02 20:38:56,003 INFO epoch 161/1000 (0.4s) loss=0.1298, accuracy=95.55, dataset_size=2307
+2026-11-02 20:39:05,012 INFO epoch 181/1000 (0.5s) loss=0.3769, accuracy=90.35, dataset_size=2307
+2026-11-02 20:39:20,388 INFO epoch 201/1000 (6.5s) dagger_beta=0.25, dagger_states=1773, dagger_expert_fraction=0.2594, dagger_mixture_success_rate=0.96, dagger_mixture_return=0.8929, dagger_round=3
+2026-11-02 20:39:35,900 INFO epoch 221/1000 (0.8s) loss=0.01704, accuracy=99.34, dataset_size=4080
+2026-11-02 20:39:51,572 INFO epoch 241/1000 (0.8s) loss=0.011, accuracy=99.54, dataset_size=4080
+2026-11-02 20:40:07,529 INFO epoch 261/1000 (0.8s) loss=0.01016, accuracy=99.53, dataset_size=4080
+2026-11-02 20:40:23,271 INFO epoch 281/1000 (0.8s) loss=0.01097, accuracy=99.41, dataset_size=4080
+2026-11-02 20:40:42,566 INFO epoch 301/1000 (4.2s) dagger_beta=0.125, dagger_states=1136, dagger_expert_fraction=0.1259, dagger_mixture_success_rate=1, dagger_mixture_return=0.9586, dagger_round=4
+2026-11-02 20:41:02,823 INFO epoch 321/1000 (1.0s) loss=0.009297, accuracy=99.65, dataset_size=5216
+2026-11-02 20:41:23,193 INFO epoch 341/1000 (1.0s) loss=0.01003, accuracy=99.55, dataset_size=5216
+2026-11-02 20:41:43,756 INFO epoch 361/1000 (1.0s) loss=0.009478, accuracy=99.61, dataset_size=5216
+2026-11-02 20:42:04,317 INFO epoch 381/1000 (1.0s) loss=0.008182, accuracy=99.59, dataset_size=5216
+2026-11-02 20:42:35,763 INFO epoch 401/1000 (11.5s) dagger_beta=0.0625, dagger_states=3623, dagger_expert_fraction=0.06155, dagger_mixture_success_rate=0.77, dagger_mixture_return=0.6282, dagger_round=5
+2026-11-02 20:43:10,055 INFO epoch 421/1000 (1.7s) loss=0.008148, accuracy=99.72, dataset_size=8839
+2026-11-02 20:43:44,530 INFO epoch 441/1000 (1.7s) loss=0.009675, accuracy=99.69, dataset_size=8839
+2026-11-02 20:44:19,270 INFO epoch 461/1000 (1.7s) loss=0.00559, accuracy=99.79, dataset_size=8839
+2026-11-02 20:44:53,709 INFO epoch 481/1000 (1.7s) loss=0.005676, accuracy=99.78, dataset_size=8839
+2026-11-02 20:45:31,549 INFO epoch 501/1000 (4.9s) dagger_beta=0.03125, dagger_states=1130, dagger_expert_fraction=0.03009, dagger_mixture_success_rate=1, dagger_mixture_return=0.9588, dagger_round=6
+2026-11-02 20:46:10,376 INFO epoch 521/1000 (1.9s) loss=0.01059, accuracy=99.58, dataset_size=9969
+2026-11-02 20:46:49,087 INFO epoch 541/1000 (1.9s) loss=0.004959, accuracy=99.82, dataset_size=9969
+2026-11-02 20:47:28,090 INFO epoch 561/1000 (1.9s) loss=0.008348, accuracy=99.74, dataset_size=9969
+2026-11-02 20:48:06,990 INFO epoch 581/1000 (1.9s) loss=0.006093, accuracy=99.76, dataset_size=9969
+2026-11-02 20:48:49,156 INFO epoch 601/1000 (5.1s) dagger_beta=0.01562, dagger_states=1130, dagger_expert_fraction=0.0177, dagger_mixture_success_rate=1, dagger_mixture_return=0.9588, dagger_round=7
+2026-11-02 20:49:32,451 INFO epoch 621/1000 (2.1s) loss=0.005856, accuracy=99.8, dataset_size=1.11e+04
+2026-11-02 20:50:15,835 INFO epoch 641/1000 (2.1s) loss=0.003639, accuracy=99.86, dataset_size=1.11e+04
+2026-11-02 20:50:59,354 INFO epoch 661/1000 (2.1s) loss=0.003346, accuracy=99.88, dataset_size=1.11e+04
+2026-11-02 20:51:42,710 INFO epoch 681/1000 (2.2s) loss=0.006258, accuracy=99.85, dataset_size=1.11e+04
+2026-11-02 20:52:29,517 INFO epoch 701/1000 (5.4s) dagger_beta=0.007812, dagger_states=1130, dagger_expert_fraction=0.009735, dagger_mixture_success_rate=1, dagger_mixture_return=0.9588, dagger_round=8
+2026-11-02 20:53:17,315 INFO epoch 721/1000 (2.4s) loss=0.01414, accuracy=99.62, dataset_size=1.223e+04
+2026-11-02 20:54:04,946 INFO epoch 741/1000 (2.4s) loss=0.008521, accuracy=99.76, dataset_size=1.223e+04
+2026-11-02 20:54:52,710 INFO epoch 761/1000 (2.4s) loss=0.002375, accuracy=99.93, dataset_size=1.223e+04
+2026-11-02 20:55:40,575 INFO epoch 781/1000 (2.4s) loss=0.001415, accuracy=99.93, dataset_size=1.223e+04
+2026-11-02 20:56:31,566 INFO epoch 801/1000 (5.5s) dagger_beta=0.003906, dagger_states=1130, dagger_expert_fraction=0.004425, dagger_mixture_success_rate=1, dagger_mixture_return=0.9588, dagger_round=9
+2026-11-02 20:57:23,930 INFO epoch 821/1000 (2.6s) loss=0.002243, accuracy=99.92, dataset_size=1.336e+04
+2026-11-02 20:58:16,286 INFO epoch 841/1000 (2.7s) loss=0.003723, accuracy=99.92, dataset_size=1.336e+04
+2026-11-02 20:59:08,687 INFO epoch 861/1000 (2.6s) loss=0.00119, accuracy=99.95, dataset_size=1.336e+04
+2026-11-02 21:00:01,138 INFO epoch 881/1000 (2.6s) loss=0.0009568, accuracy=99.97, dataset_size=1.336e+04
+2026-11-02 21:00:56,741 INFO epoch 901/1000 (5.7s) dagger_beta=0.001953, dagger_states=1130, dagger_expert_fraction=0.00354, dagger_mixture_success_rate=1, dagger_mixture_return=0.9588, dagger_round=10
+2026-11-02 21:01:53,288 INFO epoch 921/1000 (2.8s) loss=0.004761, accuracy=99.89, dataset_size=1.449e+04
+2026-11-02 21:02:59,717 INFO epoch 941/1000 (3.4s) loss=0.0006513, accuracy=99.97, dataset_size=1.449e+04
+2026-11-02 21:04:08,212 INFO epoch 961/1000 (3.5s) loss=0.0008756, accuracy=99.95, dataset_size=1.449e+04
+2026-11-02 21:05:18,086 INFO epoch 981/1000 (3.5s) loss=0.0004702, accuracy=99.99, dataset_size=1.449e+04
+2026-11-02 21:06:25,440 INFO epoch 1000/1000 (3.7s) loss=0.001024, accuracy=99.97, dataset_size=1.449e+04
+2026-11-02 21:06:25,647 INFO Training done: 1000 epochs, 28.5 min, 900 guarded resets
+2026-11-02 21:10:16,787 INFO train: AER -2.05 +/- 2.44 (raw -2.065) SR 39.00%
+2026-11-02 21:15:00,951 INFO eval: AER -2.55 +/- 2.27 (raw -2.560) SR 29.00%
+2026-11-02 21:20:18,289 INFO test: AER -2.90 +/- 2.07 (raw -2.908) SR 22.00%
+2026-11-02 21:26:20,231 INFO new_s0: AER -3.60 +/- 1.36 SR 8.00%
+2026-11-02 21:32:48,982 INFO new_s0_and_g: AER -3.95 +/- 0.50 SR 1.00%
+2026-11-02 21:32:51,477 INFO encoding eval: {"n_states": 71278, "policy_action_optimal": 0.2666881786806588, "cosine": {"same_tile": 0.31769971099076855, "nn_action_optimal": 0.5878111058110497, "policy_matches_nn": 0.6293667050141699, "wall_similarity": 0.6055311596846152}, "l2": {"same_tile": 0.2475237801285109, "nn_action_optimal": 0.6366901428210668, "policy_matches_nn": 0.5036196301804203, "wall_similarity": 0.5913753191728164}}
+2026-11-02 21:32:51,477 INFO encoding test: {"n_states": 78226, "policy_action_optimal": 0.22975736967248742, "cosine": {"same_tile": 0.2577659601666965, "nn_action_optimal": 0.5734538388770997, "policy_matches_nn": 0.5923094623271036, "wall_similarity": 0.6067688492317134}, "l2": {"same_tile": 0.19990795899061692, "nn_action_optimal": 0.6370516196660957, "policy_matches_nn": 0.458619896198195, "wall_similarity": 0.5985030552501726}}
+2026-11-02 21:32:51,568 INFO Wrote results/ablation\dagger\resnet18\seed_0\results.json

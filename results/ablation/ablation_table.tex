@@ -1,0 +1,21 @@
+\begin{table}[ht]
+\centering
+\scriptsize
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llcccccc}
+\toprule
+Method & Encoder & Train AER & Train SR & Valid. AER & Valid. SR & Test AER & Test SR \\
+\midrule
+BC & ResNet-18 & $1.00 \pm 0.00$ & $100.00\%$ & $-1.65 \pm 2.50$ & $47.00\%$ & $-1.85 \pm 2.47$ & $43.00\%$ \\
+\midrule
+DAgger & ResNet-18 & $-2.05 \pm 2.44$ & $39.00\%$ & $-2.55 \pm 2.27$ & $29.00\%$ & $-2.90 \pm 2.07$ & $22.00\%$ \\
+\midrule
+GAIL & ResNet-18 & $-4.00 \pm 0.00$ & $0.00\%$ & $-4.00 \pm 0.00$ & $0.00\%$ & $-4.00 \pm 0.00$ & $0.00\%$ \\
+\midrule
+BCO & ResNet-18 & $1.00 \pm 0.00$ & $100.00\%$ & $-2.05 \pm 2.44$ & $39.00\%$ & $-2.15 \pm 2.41$ & $37.00\%$ \\
+\midrule
+SQIL & ResNet-18 & $-4.00 \pm 0.00$ & $0.00\%$ & $-4.00 \pm 0.00$ & $0.00\%$ & $-4.00 \pm 0.00$ & $0.00\%$ \\
+\midrule
+IUPE & ResNet-18 & $1.00 \pm 0.00$ & $100.00\%$ & $-1.85 \pm 2.47$ & $43.00\%$ & $-2.20 \pm 2.40$ & $36.00\%$ \\
+\bottomrule
+\end{tabular*}
+\end{table}

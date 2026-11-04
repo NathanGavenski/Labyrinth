@@ -1,0 +1,61 @@
+2026-11-03 03:12:48,272 INFO Run bco / resnet18 / seed 0 on cuda
+2026-11-03 03:19:57,021 INFO epoch 1/1000 (409.6s) idm_loss=0.08327, idm_accuracy=97.33, loss=1.129, accuracy=46.24, idm_dataset_size=1.286e+05, idm_dataset_before=2.862e+04
+2026-11-03 03:31:53,404 INFO epoch 21/1000 (35.8s) idm_loss=5.365e-09, idm_accuracy=100, loss=0.2339, accuracy=91.69
+2026-11-03 03:43:53,863 INFO epoch 41/1000 (35.8s) idm_loss=8.403e-07, idm_accuracy=100, loss=0.07257, accuracy=98.48
+2026-11-03 03:55:52,537 INFO epoch 61/1000 (35.7s) idm_loss=7.599e-06, idm_accuracy=100, loss=0.0305, accuracy=99.23
+2026-11-03 04:07:49,052 INFO epoch 81/1000 (35.9s) idm_loss=1.63e-05, idm_accuracy=100, loss=0.7224, accuracy=89.68
+2026-11-03 04:20:30,472 INFO epoch 101/1000 (77.4s) idm_loss=1.582e-08, idm_accuracy=100, loss=0.001603, accuracy=100, idm_dataset_size=1.347e+05, idm_dataset_before=1.286e+05
+2026-11-03 04:32:55,381 INFO epoch 121/1000 (37.7s) idm_loss=0.0001211, idm_accuracy=100, loss=0.0002437, accuracy=100
+2026-11-03 04:45:23,285 INFO epoch 141/1000 (37.6s) idm_loss=0.01467, idm_accuracy=99.95, loss=0.1366, accuracy=98.37
+2026-11-03 04:57:52,484 INFO epoch 161/1000 (37.2s) idm_loss=5.159e-09, idm_accuracy=100, loss=0.05199, accuracy=98.72
+2026-11-03 05:10:21,879 INFO epoch 181/1000 (37.1s) idm_loss=3.214e-07, idm_accuracy=100, loss=0.0002381, accuracy=100
+2026-11-03 05:22:58,382 INFO epoch 201/1000 (43.5s) idm_loss=0.001181, idm_accuracy=99.99, loss=6.201e-05, accuracy=100, idm_dataset_size=1.358e+05, idm_dataset_before=1.347e+05
+2026-11-03 05:35:32,124 INFO epoch 221/1000 (37.5s) idm_loss=1.281e-09, idm_accuracy=100, loss=5.185e-05, accuracy=100
+2026-11-03 05:48:04,806 INFO epoch 241/1000 (37.9s) idm_loss=1.579e-11, idm_accuracy=100, loss=4.226e-05, accuracy=100
+2026-11-03 06:00:39,931 INFO epoch 261/1000 (37.6s) idm_loss=0, idm_accuracy=100, loss=3.328e-05, accuracy=100
+2026-11-03 06:13:13,136 INFO epoch 281/1000 (38.2s) idm_loss=0, idm_accuracy=100, loss=3.946e-05, accuracy=100
+2026-11-03 06:25:51,324 INFO epoch 301/1000 (41.5s) idm_loss=0, idm_accuracy=100, loss=2.518e-05, accuracy=100, idm_dataset_size=1.369e+05, idm_dataset_before=1.358e+05
+2026-11-03 06:38:32,156 INFO epoch 321/1000 (38.0s) idm_loss=0, idm_accuracy=100, loss=1.645e-05, accuracy=100
+2026-11-03 06:51:11,505 INFO epoch 341/1000 (38.0s) idm_loss=0, idm_accuracy=100, loss=1.167e-05, accuracy=100
+2026-11-03 07:03:51,666 INFO epoch 361/1000 (37.8s) idm_loss=0, idm_accuracy=100, loss=1.715e-05, accuracy=100
+2026-11-03 07:16:34,584 INFO epoch 381/1000 (38.0s) idm_loss=0, idm_accuracy=100, loss=1.02e-05, accuracy=100
+2026-11-03 07:29:20,915 INFO epoch 401/1000 (43.8s) idm_loss=0, idm_accuracy=100, loss=8.504e-06, accuracy=100, idm_dataset_size=1.381e+05, idm_dataset_before=1.369e+05
+2026-11-03 07:42:07,029 INFO epoch 421/1000 (38.2s) idm_loss=0, idm_accuracy=100, loss=8.879e-06, accuracy=100
+2026-11-03 07:54:50,539 INFO epoch 441/1000 (38.0s) idm_loss=0, idm_accuracy=100, loss=1.047e-05, accuracy=100
+2026-11-03 08:07:35,016 INFO epoch 461/1000 (38.1s) idm_loss=4.56e-09, idm_accuracy=100, loss=3.789e-06, accuracy=100
+2026-11-03 08:20:18,374 INFO epoch 481/1000 (38.1s) idm_loss=3.277e-11, idm_accuracy=100, loss=3.054e-06, accuracy=100
+2026-11-03 08:33:07,301 INFO epoch 501/1000 (43.1s) idm_loss=0, idm_accuracy=100, loss=4.518e-06, accuracy=100, idm_dataset_size=1.392e+05, idm_dataset_before=1.381e+05
+2026-11-03 08:45:49,556 INFO epoch 521/1000 (37.9s) idm_loss=0, idm_accuracy=100, loss=3.222e-06, accuracy=100
+2026-11-03 08:58:25,621 INFO epoch 541/1000 (38.0s) idm_loss=2.329e-08, idm_accuracy=100, loss=0.1864, accuracy=94.9
+2026-11-03 09:10:36,067 INFO epoch 561/1000 (29.6s) idm_loss=1.712e-11, idm_accuracy=100, loss=0.0003048, accuracy=100
+2026-11-03 09:20:17,693 INFO epoch 581/1000 (28.8s) idm_loss=0, idm_accuracy=100, loss=1.838e-05, accuracy=100
+2026-11-03 09:29:56,190 INFO epoch 601/1000 (31.7s) idm_loss=0, idm_accuracy=100, loss=1.289e-05, accuracy=100, idm_dataset_size=1.403e+05, idm_dataset_before=1.392e+05
+2026-11-03 09:39:39,582 INFO epoch 621/1000 (29.6s) idm_loss=0, idm_accuracy=100, loss=1.059e-05, accuracy=100
+2026-11-03 09:49:31,404 INFO epoch 641/1000 (28.9s) idm_loss=0, idm_accuracy=100, loss=8.287e-06, accuracy=100
+2026-11-03 09:59:10,855 INFO epoch 661/1000 (28.8s) idm_loss=5.433e-08, idm_accuracy=100, loss=8.103e-06, accuracy=100
+2026-11-03 10:09:00,980 INFO epoch 681/1000 (29.8s) idm_loss=1.228e-08, idm_accuracy=100, loss=0.0003501, accuracy=100
+2026-11-03 10:21:37,938 INFO epoch 701/1000 (188.7s) idm_loss=8.567e-11, idm_accuracy=100, loss=0.003687, accuracy=100, idm_dataset_size=1.987e+05, idm_dataset_before=1.403e+05
+2026-11-03 10:35:37,872 INFO epoch 721/1000 (42.1s) idm_loss=0.03502, idm_accuracy=97.52, loss=3.615e-05, accuracy=100
+2026-11-03 10:49:38,057 INFO epoch 741/1000 (41.8s) idm_loss=0.03488, idm_accuracy=97.53, loss=3.993e-05, accuracy=100
+2026-11-03 11:03:37,367 INFO epoch 761/1000 (42.2s) idm_loss=0.03485, idm_accuracy=97.48, loss=6.906e-06, accuracy=100
+2026-11-03 11:17:46,342 INFO epoch 781/1000 (42.6s) idm_loss=0.03487, idm_accuracy=97.51, loss=6.625e-06, accuracy=100
+2026-11-03 11:32:02,090 INFO epoch 801/1000 (45.9s) idm_loss=0.1247, idm_accuracy=97.44, loss=4.882e-06, accuracy=100, idm_dataset_size=1.999e+05, idm_dataset_before=1.987e+05
+2026-11-03 11:46:25,654 INFO epoch 821/1000 (45.1s) idm_loss=0.03466, idm_accuracy=97.52, loss=3.753e-06, accuracy=100
+2026-11-03 12:04:41,723 INFO epoch 841/1000 (69.7s) idm_loss=0.03467, idm_accuracy=97.48, loss=4.817e-06, accuracy=100
+2026-11-03 12:27:30,789 INFO epoch 861/1000 (68.0s) idm_loss=0.03467, idm_accuracy=97.52, loss=2.105e-06, accuracy=100
+2026-11-03 12:50:37,922 INFO epoch 881/1000 (69.6s) idm_loss=0.03466, idm_accuracy=97.47, loss=2.007e-06, accuracy=100
+2026-11-03 13:13:44,051 INFO epoch 901/1000 (72.0s) idm_loss=0.03469, idm_accuracy=97.49, loss=8.32e-06, accuracy=100, idm_dataset_size=2.01e+05, idm_dataset_before=1.999e+05
+2026-11-03 13:36:26,030 INFO epoch 921/1000 (68.1s) idm_loss=0.03609, idm_accuracy=97.49, loss=2.825e-06, accuracy=100
+2026-11-03 13:59:06,598 INFO epoch 941/1000 (68.0s) idm_loss=0.03473, idm_accuracy=97.53, loss=2.301e-06, accuracy=100
+2026-11-03 14:21:43,162 INFO epoch 961/1000 (63.9s) idm_loss=0.03449, idm_accuracy=97.5, loss=1.223e-06, accuracy=100
+2026-11-03 14:57:56,458 INFO epoch 981/1000 (68.5s) idm_loss=0.03452, idm_accuracy=97.49, loss=1.139e-06, accuracy=100
+2026-11-03 15:19:33,238 INFO epoch 1000/1000 (68.7s) idm_loss=0.0345, idm_accuracy=97.48, loss=3.082e-05, accuracy=100
+2026-11-03 15:19:33,705 INFO Training done: 1000 epochs, 726.3 min, 1000 guarded resets
+2026-11-03 15:19:38,317 INFO train: AER 1.00 +/- 0.00 (raw 0.959) SR 100.00%
+2026-11-03 15:23:45,997 INFO eval: AER -2.05 +/- 2.44 (raw -2.063) SR 39.00%
+2026-11-03 15:27:59,721 INFO test: AER -2.15 +/- 2.41 (raw -2.165) SR 37.00%
+2026-11-03 15:33:26,405 INFO new_s0: AER -3.05 +/- 1.96 SR 19.00%
+2026-11-03 15:39:36,848 INFO new_s0_and_g: AER -3.80 +/- 0.98 SR 4.00%
+2026-11-03 15:39:38,461 INFO encoding eval: {"n_states": 61364, "policy_action_optimal": 0.14886578449905483, "cosine": {"same_tile": 0.22293201225474218, "nn_action_optimal": 0.16512939182582623, "policy_matches_nn": 0.9837363926732287, "wall_similarity": 0.586551968580927}, "l2": {"same_tile": 0.13269995437064078, "nn_action_optimal": 0.1651130956261, "policy_matches_nn": 0.9837526888729549, "wall_similarity": 0.6030649077635096}}
+2026-11-03 15:39:38,461 INFO encoding test: {"n_states": 63400, "policy_action_optimal": 0.19965299684542587, "cosine": {"same_tile": 0.19257097791798108, "nn_action_optimal": 0.19962145110410096, "policy_matches_nn": 0.9999526813880126, "wall_similarity": 0.5891967665615143}, "l2": {"same_tile": 0.16832807570977917, "nn_action_optimal": 0.19965299684542587, "policy_matches_nn": 1.0, "wall_similarity": 0.6011679810725552}}
+2026-11-03 15:39:38,540 INFO Wrote results/ablation\bco\resnet18\seed_0\results.json

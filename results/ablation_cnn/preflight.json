@@ -1,0 +1,83 @@
+{
+ "returns_model": {
+  "step_penalty": -0.004,
+  "step_cap": 1000,
+  "fail_return": -4.0
+ },
+ "splits": {
+  "train": {
+   "structures": 100,
+   "expert_raw_return_mean": 0.9588,
+   "expert_raw_return_min": 0.9159999999999999,
+   "expert_raw_return_max": 0.972,
+   "expert_normalised_return": 1.0,
+   "expert_success_rate": 100.0,
+   "forced_failure": {
+    "return": -4.000000000000003,
+    "terminated": false,
+    "truncated": true,
+    "normalised": -4.000000000000003
+   },
+   "dataset_actions_optimal": "1130/1130",
+   "dataset_actions_equal_expert_tie_break": "1116/1130"
+  },
+  "eval": {
+   "structures": 100,
+   "expert_raw_return_mean": 0.9604799999999999,
+   "expert_raw_return_min": 0.9239999999999999,
+   "expert_raw_return_max": 0.972,
+   "expert_normalised_return": 1.0,
+   "expert_success_rate": 100.0,
+   "forced_failure": {
+    "return": -4.000000000000003,
+    "terminated": false,
+    "truncated": true,
+    "normalised": -4.000000000000003
+   },
+   "dataset_actions_optimal": "1088/1088",
+   "dataset_actions_equal_expert_tie_break": "1074/1088"
+  },
+  "test": {
+   "structures": 100,
+   "expert_raw_return_mean": 0.9579199999999998,
+   "expert_raw_return_min": 0.9239999999999999,
+   "expert_raw_return_max": 0.972,
+   "expert_normalised_return": 1.0,
+   "expert_success_rate": 100.0,
+   "forced_failure": {
+    "return": -4.000000000000003,
+    "terminated": false,
+    "truncated": true,
+    "normalised": -4.000000000000003
+   },
+   "dataset_actions_optimal": "1152/1152",
+   "dataset_actions_equal_expert_tie_break": "1144/1152"
+  }
+ },
+ "guard": {
+  "train_cycle_ok": true,
+  "fired": {
+   "eval": true,
+   "test": true,
+   "random_generation": true
+  }
+ },
+ "max_mean_abs_pixel_diff_dataset_vs_env": {
+  "train": 0.16813151041666666,
+  "eval": 0.16634114583333334,
+  "test": 0.17293294270833334,
+  "random": 0.171630859375
+ },
+ "random_split": {
+  "structures": 86,
+  "subset_of_train": true,
+  "transitions": 28623
+ },
+ "split_overlap": {
+  "train_eval": 0,
+  "train_test": 0,
+  "eval_test": 0
+ },
+ "seconds": 241.22104620933533,
+ "passed": true
+}

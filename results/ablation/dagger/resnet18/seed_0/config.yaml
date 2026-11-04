@@ -1,0 +1,10 @@
+Default:
+  lr: 5e-4
+  policy: ResnetPolicy
+  hidden_dim:
+  - 512
+  - 512
+  rounds: 10
+  beta_decay: 0.5
+  rollout_horizon: 100
+  idm: ResnetPolicy

@@ -1,0 +1,9 @@
+# DAgger (Ross et al., 2011). The encoder keys (policy, hidden_dim) are taken from
+# configs/cnn.yaml or configs/resnet.yaml by benchmark_ablation.py.
+Default:
+  lr: 5e-4
+  policy: 'CnnPolicy'
+  hidden_dim: [512, 512]
+  rounds: 10            # 1,000 epochs -> 10 rounds x 100 epochs
+  beta_decay: 0.5       # beta_i = 0.5 ** (i - 1): 1, 0.5, 0.25, ...
+  rollout_horizon: 100  # max steps per DAgger collection episode (longest expert path: 22)

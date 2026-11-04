@@ -1,0 +1,17 @@
+2026-11-02 20:17:18,840 INFO IL-Datasets 0.6.1 @ 2ba7664ab8a3bffe31e2fbfe74a40a24f422aa5a (main)
+2026-11-02 20:17:18,840 INFO Dataset NathanGavenski/Labyrinth-v0_5x5 @ 99f7955a005abe38f3860a3c826192ae4e489a24
+2026-11-02 20:19:38,132 INFO Preflight passed in 139s: {"train": {"structures": 100, "expert_raw_return_mean": 0.9588, "expert_raw_return_min": 0.9159999999999999, "expert_raw_return_max": 0.972, "expert_normalised_return": 1.0, "expert_success_rate": 100.0, "forced_failure": {"return": -4.000000000000003, "terminated": false, "truncated": true, "normalised": -4.000000000000003}, "dataset_actions_optimal": "1130/1130", "dataset_actions_equal_expert_tie_break": "1108/1130"}, "eval": {"structures": 100, "expert_raw_return_mean": 0.9604799999999999, "expert_raw_return_min": 0.9239999999999999, "expert_raw_return_max": 0.972, "expert_normalised_return": 1.0, "expert_success_rate": 100.0, "forced_failure": {"return": -4.000000000000003, "terminated": false, "truncated": true, "normalised": -4.000000000000003}, "dataset_actions_optimal": "1088/1088", "dataset_actions_equal_expert_tie_break": "1077/1088"}, "test": {"structures": 100, "expert_raw_return_mean": 0.9579199999999998, "expert_raw_return_min": 0.9239999999999999, "expert_raw_return_max": 0.972, "expert_normalised_return": 1.0, "expert_success_rate": 100.0, "forced_failure": {"return": -4.000000000000003, "terminated": false, "truncated": true, "normalised": -4.000000000000003}, "dataset_actions_optimal": "1152/1152", "dataset_actions_equal_expert_tie_break": "1142/1152"}}
+2026-11-02 20:19:38,135 INFO Starting bc/resnet18/seed_0
+2026-11-02 20:37:45,515 INFO Finished bc/resnet18/seed_0 in 18.1 min
+2026-11-02 20:37:45,516 INFO Starting dagger/resnet18/seed_0
+2026-11-02 21:32:52,547 INFO Finished dagger/resnet18/seed_0 in 55.1 min
+2026-11-02 21:32:52,548 INFO Starting gail/resnet18/seed_0
+2026-11-03 03:12:43,285 INFO Finished gail/resnet18/seed_0 in 339.8 min
+2026-11-03 03:12:43,289 INFO Starting bco/resnet18/seed_0
+2026-11-03 15:39:39,702 INFO Finished bco/resnet18/seed_0 in 746.9 min
+2026-11-03 15:39:39,704 INFO Starting sqil/resnet18/seed_0
+2026-11-03 16:26:48,922 INFO Finished sqil/resnet18/seed_0 in 47.2 min
+2026-11-03 16:26:48,924 INFO Starting iupe/resnet18/seed_0
+2026-11-03 18:02:41,107 INFO Finished iupe/resnet18/seed_0 in 95.9 min
+2026-11-03 18:02:41,245 INFO Summary: results/ablation\summary.csv
+2026-11-03 18:02:41,260 INFO Table: results/ablation\ablation_table.tex

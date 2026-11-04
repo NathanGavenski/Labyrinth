@@ -1,0 +1,12 @@
+# SQIL (Reddy et al., 2019). The encoder keys (policy, hidden_dim) are taken from
+# configs/cnn.yaml or configs/resnet.yaml by benchmark_ablation.py.
+Default:
+  lr: 5e-4
+  policy: 'CnnPolicy'
+  hidden_dim: [512, 512]
+  batch_size: 256       # 128 expert (reward 1) + 128 agent (reward 0)
+  gamma: 0.99
+  alpha: 1.0            # soft Q temperature
+  tau: 0.005            # Polyak target update per gradient step
+  warmup_steps: 1000    # agent steps before the first update
+  buffer_size: 1000000

@@ -1,0 +1,16 @@
+# Encoder ablation (benchmark_ablation.py), tested with Python 3.12.
+# Install torch/torchvision for your CUDA version first, e.g. for RTX 50xx GPUs:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+il-datasets @ git+https://github.com/NathanGavenski/IL-Datasets.git@main
+tensorboard-wrapper
+tensorboard
+pyyaml
+gym
+gymnasium
+pygame
+pyglet==1.5.27
+pyarrow
+pandas
+pillow
+huggingface_hub
+pytest
