@@ -18,3 +18,64 @@
 2026-11-04 09:58:39,640 INFO Run gail / cnn / seed 0 on cuda
 2026-11-04 09:58:45,528 INFO Resumed from epoch 3050
 2026-11-04 10:31:11,010 INFO epoch 3201/10000 (15.3s) discriminator_loss=1.389, discriminator_expert_accuracy=0.5389, discriminator_policy_accuracy=0.4341, policy_loss=-0.02622, value_loss=0.5943, entropy=1.086
+2026-11-04 11:36:30,185 INFO Run gail / cnn / seed 0 on cpu
+2026-11-04 11:36:41,562 INFO epoch 1/10000 (8.4s) discriminator_loss=1.382, discriminator_expert_accuracy=0.4315, discriminator_policy_accuracy=0.7441, policy_loss=-0.05287, value_loss=0.008355, entropy=1.363
+2026-11-04 12:02:22,760 INFO epoch 201/10000 (7.6s) discriminator_loss=1.387, discriminator_expert_accuracy=0.6562, discriminator_policy_accuracy=0.231, policy_loss=-0.01073, value_loss=1.106, entropy=0.4202
+2026-11-04 12:27:43,069 INFO epoch 401/10000 (7.6s) discriminator_loss=1.388, discriminator_expert_accuracy=0.2523, discriminator_policy_accuracy=0.6626, policy_loss=-0.01001, value_loss=0.002331, entropy=0.1994
+2026-11-04 12:53:14,108 INFO epoch 601/10000 (7.6s) discriminator_loss=1.348, discriminator_expert_accuracy=0.677, discriminator_policy_accuracy=0.585, policy_loss=-0.01445, value_loss=1.304, entropy=1.012
+2026-11-04 13:18:48,517 INFO epoch 801/10000 (7.7s) discriminator_loss=1.385, discriminator_expert_accuracy=0.009968, discriminator_policy_accuracy=0.999, policy_loss=-0.01227, value_loss=0.0152, entropy=0.08988
+2026-11-04 13:44:19,168 INFO epoch 1001/10000 (7.7s) discriminator_loss=1.298, discriminator_expert_accuracy=0.9268, discriminator_policy_accuracy=0.4429, policy_loss=-0.0006741, value_loss=63.56, entropy=0.3178
+2026-11-04 14:09:58,116 INFO epoch 1201/10000 (7.8s) discriminator_loss=1.333, discriminator_expert_accuracy=0.6013, discriminator_policy_accuracy=0.457, policy_loss=-0.01827, value_loss=3.016, entropy=0.5202
+2026-11-04 14:35:35,576 INFO epoch 1401/10000 (7.5s) discriminator_loss=1.396, discriminator_expert_accuracy=0.8505, discriminator_policy_accuracy=0.06689, policy_loss=-0.01337, value_loss=0.06292, entropy=0.3446
+2026-11-04 15:01:05,400 INFO epoch 1601/10000 (7.6s) discriminator_loss=1.452, discriminator_expert_accuracy=0.836, discriminator_policy_accuracy=0.2817, policy_loss=-0.003923, value_loss=2.892, entropy=0.591
+2026-11-04 15:26:36,117 INFO epoch 1801/10000 (7.5s) discriminator_loss=1.394, discriminator_expert_accuracy=0.4933, discriminator_policy_accuracy=0.4102, policy_loss=-0.02516, value_loss=0.2438, entropy=0.6077
+2026-11-04 15:52:02,965 INFO epoch 2001/10000 (7.7s) discriminator_loss=1.33, discriminator_expert_accuracy=0.4835, discriminator_policy_accuracy=0.5947, policy_loss=-0.008451, value_loss=9.955, entropy=0.9503
+2026-11-04 16:17:30,930 INFO epoch 2201/10000 (7.6s) discriminator_loss=1.35, discriminator_expert_accuracy=0.5999, discriminator_policy_accuracy=0.6523, policy_loss=-0.03009, value_loss=0.8591, entropy=1.025
+2026-11-04 16:42:56,555 INFO epoch 2401/10000 (7.9s) discriminator_loss=1.353, discriminator_expert_accuracy=0.4488, discriminator_policy_accuracy=0.8848, policy_loss=-0.05867, value_loss=1.006, entropy=0.7544
+2026-11-04 17:08:31,347 INFO epoch 2601/10000 (7.6s) discriminator_loss=1.345, discriminator_expert_accuracy=0.4428, discriminator_policy_accuracy=0.7705, policy_loss=0.4453, value_loss=1.375, entropy=0.8303
+2026-11-04 17:34:16,624 INFO epoch 2801/10000 (7.8s) discriminator_loss=1.384, discriminator_expert_accuracy=0.5773, discriminator_policy_accuracy=0.4536, policy_loss=-0.0521, value_loss=0.162, entropy=0.9708
+2026-11-04 17:59:56,733 INFO epoch 3001/10000 (7.9s) discriminator_loss=1.359, discriminator_expert_accuracy=0.551, discriminator_policy_accuracy=0.5493, policy_loss=-0.01909, value_loss=1.104, entropy=0.9027
+2026-11-04 18:25:26,137 INFO epoch 3201/10000 (7.6s) discriminator_loss=1.369, discriminator_expert_accuracy=0.3774, discriminator_policy_accuracy=0.7329, policy_loss=-0.02526, value_loss=1.164, entropy=0.7419
+2026-11-04 18:51:02,046 INFO epoch 3401/10000 (7.6s) discriminator_loss=1.385, discriminator_expert_accuracy=0.4834, discriminator_policy_accuracy=0.5303, policy_loss=-0.03073, value_loss=0.1728, entropy=0.6619
+2026-11-04 19:16:39,583 INFO epoch 3601/10000 (7.6s) discriminator_loss=1.27, discriminator_expert_accuracy=0.6136, discriminator_policy_accuracy=0.709, policy_loss=-0.03206, value_loss=4.285, entropy=0.289
+2026-11-04 19:42:13,978 INFO epoch 3801/10000 (7.8s) discriminator_loss=1.322, discriminator_expert_accuracy=0.5093, discriminator_policy_accuracy=0.7358, policy_loss=-0.0652, value_loss=3.853, entropy=0.8804
+2026-11-04 20:07:52,786 INFO epoch 4001/10000 (7.6s) discriminator_loss=1.391, discriminator_expert_accuracy=0.7765, discriminator_policy_accuracy=0.06641, policy_loss=-0.00362, value_loss=0.7134, entropy=0.4599
+2026-11-04 20:33:26,278 INFO epoch 4201/10000 (7.7s) discriminator_loss=1.368, discriminator_expert_accuracy=0.488, discriminator_policy_accuracy=0.5933, policy_loss=-0.01278, value_loss=5.29, entropy=0.7596
+2026-11-04 20:59:01,820 INFO epoch 4401/10000 (7.6s) discriminator_loss=1.291, discriminator_expert_accuracy=0.6933, discriminator_policy_accuracy=0.3882, policy_loss=-0.0275, value_loss=1.842, entropy=0.3444
+2026-11-04 21:24:37,837 INFO epoch 4601/10000 (7.7s) discriminator_loss=1.394, discriminator_expert_accuracy=0.1977, discriminator_policy_accuracy=0.7632, policy_loss=-0.03332, value_loss=1.567, entropy=0.832
+2026-11-04 21:50:05,822 INFO epoch 4801/10000 (7.6s) discriminator_loss=1.381, discriminator_expert_accuracy=0.5515, discriminator_policy_accuracy=0.6479, policy_loss=-0.01789, value_loss=0.9766, entropy=0.4032
+2026-11-04 22:15:35,477 INFO epoch 5001/10000 (7.6s) discriminator_loss=1.456, discriminator_expert_accuracy=0.4114, discriminator_policy_accuracy=0.416, policy_loss=-0.01586, value_loss=0.6628, entropy=0.808
+2026-11-04 22:41:17,804 INFO epoch 5201/10000 (7.8s) discriminator_loss=1.598, discriminator_expert_accuracy=0.5162, discriminator_policy_accuracy=0.4873, policy_loss=-0.005356, value_loss=8.671, entropy=0.9122
+2026-11-04 23:06:45,239 INFO epoch 5401/10000 (7.9s) discriminator_loss=1.327, discriminator_expert_accuracy=0.5804, discriminator_policy_accuracy=0.6685, policy_loss=-0.04402, value_loss=7.664, entropy=0.7946
+2026-11-04 23:32:21,746 INFO epoch 5601/10000 (7.9s) discriminator_loss=1.415, discriminator_expert_accuracy=0.4002, discriminator_policy_accuracy=0.4429, policy_loss=-0.01571, value_loss=0.592, entropy=0.6155
+2026-11-04 23:57:58,776 INFO epoch 5801/10000 (7.7s) discriminator_loss=1.333, discriminator_expert_accuracy=0.6457, discriminator_policy_accuracy=0.5566, policy_loss=-0.02992, value_loss=7.685, entropy=0.6136
+2026-11-05 00:23:27,187 INFO epoch 6001/10000 (7.7s) discriminator_loss=1.358, discriminator_expert_accuracy=0.5552, discriminator_policy_accuracy=0.5073, policy_loss=-0.02493, value_loss=9.682, entropy=0.511
+2026-11-05 00:48:58,385 INFO epoch 6201/10000 (7.6s) discriminator_loss=1.366, discriminator_expert_accuracy=0.6375, discriminator_policy_accuracy=0.4336, policy_loss=-0.02266, value_loss=70.58, entropy=1.088
+2026-11-05 01:14:38,415 INFO epoch 6401/10000 (7.7s) discriminator_loss=1.292, discriminator_expert_accuracy=0.7233, discriminator_policy_accuracy=0.4614, policy_loss=-0.0491, value_loss=6.221, entropy=0.9067
+2026-11-05 01:40:18,153 INFO epoch 6601/10000 (7.9s) discriminator_loss=1.383, discriminator_expert_accuracy=0.5334, discriminator_policy_accuracy=0.4458, policy_loss=-0.02643, value_loss=0.1701, entropy=0.8103
+2026-11-05 02:06:04,328 INFO epoch 6801/10000 (7.5s) discriminator_loss=1.4, discriminator_expert_accuracy=0.5433, discriminator_policy_accuracy=0.2231, policy_loss=-0.01463, value_loss=0.01031, entropy=0.3331
+2026-11-05 02:31:33,834 INFO epoch 7001/10000 (7.6s) discriminator_loss=1.285, discriminator_expert_accuracy=0.6651, discriminator_policy_accuracy=0.5527, policy_loss=-0.04124, value_loss=8.076, entropy=0.8886
+2026-11-05 02:56:55,726 INFO epoch 7201/10000 (7.8s) discriminator_loss=1.366, discriminator_expert_accuracy=0.6617, discriminator_policy_accuracy=0.6025, policy_loss=-0.006871, value_loss=5.462, entropy=0.4896
+2026-11-05 03:22:39,381 INFO epoch 7401/10000 (7.6s) discriminator_loss=1.278, discriminator_expert_accuracy=0.6937, discriminator_policy_accuracy=0.6274, policy_loss=-0.01829, value_loss=2.628, entropy=0.627
+2026-11-05 03:47:56,219 INFO epoch 7601/10000 (7.8s) discriminator_loss=1.274, discriminator_expert_accuracy=0.5763, discriminator_policy_accuracy=0.7363, policy_loss=-0.01114, value_loss=4.95, entropy=0.7042
+2026-11-05 04:13:35,509 INFO epoch 7801/10000 (7.8s) discriminator_loss=1.229, discriminator_expert_accuracy=0.7337, discriminator_policy_accuracy=0.668, policy_loss=-0.01254, value_loss=1.506, entropy=0.9357
+2026-11-05 04:39:16,405 INFO epoch 8001/10000 (7.8s) discriminator_loss=0.9415, discriminator_expert_accuracy=0.7237, discriminator_policy_accuracy=0.9297, policy_loss=-0.01215, value_loss=4.043, entropy=0.6894
+2026-11-05 05:05:13,833 INFO epoch 8201/10000 (7.8s) discriminator_loss=0.8335, discriminator_expert_accuracy=0.7209, discriminator_policy_accuracy=0.9458, policy_loss=-0.01563, value_loss=5.05, entropy=0.845
+2026-11-05 05:31:11,785 INFO epoch 8401/10000 (8.0s) discriminator_loss=1.858, discriminator_expert_accuracy=0.3434, discriminator_policy_accuracy=0.7275, policy_loss=-0.08765, value_loss=1.316e+10, entropy=0.4158
+2026-11-05 05:57:04,942 INFO epoch 8601/10000 (7.6s) discriminator_loss=0.916, discriminator_expert_accuracy=0.7258, discriminator_policy_accuracy=0.9941, policy_loss=-0.0263, value_loss=12.84, entropy=0.2687
+2026-11-05 06:23:16,601 INFO epoch 8801/10000 (7.8s) discriminator_loss=0.6555, discriminator_expert_accuracy=0.7236, discriminator_policy_accuracy=0.9985, policy_loss=-0.004168, value_loss=26.79, entropy=0.06243
+2026-11-05 06:49:24,602 INFO epoch 9001/10000 (7.9s) discriminator_loss=0.8045, discriminator_expert_accuracy=0.7244, discriminator_policy_accuracy=0.895, policy_loss=0.03459, value_loss=19.4, entropy=0.2477
+2026-11-05 07:15:46,310 INFO epoch 9201/10000 (8.2s) discriminator_loss=0.6941, discriminator_expert_accuracy=0.8017, discriminator_policy_accuracy=0.8799, policy_loss=-0.009934, value_loss=1.353, entropy=0.05927
+2026-11-05 07:42:18,636 INFO epoch 9401/10000 (8.0s) discriminator_loss=0.2121, discriminator_expert_accuracy=0.9541, discriminator_policy_accuracy=0.9863, policy_loss=-0.01571, value_loss=8.844, entropy=0.1468
+2026-11-05 08:08:30,718 INFO epoch 9601/10000 (7.8s) discriminator_loss=0.03719, discriminator_expert_accuracy=0.999, discriminator_policy_accuracy=1, policy_loss=-0.01138, value_loss=174.8, entropy=0.4353
+2026-11-05 08:35:12,645 INFO epoch 9801/10000 (8.1s) discriminator_loss=0.004731, discriminator_expert_accuracy=1, discriminator_policy_accuracy=1, policy_loss=0.0009905, value_loss=1.122, entropy=0.0007546
+2026-11-05 09:02:08,120 INFO epoch 10000/10000 (7.8s) discriminator_loss=0.0009113, discriminator_expert_accuracy=1, discriminator_policy_accuracy=1, policy_loss=-0.01431, value_loss=287.7, entropy=0.1679
+2026-11-05 09:02:08,165 INFO Training done: 10000 epochs, 1284.4 min, 262933 guarded resets
+2026-11-05 09:02:13,552 INFO train: AER 0.70 +/- 1.19 (raw 0.661) SR 94.00%
+2026-11-05 09:03:11,079 INFO eval: AER -2.65 +/- 2.22 (raw -2.659) SR 27.00%
+2026-11-05 09:04:10,967 INFO test: AER -2.80 +/- 2.13 (raw -2.809) SR 24.00%
+2026-11-05 09:05:24,219 INFO new_s0: AER -4.00 +/- 0.00 SR 0.00%
+2026-11-05 09:06:38,716 INFO new_s0_and_g: AER -4.00 +/- 0.00 SR 0.00%
+2026-11-05 09:06:40,321 INFO encoding eval: {"n_states": 73248, "policy_action_optimal": 0.07552424639580603, "cosine": {"same_tile": 0.6179281345565749, "nn_action_optimal": 0.23154215814766274, "policy_matches_nn": 0.7409895150720839, "wall_similarity": 0.5982610446701617}, "l2": {"same_tile": 0.44732961992136305, "nn_action_optimal": 0.19791666666666666, "policy_matches_nn": 0.7814684359982526, "wall_similarity": 0.5838753276539973}}
+2026-11-05 09:06:40,322 INFO encoding test: {"n_states": 76240, "policy_action_optimal": 0.09214323189926547, "cosine": {"same_tile": 0.5614244491080798, "nn_action_optimal": 0.28134837355718784, "policy_matches_nn": 0.7447140608604407, "wall_similarity": 0.6294376311647428}, "l2": {"same_tile": 0.34577649527806925, "nn_action_optimal": 0.26854669464847847, "policy_matches_nn": 0.7380246589716685, "wall_similarity": 0.6004200550891919}}
+2026-11-05 09:06:40,329 INFO Wrote results/ablation_cnn/gail/cnn/seed_0/results.json

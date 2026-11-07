@@ -1,0 +1,18 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+2026-11-05 09:06:43,930 INFO Run bco / cnn / seed 0 on cpu
+Creating dataset TRAIN:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset TRAIN: 100%|██████████| 100/100 [00:00<00:00, 399077.45it/s]
+Creating dataset EVAL:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset EVAL: 100%|██████████| 100/100 [00:00<00:00, 491136.30it/s]
+Creating dataset TEST:   0%|          | 0/100 [00:00<?, ?it/s]Creating dataset TEST: 100%|██████████| 100/100 [00:00<00:00, 519740.27it/s]
+Creating dataset RANDOM:   0%|          | 0/589 [00:00<?, ?it/s]Creating dataset RANDOM: 100%|██████████| 589/589 [00:00<00:00, 315873.30it/s]
+2026-11-05 09:08:15,274 INFO epoch 1/10000 (78.8s) idm_loss=0.08574, idm_accuracy=96.63, loss=1.215, accuracy=42.56, idm_dataset_size=1.286e+05, idm_dataset_before=2.862e+04
+2026-11-05 11:21:33,087 INFO epoch 201/10000 (40.2s) idm_loss=0, idm_accuracy=100, loss=0.0001406, accuracy=100, idm_dataset_size=1.309e+05, idm_dataset_before=1.298e+05
+2026-11-05 13:33:45,553 INFO epoch 401/10000 (40.3s) idm_loss=0, idm_accuracy=100, loss=0.0004581, accuracy=100, idm_dataset_size=1.331e+05, idm_dataset_before=1.32e+05
+2026-11-05 17:03:43,838 INFO epoch 601/10000 (197.4s) idm_loss=3.671e-08, idm_accuracy=100, loss=0.1589, accuracy=94.64, idm_dataset_size=2.53e+05, idm_dataset_before=1.53e+05
+2026-11-05 23:37:58,704 INFO epoch 801/10000 (97.0s) idm_loss=0.1916, idm_accuracy=86.13, loss=0.006244, accuracy=99.84, idm_dataset_size=2.691e+05, idm_dataset_before=2.679e+05
+2026-11-06 05:53:38,211 INFO epoch 1001/10000 (202.0s) idm_loss=0.19, idm_accuracy=86.23, loss=0.1329, accuracy=94.79, idm_dataset_size=3.692e+05, idm_dataset_before=2.702e+05
+2026-11-06 15:41:33,747 INFO epoch 1201/10000 (167.9s) idm_loss=0.2131, idm_accuracy=87.56, loss=0.007796, accuracy=99.84, idm_dataset_size=3.725e+05, idm_dataset_before=3.713e+05
+2026-11-07 00:38:38,012 INFO epoch 1401/10000 (225.5s) idm_loss=0.2023, idm_accuracy=88.15, loss=0.2183, accuracy=91.25, idm_dataset_size=4.775e+05, idm_dataset_before=3.973e+05
+2026-11-07 11:37:18,992 INFO epoch 1601/10000 (244.9s) idm_loss=0.2108, idm_accuracy=87.62, loss=0.002452, accuracy=99.81, idm_dataset_size=5.014e+05, idm_dataset_before=5.003e+05
