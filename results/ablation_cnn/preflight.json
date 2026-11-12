@@ -19,7 +19,7 @@
     "normalised": -4.000000000000003
    },
    "dataset_actions_optimal": "1130/1130",
-   "dataset_actions_equal_expert_tie_break": "1109/1130"
+   "dataset_actions_equal_expert_tie_break": "1114/1130"
   },
   "eval": {
    "structures": 100,
@@ -35,7 +35,7 @@
     "normalised": -4.000000000000003
    },
    "dataset_actions_optimal": "1088/1088",
-   "dataset_actions_equal_expert_tie_break": "1074/1088"
+   "dataset_actions_equal_expert_tie_break": "1076/1088"
   },
   "test": {
    "structures": 100,
@@ -51,7 +51,7 @@
     "normalised": -4.000000000000003
    },
    "dataset_actions_optimal": "1152/1152",
-   "dataset_actions_equal_expert_tie_break": "1142/1152"
+   "dataset_actions_equal_expert_tie_break": "1143/1152"
   }
  },
  "guard": {
@@ -78,6 +78,6 @@
   "train_test": 0,
   "eval_test": 0
  },
- "seconds": 36.43017268180847,
+ "seconds": 32.014503717422485,
  "passed": true
 }

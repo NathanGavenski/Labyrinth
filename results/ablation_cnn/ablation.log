@@ -25,3 +25,12 @@
 2026-11-04 11:36:27,465 INFO Starting gail/cnn/seed_0
 2026-11-05 09:06:41,174 INFO Finished gail/cnn/seed_0 in 1290.2 min
 2026-11-05 09:06:41,174 INFO Starting bco/cnn/seed_0
+2026-11-07 13:27:07,126 INFO IL-Datasets 0.6.1 @ 2ba7664ab8a3bffe31e2fbfe74a40a24f422aa5a (main)
+2026-11-07 13:27:07,126 INFO Dataset NathanGavenski/Labyrinth-v0_5x5 @ 99f7955a005abe38f3860a3c826192ae4e489a24
+2026-11-07 13:27:39,159 INFO Preflight passed in 32s: {"train": {"structures": 100, "expert_raw_return_mean": 0.9588, "expert_raw_return_min": 0.9159999999999999, "expert_raw_return_max": 0.972, "expert_normalised_return": 1.0, "expert_success_rate": 100.0, "forced_failure": {"return": -4.000000000000003, "terminated": false, "truncated": true, "normalised": -4.000000000000003}, "dataset_actions_optimal": "1130/1130", "dataset_actions_equal_expert_tie_break": "1114/1130"}, "eval": {"structures": 100, "expert_raw_return_mean": 0.9604799999999999, "expert_raw_return_min": 0.9239999999999999, "expert_raw_return_max": 0.972, "expert_normalised_return": 1.0, "expert_success_rate": 100.0, "forced_failure": {"return": -4.000000000000003, "terminated": false, "truncated": true, "normalised": -4.000000000000003}, "dataset_actions_optimal": "1088/1088", "dataset_actions_equal_expert_tie_break": "1076/1088"}, "test": {"structures": 100, "expert_raw_return_mean": 0.9579199999999998, "expert_raw_return_min": 0.9239999999999999, "expert_raw_return_max": 0.972, "expert_normalised_return": 1.0, "expert_success_rate": 100.0, "forced_failure": {"return": -4.000000000000003, "terminated": false, "truncated": true, "normalised": -4.000000000000003}, "dataset_actions_optimal": "1152/1152", "dataset_actions_equal_expert_tie_break": "1143/1152"}}
+2026-11-07 13:27:39,159 INFO Starting sqil/cnn/seed_0
+2026-11-07 14:22:55,144 INFO Finished sqil/cnn/seed_0 in 55.3 min
+2026-11-07 14:22:55,145 INFO Starting iupe/cnn/seed_0
+2026-11-07 20:59:37,001 INFO Finished iupe/cnn/seed_0 in 396.7 min
+2026-11-07 20:59:37,015 INFO Summary: results/ablation_cnn/summary.csv
+2026-11-07 20:59:37,020 INFO Table: results/ablation_cnn/ablation_table.tex

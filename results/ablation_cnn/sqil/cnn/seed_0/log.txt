@@ -1,0 +1,61 @@
+2026-11-07 13:27:42,049 INFO Run sqil / cnn / seed 0 on cpu
+2026-11-07 13:27:46,351 INFO epoch 1/10000 (1.3s) loss=1.26, q_expert=1.594, q_agent=1.302, accuracy_expert=41.41, env_steps=1009, gradient_steps=9
+2026-11-07 13:28:49,262 INFO epoch 201/10000 (0.4s) loss=0.3602, q_expert=11.64, q_agent=10.72, accuracy_expert=25.78, env_steps=2809, gradient_steps=1809
+2026-11-07 13:29:53,304 INFO epoch 401/10000 (0.3s) loss=0.6925, q_expert=17.01, q_agent=16.54, accuracy_expert=35.68, env_steps=4609, gradient_steps=3609
+2026-11-07 13:30:55,076 INFO epoch 601/10000 (0.3s) loss=1.069, q_expert=21.42, q_agent=21.58, accuracy_expert=27.86, env_steps=6409, gradient_steps=5409
+2026-11-07 13:31:58,345 INFO epoch 801/10000 (0.3s) loss=1.988, q_expert=26.45, q_agent=27.99, accuracy_expert=37.76, env_steps=8209, gradient_steps=7209
+2026-11-07 13:33:01,497 INFO epoch 1001/10000 (0.3s) loss=1.174, q_expert=23.45, q_agent=23.34, accuracy_expert=23.61, env_steps=1.001e+04, gradient_steps=9009
+2026-11-07 13:34:05,694 INFO epoch 1201/10000 (0.3s) loss=1.225, q_expert=21.35, q_agent=22.16, accuracy_expert=29.95, env_steps=1.181e+04, gradient_steps=1.081e+04
+2026-11-07 13:35:07,111 INFO epoch 1401/10000 (0.3s) loss=1.365, q_expert=23.76, q_agent=25.03, accuracy_expert=38.19, env_steps=1.361e+04, gradient_steps=1.261e+04
+2026-11-07 13:36:08,357 INFO epoch 1601/10000 (0.3s) loss=1.178, q_expert=20.82, q_agent=21.78, accuracy_expert=40.62, env_steps=1.541e+04, gradient_steps=1.441e+04
+2026-11-07 13:37:07,768 INFO epoch 1801/10000 (0.3s) loss=2.742, q_expert=23.93, q_agent=24.98, accuracy_expert=20.31, env_steps=1.721e+04, gradient_steps=1.621e+04
+2026-11-07 13:38:06,233 INFO epoch 2001/10000 (0.3s) loss=2.171, q_expert=22.22, q_agent=23.49, accuracy_expert=39.24, env_steps=1.901e+04, gradient_steps=1.801e+04
+2026-11-07 13:39:03,922 INFO epoch 2201/10000 (0.3s) loss=0.7745, q_expert=15.95, q_agent=16.97, accuracy_expert=39.93, env_steps=2.081e+04, gradient_steps=1.981e+04
+2026-11-07 13:40:01,914 INFO epoch 2401/10000 (0.3s) loss=0.5149, q_expert=13.02, q_agent=13.35, accuracy_expert=41.15, env_steps=2.261e+04, gradient_steps=2.161e+04
+2026-11-07 13:40:59,253 INFO epoch 2601/10000 (0.3s) loss=0.9627, q_expert=21.74, q_agent=22.15, accuracy_expert=36.98, env_steps=2.441e+04, gradient_steps=2.341e+04
+2026-11-07 13:41:56,462 INFO epoch 2801/10000 (0.3s) loss=3.461, q_expert=39.08, q_agent=41.92, accuracy_expert=37.59, env_steps=2.621e+04, gradient_steps=2.521e+04
+2026-11-07 13:42:54,557 INFO epoch 3001/10000 (0.3s) loss=6.059, q_expert=50.96, q_agent=54.85, accuracy_expert=32.38, env_steps=2.801e+04, gradient_steps=2.701e+04
+2026-11-07 13:43:54,123 INFO epoch 3201/10000 (0.3s) loss=7.726, q_expert=58.61, q_agent=63.03, accuracy_expert=29.77, env_steps=2.981e+04, gradient_steps=2.881e+04
+2026-11-07 13:44:52,672 INFO epoch 3401/10000 (0.3s) loss=6.921, q_expert=58.73, q_agent=63.23, accuracy_expert=32.81, env_steps=3.161e+04, gradient_steps=3.061e+04
+2026-11-07 13:45:51,208 INFO epoch 3601/10000 (0.3s) loss=79.12, q_expert=38.36, q_agent=39.2, accuracy_expert=40.02, env_steps=3.341e+04, gradient_steps=3.241e+04
+2026-11-07 13:46:49,769 INFO epoch 3801/10000 (0.3s) loss=37.29, q_expert=44.23, q_agent=47.34, accuracy_expert=38.8, env_steps=3.521e+04, gradient_steps=3.421e+04
+2026-11-07 13:47:49,233 INFO epoch 4001/10000 (0.3s) loss=28.06, q_expert=52.03, q_agent=55.61, accuracy_expert=37.5, env_steps=3.701e+04, gradient_steps=3.601e+04
+2026-11-07 13:48:48,613 INFO epoch 4201/10000 (0.3s) loss=21.36, q_expert=49.57, q_agent=54.4, accuracy_expert=30.47, env_steps=3.881e+04, gradient_steps=3.781e+04
+2026-11-07 13:49:46,885 INFO epoch 4401/10000 (0.3s) loss=14.6, q_expert=48.41, q_agent=52.31, accuracy_expert=28.12, env_steps=4.061e+04, gradient_steps=3.961e+04
+2026-11-07 13:50:45,973 INFO epoch 4601/10000 (0.3s) loss=12.15, q_expert=47.94, q_agent=51.73, accuracy_expert=22.4, env_steps=4.241e+04, gradient_steps=4.141e+04
+2026-11-07 13:51:45,415 INFO epoch 4801/10000 (0.3s) loss=6.988, q_expert=38.11, q_agent=41.02, accuracy_expert=25.69, env_steps=4.421e+04, gradient_steps=4.321e+04
+2026-11-07 13:52:45,113 INFO epoch 5001/10000 (0.3s) loss=6.51, q_expert=41.24, q_agent=44.44, accuracy_expert=24.22, env_steps=4.601e+04, gradient_steps=4.501e+04
+2026-11-07 13:53:44,587 INFO epoch 5201/10000 (0.3s) loss=8.639, q_expert=49.81, q_agent=52.6, accuracy_expert=27.69, env_steps=4.781e+04, gradient_steps=4.681e+04
+2026-11-07 13:54:43,528 INFO epoch 5401/10000 (0.3s) loss=23.64, q_expert=91.01, q_agent=98.16, accuracy_expert=26.22, env_steps=4.961e+04, gradient_steps=4.861e+04
+2026-11-07 13:55:42,674 INFO epoch 5601/10000 (0.3s) loss=152.5, q_expert=139.4, q_agent=146.9, accuracy_expert=34.72, env_steps=5.141e+04, gradient_steps=5.041e+04
+2026-11-07 13:56:41,830 INFO epoch 5801/10000 (0.3s) loss=118.1, q_expert=195.1, q_agent=213.8, accuracy_expert=41.06, env_steps=5.321e+04, gradient_steps=5.221e+04
+2026-11-07 13:57:40,647 INFO epoch 6001/10000 (0.3s) loss=191.8, q_expert=253.2, q_agent=273.8, accuracy_expert=45.92, env_steps=5.501e+04, gradient_steps=5.401e+04
+2026-11-07 13:58:39,317 INFO epoch 6201/10000 (0.3s) loss=8.984e+05, q_expert=6196, q_agent=6557, accuracy_expert=30.56, env_steps=5.681e+04, gradient_steps=5.581e+04
+2026-11-07 13:59:37,658 INFO epoch 6401/10000 (0.3s) loss=5.474e+06, q_expert=3.168e+04, q_agent=3.465e+04, accuracy_expert=39.41, env_steps=5.861e+04, gradient_steps=5.761e+04
+2026-11-07 14:00:36,094 INFO epoch 6601/10000 (0.3s) loss=3.26e+06, q_expert=2.652e+04, q_agent=2.907e+04, accuracy_expert=33.25, env_steps=6.041e+04, gradient_steps=5.941e+04
+2026-11-07 14:01:34,693 INFO epoch 6801/10000 (0.3s) loss=1.997e+06, q_expert=2.269e+04, q_agent=2.504e+04, accuracy_expert=34.72, env_steps=6.221e+04, gradient_steps=6.121e+04
+2026-11-07 14:02:33,659 INFO epoch 7001/10000 (0.3s) loss=2.122e+06, q_expert=1.513e+04, q_agent=1.648e+04, accuracy_expert=28.91, env_steps=6.401e+04, gradient_steps=6.301e+04
+2026-11-07 14:03:32,258 INFO epoch 7201/10000 (0.3s) loss=5.883e+05, q_expert=1.22e+04, q_agent=1.336e+04, accuracy_expert=35.59, env_steps=6.581e+04, gradient_steps=6.481e+04
+2026-11-07 14:04:31,674 INFO epoch 7401/10000 (0.3s) loss=4.488e+05, q_expert=1.116e+04, q_agent=1.222e+04, accuracy_expert=31.51, env_steps=6.761e+04, gradient_steps=6.661e+04
+2026-11-07 14:05:29,896 INFO epoch 7601/10000 (0.3s) loss=6.075e+05, q_expert=9185, q_agent=9829, accuracy_expert=32.64, env_steps=6.941e+04, gradient_steps=6.841e+04
+2026-11-07 14:06:28,167 INFO epoch 7801/10000 (0.3s) loss=2.512e+14, q_expert=8.414e+07, q_agent=8.482e+07, accuracy_expert=9.028, env_steps=7.121e+04, gradient_steps=7.021e+04
+2026-11-07 14:07:26,330 INFO epoch 8001/10000 (0.3s) loss=3.527e+16, q_expert=1.079e+09, q_agent=1.096e+09, accuracy_expert=8.16, env_steps=7.301e+04, gradient_steps=7.201e+04
+2026-11-07 14:08:24,917 INFO epoch 8201/10000 (0.3s) loss=4.24e+17, q_expert=9.631e+08, q_agent=9.917e+08, accuracy_expert=4.948, env_steps=7.481e+04, gradient_steps=7.381e+04
+2026-11-07 14:09:23,352 INFO epoch 8401/10000 (0.3s) loss=5.742e+16, q_expert=1.045e+09, q_agent=1.082e+09, accuracy_expert=7.812, env_steps=7.661e+04, gradient_steps=7.561e+04
+2026-11-07 14:10:21,364 INFO epoch 8601/10000 (0.3s) loss=7.43e+17, q_expert=2.652e+09, q_agent=2.667e+09, accuracy_expert=7.378, env_steps=7.841e+04, gradient_steps=7.741e+04
+2026-11-07 14:11:20,564 INFO epoch 8801/10000 (0.3s) loss=2.729e+19, q_expert=6.348e+09, q_agent=6.587e+09, accuracy_expert=5.99, env_steps=8.021e+04, gradient_steps=7.921e+04
+2026-11-07 14:12:18,929 INFO epoch 9001/10000 (0.3s) loss=2.143e+19, q_expert=1.125e+10, q_agent=1.154e+10, accuracy_expert=7.292, env_steps=8.201e+04, gradient_steps=8.101e+04
+2026-11-07 14:13:17,195 INFO epoch 9201/10000 (0.3s) loss=2.127e+18, q_expert=8.317e+09, q_agent=8.465e+09, accuracy_expert=6.684, env_steps=8.381e+04, gradient_steps=8.281e+04
+2026-11-07 14:14:15,442 INFO epoch 9401/10000 (0.3s) loss=1.297e+19, q_expert=2.045e+10, q_agent=2.11e+10, accuracy_expert=6.424, env_steps=8.561e+04, gradient_steps=8.461e+04
+2026-11-07 14:15:13,654 INFO epoch 9601/10000 (0.3s) loss=1.627e+18, q_expert=6.863e+09, q_agent=7.525e+09, accuracy_expert=9.375, env_steps=8.741e+04, gradient_steps=8.641e+04
+2026-11-07 14:16:12,111 INFO epoch 9801/10000 (0.3s) loss=3.874e+18, q_expert=8.964e+09, q_agent=9.343e+09, accuracy_expert=8.16, env_steps=8.921e+04, gradient_steps=8.821e+04
+2026-11-07 14:17:09,720 INFO epoch 10000/10000 (0.3s) loss=5.139e+22, q_expert=4.371e+10, q_agent=4.495e+10, accuracy_expert=9.028, env_steps=9.1e+04, gradient_steps=9e+04
+2026-11-07 14:17:09,757 INFO Training done: 10000 epochs, 49.0 min, 94 guarded resets
+2026-11-07 14:18:16,545 INFO train: AER -4.00 +/- 0.00 (raw -4.000) SR 0.00%
+2026-11-07 14:19:24,405 INFO eval: AER -4.00 +/- 0.00 (raw -4.000) SR 0.00%
+2026-11-07 14:20:32,574 INFO test: AER -4.00 +/- 0.00 (raw -4.000) SR 0.00%
+2026-11-07 14:21:40,434 INFO new_s0: AER -4.00 +/- 0.00 SR 0.00%
+2026-11-07 14:22:49,694 INFO new_s0_and_g: AER -4.00 +/- 0.00 SR 0.00%
+2026-11-07 14:22:54,265 INFO encoding eval: {"n_states": 100000, "policy_action_optimal": 0.0, "cosine": {"same_tile": 0.12, "nn_action_optimal": 0.4, "policy_matches_nn": 0.12, "wall_similarity": 0.58725}, "l2": {"same_tile": 0.11, "nn_action_optimal": 0.33, "policy_matches_nn": 0.04, "wall_similarity": 0.59575}}
+2026-11-07 14:22:54,265 INFO encoding test: {"n_states": 100000, "policy_action_optimal": 0.0, "cosine": {"same_tile": 0.08, "nn_action_optimal": 0.53, "policy_matches_nn": 0.05, "wall_similarity": 0.5715}, "l2": {"same_tile": 0.2, "nn_action_optimal": 0.47, "policy_matches_nn": 0.06, "wall_similarity": 0.59775}}
+2026-11-07 14:22:54,282 INFO Wrote results/ablation_cnn/sqil/cnn/seed_0/results.json
